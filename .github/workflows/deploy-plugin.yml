@@ -42,7 +42,11 @@ jobs:
           mkdir -p ~/.ssh && chmod 700 ~/.ssh
           printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keygen -p -P "$SSH_KEY_PASSPHRASE" -N "" -f ~/.ssh/deploy_key >/dev/null
+          # Only the first line (the header, not secret) is printed, to diagnose the key format.
+          head -n 1 ~/.ssh/deploy_key
+          if [ -n "$SSH_KEY_PASSPHRASE" ]; then
+            ssh-keygen -p -P "$SSH_KEY_PASSPHRASE" -N "" -f ~/.ssh/deploy_key >/dev/null
+          fi
           ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
 
       - name: Test the connection
