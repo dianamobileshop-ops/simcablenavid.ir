@@ -20,6 +20,7 @@ function navid_setup() {
 	add_theme_support( 'wc-product-gallery-zoom' );
 	add_theme_support( 'wc-product-gallery-lightbox' );
 	add_theme_support( 'wc-product-gallery-slider' );
+	register_nav_menus( array( 'primary' => 'منوی اصلی' ) );
 	load_theme_textdomain( 'navid', get_template_directory() . '/languages' );
 }
 add_action( 'after_setup_theme', 'navid_setup' );
@@ -48,3 +49,4 @@ function navid_options() {
 }
 
 require_once get_template_directory() . '/inc/settings.php';
+require_once get_template_directory() . '/inc/woocommerce.php';
