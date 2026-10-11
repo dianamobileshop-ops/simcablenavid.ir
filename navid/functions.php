@@ -20,7 +20,10 @@ function navid_setup() {
 	add_theme_support( 'wc-product-gallery-zoom' );
 	add_theme_support( 'wc-product-gallery-lightbox' );
 	add_theme_support( 'wc-product-gallery-slider' );
-	register_nav_menus( array( 'primary' => 'منوی اصلی' ) );
+	register_nav_menus( array(
+		'primary' => 'منوی اصلی',
+		'footer'  => 'منوی فوتر',
+	) );
 	load_theme_textdomain( 'navid', get_template_directory() . '/languages' );
 }
 add_action( 'after_setup_theme', 'navid_setup' );
@@ -30,6 +33,7 @@ add_action( 'after_setup_theme', 'navid_setup' );
  */
 function navid_assets() {
 	wp_enqueue_style( 'navid', get_stylesheet_uri(), array(), NAVID_VERSION );
+	wp_enqueue_script( 'navid-header', get_template_directory_uri() . '/assets/js/header.js', array(), NAVID_VERSION, true );
 	if ( is_front_page() ) {
 		wp_enqueue_script( 'navid-slider', get_template_directory_uri() . '/assets/js/slider.js', array(), NAVID_VERSION, true );
 	}
@@ -50,6 +54,8 @@ function navid_options() {
 		'toolbar_sub'   => 'آخرین به‌روزرسانی: امروز',
 		'price_url'     => '',
 		'slides'        => '',
+		'phone'         => '',
+		'address'       => '',
 	);
 	return wp_parse_args( (array) get_option( 'navid_options', array() ), $defaults );
 }

@@ -72,6 +72,8 @@ function navid_save_settings() {
 		'toolbar_sub'   => isset( $raw['toolbar_sub'] ) ? sanitize_text_field( $raw['toolbar_sub'] ) : '',
 		'price_url'     => isset( $raw['price_url'] ) ? esc_url_raw( $raw['price_url'] ) : '',
 		'slides'        => isset( $raw['slides'] ) ? sanitize_textarea_field( $raw['slides'] ) : '',
+		'phone'         => isset( $raw['phone'] ) ? sanitize_text_field( $raw['phone'] ) : '',
+		'address'       => isset( $raw['address'] ) ? sanitize_text_field( $raw['address'] ) : '',
 	);
 	update_option( 'navid_options', $clean );
 
@@ -132,7 +134,7 @@ function navid_render_settings() {
 					</section>
 
 					<section id="navid-header" class="navid-admin-card">
-						<h2>هدر و نوار بالا</h2>
+						<h2>هدر و فوتر</h2>
 						<div class="navid-row">
 							<label for="navid-topbar">نمایش نوار بالا</label>
 							<input id="navid-topbar" type="checkbox" name="navid[show_topbar]" value="1" <?php checked( '1', $opt['show_topbar'] ); ?>>
@@ -140,6 +142,14 @@ function navid_render_settings() {
 						<div class="navid-row">
 							<label for="navid-sticky">هدر چسبان</label>
 							<input id="navid-sticky" type="checkbox" name="navid[sticky_header]" value="1" <?php checked( '1', $opt['sticky_header'] ); ?>>
+						</div>
+						<div class="navid-row">
+							<label for="navid-phone">شماره تماس</label>
+							<input id="navid-phone" type="text" name="navid[phone]" value="<?php echo esc_attr( $opt['phone'] ); ?>" dir="ltr">
+						</div>
+						<div class="navid-row">
+							<label for="navid-address">آدرس</label>
+							<input id="navid-address" type="text" name="navid[address]" value="<?php echo esc_attr( $opt['address'] ); ?>">
 						</div>
 					</section>
 

@@ -44,7 +44,7 @@ img {
 	margin-inline: auto;
 }
 
-/* Header: sticky on phones and desktop */
+/* Header: desktop top bar + menu row; on phones it becomes a rounded card */
 .navid-header {
 	position: sticky;
 	top: 0;
@@ -53,21 +53,291 @@ img {
 	border-bottom: 1px solid var(--navid-line);
 }
 
-.navid-header .navid-wrap {
+.navid-top {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
-	min-height: 60px;
-	gap: 12px;
+	gap: 16px;
+	min-height: 72px;
 }
 
-.navid-header .custom-logo {
-	max-height: 40px;
+.navid-brand {
+	display: flex;
+	align-items: center;
+	flex-shrink: 0;
+	color: var(--navid-ink);
+	font-weight: 800;
+	text-decoration: none;
+}
+
+.navid-brand .custom-logo {
+	max-height: 48px;
 	width: auto;
+}
+
+.navid-search {
+	flex: 1;
+	display: flex;
+	max-width: 620px;
+	margin-inline: auto;
+	border: 1px solid var(--navid-line);
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--navid-bg);
+}
+
+.navid-search input {
+	flex: 1;
+	min-width: 0;
+	border: 0;
+	background: transparent;
+	padding: 10px 16px;
+	font: inherit;
+	outline: none;
+}
+
+.navid-search button {
+	border: 0;
+	background: var(--navid-primary);
+	color: #fff;
+	padding: 0 16px;
+	cursor: pointer;
+}
+
+.navid-desk-actions {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	flex-shrink: 0;
+}
+
+.navid-iconbtn-text {
+	color: var(--navid-ink);
+	text-decoration: none;
+	font-size: 14px;
+	font-weight: 600;
+	position: relative;
+}
+
+.navid-badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 18px;
+	height: 18px;
+	padding: 0 5px;
+	margin-inline-start: 4px;
+	border-radius: 999px;
+	background: #e63946;
+	color: #fff;
+	font-size: 11px;
+	font-style: normal;
+	line-height: 1;
+}
+
+.navid-iconbtn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	width: 40px;
+	height: 40px;
+	border: 0;
+	border-radius: 50%;
+	background: transparent;
+	color: var(--navid-ink);
+	cursor: pointer;
+}
+
+.navid-phone,
+.navid-menu-toggle {
+	display: none;
+}
+
+.navid-nav {
+	border-top: 1px solid var(--navid-line);
+}
+
+.navid-menu {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 22px;
+	list-style: none;
+	margin: 0;
+	padding: 10px 0;
+}
+
+.navid-menu a {
+	color: var(--navid-ink);
+	text-decoration: none;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.navid-menu a:hover {
+	color: var(--navid-primary);
 }
 
 .navid-main {
 	padding-block: 24px 48px;
+}
+
+/* Footer */
+.navid-footer {
+	background: var(--navid-card);
+	border-top: 1px solid var(--navid-line);
+	padding-block: 28px;
+	font-size: 14px;
+}
+
+.navid-footer-grid {
+	display: grid;
+	grid-template-columns: 1.2fr 1fr 1fr;
+	gap: 24px;
+}
+
+.navid-footer-name {
+	font-weight: 800;
+	margin: 0 0 6px;
+}
+
+.navid-footer-menu {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	gap: 8px;
+}
+
+.navid-footer-menu a {
+	color: var(--navid-ink);
+	text-decoration: none;
+}
+
+.navid-footer-copy {
+	color: var(--navid-muted);
+	font-size: 13px;
+}
+
+/* Mobile bottom tab bar */
+.navid-tabbar {
+	display: none;
+}
+
+@media (max-width: 768px) {
+	.navid-header {
+		background: transparent;
+		border: 0;
+	}
+
+	.navid-top {
+		background: var(--navid-card);
+		border-radius: 18px;
+		box-shadow: 0 2px 12px rgba(40, 20, 80, .08);
+		margin: 10px 12px 0;
+		padding: 0 12px;
+		min-height: 60px;
+		gap: 8px;
+	}
+
+	.navid-brand {
+		flex: 1;
+		justify-content: center;
+	}
+
+	.navid-brand .custom-logo {
+		max-height: 40px;
+	}
+
+	.navid-phone,
+	.navid-menu-toggle {
+		display: inline-flex;
+	}
+
+	.navid-menu-toggle {
+		width: auto;
+		padding: 0 6px;
+		font-size: 13px;
+		gap: 4px;
+	}
+
+	.navid-search,
+	.navid-desk-actions {
+		display: none;
+	}
+
+	.navid-nav {
+		display: none;
+		margin: 8px 12px 0;
+		background: var(--navid-card);
+		border-radius: 18px;
+		border: 0;
+		box-shadow: 0 2px 12px rgba(40, 20, 80, .08);
+	}
+
+	.navid-nav.is-open {
+		display: block;
+	}
+
+	.navid-menu {
+		flex-direction: column;
+		gap: 0;
+		padding: 6px 0;
+	}
+
+	.navid-menu li {
+		border-bottom: 1px solid var(--navid-line);
+	}
+
+	.navid-menu li:last-child {
+		border-bottom: 0;
+	}
+
+	.navid-menu a {
+		display: block;
+		padding: 12px 16px;
+	}
+
+	.navid-footer-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.navid-tabbar {
+		position: fixed;
+		inset-inline: 0;
+		bottom: 0;
+		z-index: 200;
+		display: grid;
+		grid-template-columns: repeat(5, 1fr);
+		background: var(--navid-card);
+		border-top: 1px solid var(--navid-line);
+		padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+	}
+
+	.navid-tabbar a {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 2px;
+		color: var(--navid-muted);
+		text-decoration: none;
+		font-size: 11px;
+	}
+
+	.navid-tabbar a:first-child {
+		color: var(--navid-primary);
+	}
+
+	.navid-tabbar .navid-badge {
+		position: absolute;
+		top: -4px;
+		inset-inline-start: 50%;
+		margin-inline-start: 8px;
+	}
+
+	body {
+		padding-bottom: 76px;
+	}
 }
 
 .navid-btn {
