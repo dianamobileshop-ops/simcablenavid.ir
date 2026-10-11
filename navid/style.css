@@ -1,0 +1,236 @@
+/*
+Theme Name: Navid
+Theme URI: https://simcablenavid.ir
+Description: قالب اختصاصی نوید. شامل جدول قیمت و پنل مدیریت در یک بسته.
+Version: 1.0.0
+Requires PHP: 7.4
+Text Domain: navid
+License: GPL v2 or later
+*/
+
+:root {
+	--navid-primary: #1faa6b;
+	--navid-primary-soft: #e9f8f0;
+	--navid-ink: #1f2430;
+	--navid-muted: #6b7280;
+	--navid-bg: #f4f6f8;
+	--navid-card: #ffffff;
+	--navid-line: #e5e8ee;
+	--navid-radius: 14px;
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	background: var(--navid-bg);
+	color: var(--navid-ink);
+	font-family: Vazirmatn, Tahoma, sans-serif;
+	font-size: 15px;
+	line-height: 1.8;
+}
+
+img {
+	max-width: 100%;
+	height: auto;
+}
+
+.navid-wrap {
+	width: min(1200px, calc(100% - 32px));
+	margin-inline: auto;
+}
+
+/* Header: sticky on phones and desktop */
+.navid-header {
+	position: sticky;
+	top: 0;
+	z-index: 100;
+	background: var(--navid-card);
+	border-bottom: 1px solid var(--navid-line);
+}
+
+.navid-header .navid-wrap {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	min-height: 60px;
+	gap: 12px;
+}
+
+.navid-header .custom-logo {
+	max-height: 40px;
+	width: auto;
+}
+
+.navid-main {
+	padding-block: 24px 48px;
+}
+
+.navid-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	min-height: 40px;
+	padding: 8px 16px;
+	border-radius: 10px;
+	border: 1px solid var(--navid-line);
+	background: var(--navid-card);
+	color: var(--navid-ink);
+	font: inherit;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.navid-btn--primary {
+	background: var(--navid-primary);
+	border-color: var(--navid-primary);
+	color: #fff;
+}
+
+@media (max-width: 768px) {
+	.navid-wrap {
+		width: calc(100% - 32px);
+	}
+}
+
+/* Shop page: sort tabs, filter sidebar, product grid */
+.navid-shop {
+	display: grid;
+	grid-template-columns: 1fr 280px;
+	gap: 20px;
+	align-items: start;
+}
+
+.navid-shop-bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	flex-wrap: wrap;
+	margin-bottom: 14px;
+	color: var(--navid-muted);
+	font-size: 13px;
+}
+
+.navid-sort {
+	display: flex;
+	gap: 6px;
+	flex-wrap: wrap;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.navid-sort a {
+	padding: 6px 12px;
+	border-radius: 999px;
+	color: var(--navid-ink);
+	text-decoration: none;
+}
+
+.navid-sort a.is-on {
+	background: var(--navid-primary-soft);
+	color: var(--navid-primary);
+	font-weight: 700;
+}
+
+.navid-grid {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 12px;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.navid-card {
+	display: flex;
+	flex-direction: column;
+	background: var(--navid-card);
+	border: 1px solid var(--navid-line);
+	border-radius: var(--navid-radius);
+	padding: 12px;
+	min-width: 0;
+}
+
+.navid-card img {
+	aspect-ratio: 1 / 1;
+	object-fit: contain;
+	margin-bottom: 8px;
+}
+
+.navid-card-title {
+	font-size: 13.5px;
+	font-weight: 700;
+	margin: 0 0 6px;
+	line-height: 1.6;
+	overflow-wrap: anywhere;
+}
+
+.navid-card-stock {
+	font-size: 12px;
+	color: var(--navid-primary);
+	margin-bottom: 4px;
+}
+
+.navid-card-seller {
+	font-size: 12px;
+	color: var(--navid-muted);
+	margin-bottom: 10px;
+}
+
+.navid-card-price {
+	margin-top: auto;
+	font-weight: 700;
+	color: var(--navid-primary);
+	text-decoration: none;
+}
+
+.navid-filters {
+	display: grid;
+	gap: 12px;
+}
+
+.navid-filter {
+	background: var(--navid-card);
+	border: 1px solid var(--navid-line);
+	border-radius: var(--navid-radius);
+	padding: 14px;
+}
+
+.navid-filter h3 {
+	margin: 0 0 10px;
+	font-size: 14px;
+}
+
+.navid-filter input[type=search] {
+	width: 100%;
+	min-height: 38px;
+	border: 1px solid var(--navid-line);
+	border-radius: 10px;
+	padding: 6px 10px;
+	font: inherit;
+}
+
+.navid-filter label {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 8px;
+	padding: 4px 0;
+	font-size: 13.5px;
+}
+
+@media (max-width: 992px) {
+	.navid-shop {
+		grid-template-columns: 1fr;
+	}
+	.navid-grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
