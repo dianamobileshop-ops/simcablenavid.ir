@@ -30,6 +30,9 @@ add_action( 'after_setup_theme', 'navid_setup' );
  */
 function navid_assets() {
 	wp_enqueue_style( 'navid', get_stylesheet_uri(), array(), NAVID_VERSION );
+	if ( is_front_page() ) {
+		wp_enqueue_script( 'navid-slider', get_template_directory_uri() . '/assets/js/slider.js', array(), NAVID_VERSION, true );
+	}
 }
 add_action( 'wp_enqueue_scripts', 'navid_assets' );
 
@@ -44,9 +47,13 @@ function navid_options() {
 		'show_topbar'   => '1',
 		'sticky_header' => '1',
 		'toolbar_title' => 'دریافت لیست قیمت رسمی سیم و کابل نوید',
+		'toolbar_sub'   => 'آخرین به‌روزرسانی: امروز',
+		'price_url'     => '',
+		'slides'        => '',
 	);
 	return wp_parse_args( (array) get_option( 'navid_options', array() ), $defaults );
 }
 
 require_once get_template_directory() . '/inc/settings.php';
 require_once get_template_directory() . '/inc/woocommerce.php';
+require_once get_template_directory() . '/inc/home.php';

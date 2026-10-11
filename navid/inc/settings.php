@@ -69,6 +69,9 @@ function navid_save_settings() {
 		'show_topbar'   => empty( $raw['show_topbar'] ) ? '0' : '1',
 		'sticky_header' => empty( $raw['sticky_header'] ) ? '0' : '1',
 		'toolbar_title' => isset( $raw['toolbar_title'] ) ? sanitize_text_field( $raw['toolbar_title'] ) : '',
+		'toolbar_sub'   => isset( $raw['toolbar_sub'] ) ? sanitize_text_field( $raw['toolbar_sub'] ) : '',
+		'price_url'     => isset( $raw['price_url'] ) ? esc_url_raw( $raw['price_url'] ) : '',
+		'slides'        => isset( $raw['slides'] ) ? sanitize_textarea_field( $raw['slides'] ) : '',
 	);
 	update_option( 'navid_options', $clean );
 
@@ -145,6 +148,22 @@ function navid_render_settings() {
 						<div class="navid-row">
 							<label for="navid-toolbar-title">عنوان نوار جدول</label>
 							<input id="navid-toolbar-title" type="text" name="navid[toolbar_title]" value="<?php echo esc_attr( $opt['toolbar_title'] ); ?>">
+						</div>
+						<div class="navid-row">
+							<label for="navid-toolbar-sub">خط به‌روزرسانی</label>
+							<input id="navid-toolbar-sub" type="text" name="navid[toolbar_sub]" value="<?php echo esc_attr( $opt['toolbar_sub'] ); ?>">
+						</div>
+						<div class="navid-row">
+							<label for="navid-price-url">آدرس صفحه قیمت</label>
+							<input id="navid-price-url" type="text" name="navid[price_url]" value="<?php echo esc_attr( $opt['price_url'] ); ?>" placeholder="https://">
+						</div>
+					</section>
+
+					<section id="navid-slider" class="navid-admin-card">
+						<h2>بنرهای اسلایدر صفحه اصلی</h2>
+						<div class="navid-row">
+							<label for="navid-slides">هر بنر در یک خط: آدرس عکس | لینک | متن جایگزین</label>
+							<textarea id="navid-slides" name="navid[slides]" rows="5" dir="ltr"><?php echo esc_textarea( $opt['slides'] ); ?></textarea>
 						</div>
 					</section>
 
