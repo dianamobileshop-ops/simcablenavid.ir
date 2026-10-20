@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'NAVID_VERSION', '1.0.4' );
+define( 'NAVID_VERSION', '1.0.5' );
 
 /**
  * Basic theme support.
@@ -61,6 +61,8 @@ function navid_options() {
 		'slides'        => '',
 		// Same contact details the price list header/footer already uses.
 		'email'         => '',
+		'special_label' => '',
+		'special_url'   => '',
 		'about'         => '',
 		'phone'         => (string) get_option( 'npt_phone', '' ),
 		'address'       => (string) get_option( 'npt_address', '' ),

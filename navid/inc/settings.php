@@ -110,6 +110,8 @@ function navid_save_settings() {
 		'toolbar_sub'   => isset( $raw['toolbar_sub'] ) ? sanitize_text_field( $raw['toolbar_sub'] ) : '',
 		'price_url'     => isset( $raw['price_url'] ) ? esc_url_raw( $raw['price_url'] ) : '',
 		'slides'        => isset( $raw['slides'] ) ? sanitize_textarea_field( $raw['slides'] ) : '',
+		'special_label' => isset( $raw['special_label'] ) ? sanitize_text_field( $raw['special_label'] ) : '',
+		'special_url'   => isset( $raw['special_url'] ) ? esc_url_raw( $raw['special_url'] ) : '',
 		'email'         => isset( $raw['email'] ) ? sanitize_email( $raw['email'] ) : '',
 		'about'         => isset( $raw['about'] ) ? sanitize_textarea_field( $raw['about'] ) : '',
 		'phone'         => isset( $raw['phone'] ) ? sanitize_text_field( $raw['phone'] ) : '',
@@ -385,6 +387,14 @@ function navid_render_settings() {
 			<div class="navid-row">
 				<label for="navid-phone">شماره تماس</label>
 				<input id="navid-phone" type="text" name="navid[phone]" value="<?php echo esc_attr( $opt['phone'] ); ?>" dir="ltr">
+			</div>
+			<div class="navid-row">
+				<label for="navid-special-label">لینک ویژه کنار منو (مثلاً فروش ویژه)</label>
+				<input id="navid-special-label" type="text" name="navid[special_label]" value="<?php echo esc_attr( $opt['special_label'] ); ?>" placeholder="فروش ویژه">
+			</div>
+			<div class="navid-row">
+				<label for="navid-special-url">آدرس لینک ویژه</label>
+				<input id="navid-special-url" type="text" name="navid[special_url]" value="<?php echo esc_attr( $opt['special_url'] ); ?>" dir="ltr" placeholder="https://">
 			</div>
 			<div class="navid-row">
 				<label for="navid-email">ایمیل</label>

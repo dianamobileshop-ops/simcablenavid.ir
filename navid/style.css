@@ -2,7 +2,7 @@
 Theme Name: Navid
 Theme URI: https://simcablenavid.ir
 Description: قالب اختصاصی نوید. شامل جدول قیمت و پنل مدیریت در یک بسته.
-Version: 1.0.4
+Version: 1.0.5
 Update URI: https://simcablenavid.ir/navid
 Requires PHP: 7.4
 Text Domain: navid
@@ -1188,5 +1188,269 @@ img {
 
 	.navid-slide-card p {
 		font-size: 13px;
+	}
+}
+
+/* ---- 1.0.5: desktop header like the reference, dropdown menus ---- */
+.navid-menu li {
+	position: relative;
+}
+
+.navid-menu .sub-menu {
+	display: none;
+	list-style: none;
+	margin: 0;
+	padding: 6px;
+	background: var(--navid-card);
+	border: 1px solid var(--navid-line);
+	border-radius: 12px;
+	box-shadow: 0 8px 24px rgba(20, 32, 43, .12);
+}
+
+.navid-menu .sub-menu a {
+	display: block;
+	padding: 8px 12px;
+	border-radius: 8px;
+	white-space: nowrap;
+}
+
+.navid-menu .sub-menu a:hover {
+	background: var(--navid-bg);
+}
+
+.navid-menu .menu-item-has-children > a:after {
+	content: "▾";
+	margin-inline-start: 5px;
+	font-size: 11px;
+	opacity: .6;
+}
+
+.navid-submenu-toggle {
+	display: none;
+}
+
+.navid-navrow {
+	display: flex;
+	align-items: center;
+	gap: 22px;
+}
+
+.navid-catmenu {
+	position: relative;
+}
+
+.navid-catmenu summary {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 12px 0;
+	font-weight: 800;
+	cursor: pointer;
+	list-style: none;
+}
+
+.navid-catmenu summary::-webkit-details-marker {
+	display: none;
+}
+
+.navid-catpanel {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(170px, 1fr));
+	gap: 8px 28px;
+	min-width: 640px;
+	max-height: 70vh;
+	overflow: auto;
+	padding: 18px;
+	background: var(--navid-card);
+	border: 1px solid var(--navid-line);
+	border-radius: 14px;
+	box-shadow: 0 12px 32px rgba(20, 32, 43, .14);
+}
+
+.navid-catcol a {
+	display: block;
+	padding: 4px 0;
+	color: var(--navid-muted);
+	text-decoration: none;
+	font-size: 13px;
+}
+
+.navid-catcol a:hover {
+	color: var(--navid-primary);
+}
+
+.navid-catcol .navid-catcol-title {
+	color: var(--navid-ink);
+	font-weight: 800;
+	font-size: 14px;
+}
+
+.navid-special {
+	margin-inline-start: auto;
+	padding: 12px 6px;
+	color: var(--navid-ink);
+	font-weight: 700;
+	text-decoration: none;
+	border-bottom: 2px solid var(--navid-primary);
+}
+
+@media (min-width: 769px) {
+	.navid-top {
+		gap: 18px;
+	}
+
+	.navid-brand {
+		order: 1;
+	}
+
+	.navid-search {
+		order: 2;
+		flex: 1;
+		max-width: none;
+		height: 46px;
+		margin: 0;
+	}
+
+	.navid-phone {
+		display: inline-flex;
+		order: 3;
+		width: auto;
+		padding-inline: 4px 16px;
+		border-radius: 0;
+		border-inline-end: 1px solid var(--navid-line);
+	}
+
+	.navid-desk-actions {
+		order: 4;
+		gap: 12px;
+	}
+
+	.navid-account {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		padding: 8px 16px;
+		border: 1px solid var(--navid-line);
+		border-radius: 12px;
+		color: var(--navid-ink);
+		font-size: 14px;
+		font-weight: 600;
+		text-decoration: none;
+	}
+
+	.navid-cart {
+		position: relative;
+		display: inline-flex;
+		color: var(--navid-primary);
+	}
+
+	.navid-cart .navid-cart-count {
+		position: absolute;
+		top: -8px;
+		inset-inline-end: -8px;
+	}
+
+	.navid-navrow .navid-menu {
+		flex: 1;
+		flex-wrap: nowrap;
+		padding: 0;
+	}
+
+	.navid-navrow .navid-menu > li > a {
+		display: block;
+		padding: 12px 0;
+	}
+
+	.navid-catpanel {
+		position: absolute;
+		top: 100%;
+		inset-inline-start: 0;
+		z-index: 130;
+	}
+
+	.navid-menu li:hover > .sub-menu,
+	.navid-menu li:focus-within > .sub-menu {
+		display: block;
+		position: absolute;
+		top: 100%;
+		inset-inline-start: 0;
+		min-width: 200px;
+		z-index: 125;
+	}
+}
+
+@media (max-width: 768px) {
+	.navid-navrow {
+		display: block;
+	}
+
+	.navid-catmenu summary {
+		padding: 12px 16px;
+		border-bottom: 1px solid var(--navid-line);
+	}
+
+	.navid-catpanel {
+		display: block;
+		min-width: 0;
+		max-height: none;
+		padding: 4px 16px 10px;
+		border: 0;
+		border-radius: 0;
+		box-shadow: none;
+	}
+
+	.navid-catcol {
+		padding: 6px 0;
+	}
+
+	.navid-special {
+		display: block;
+		margin: 0;
+		padding: 12px 16px;
+		border-bottom: 0;
+		color: var(--navid-primary);
+	}
+
+	.navid-menu .menu-item-has-children > a:after {
+		content: none;
+	}
+
+	.navid-menu .menu-item-has-children {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+	}
+
+	.navid-menu .menu-item-has-children > a {
+		flex: 1;
+	}
+
+	.navid-submenu-toggle {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 44px;
+		height: 44px;
+		border: 0;
+		background: transparent;
+		font-size: 14px;
+		cursor: pointer;
+	}
+
+	.navid-menu .sub-menu {
+		flex: 0 0 100%;
+		border: 0;
+		box-shadow: none;
+		border-radius: 0;
+		background: var(--navid-bg);
+		padding: 0 12px;
+	}
+
+	.navid-menu .menu-item-has-children.is-open > .sub-menu {
+		display: block;
+	}
+
+	.navid-menu .menu-item-has-children.is-open > .navid-submenu-toggle {
+		transform: rotate(180deg);
 	}
 }
