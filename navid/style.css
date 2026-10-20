@@ -2,12 +2,28 @@
 Theme Name: Navid
 Theme URI: https://simcablenavid.ir
 Description: قالب اختصاصی نوید. شامل جدول قیمت و پنل مدیریت در یک بسته.
-Version: 1.0.1
+Version: 1.0.2
 Update URI: https://simcablenavid.ir/navid
 Requires PHP: 7.4
 Text Domain: navid
 License: GPL v2 or later
 */
+
+@font-face {
+	font-family: Vazirmatn;
+	src: url('inc/npt/vendor/fonts/Vazirmatn-Regular.ttf') format('truetype');
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: Vazirmatn;
+	src: url('inc/npt/vendor/fonts/Vazirmatn-Bold.ttf') format('truetype');
+	font-weight: 700;
+	font-style: normal;
+	font-display: swap;
+}
 
 :root {
 	--navid-primary: #1faa6b;
@@ -834,4 +850,109 @@ img {
 	.navid-blog-grid {
 		grid-template-columns: 1fr;
 	}
+}
+
+
+/* ---- Templates added in 1.0.2: single, page, archive, search, 404, comments ---- */
+.navid-cart-count:empty {
+	display: none;
+}
+
+@media (max-width: 782px) {
+	.navid-search-open .navid-top {
+		flex-wrap: wrap;
+	}
+
+	.navid-search-open .navid-search {
+		display: flex;
+		flex: 1 0 100%;
+		order: 9;
+	}
+}
+
+.navid-content {
+	background: var(--navid-card);
+	border: 1px solid var(--navid-line);
+	border-radius: var(--navid-radius);
+	padding: 20px;
+	margin: 16px 0;
+}
+
+.navid-content h1,
+.navid-content h2.navid-entry-title {
+	margin-top: 0;
+}
+
+.navid-entry-title a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.navid-entry-meta {
+	color: var(--navid-muted);
+	font-size: 13px;
+	margin: 0 0 12px;
+}
+
+.navid-entry-thumb img {
+	border-radius: var(--navid-radius);
+	margin-bottom: 14px;
+}
+
+.navid-pagination {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	justify-content: center;
+	margin: 20px 0;
+}
+
+.navid-pagination .page-numbers {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 38px;
+	height: 38px;
+	padding: 0 10px;
+	border: 1px solid var(--navid-line);
+	border-radius: 10px;
+	background: var(--navid-card);
+	color: var(--navid-ink);
+	text-decoration: none;
+}
+
+.navid-pagination .page-numbers.current {
+	background: var(--navid-primary);
+	border-color: var(--navid-primary);
+	color: #fff;
+}
+
+.navid-404 {
+	text-align: center;
+	padding: 40px 16px;
+}
+
+.navid-comments {
+	margin-top: 24px;
+}
+
+.navid-comments ol {
+	list-style: none;
+	padding: 0;
+}
+
+.navid-comments .comment-body {
+	border-top: 1px solid var(--navid-line);
+	padding: 12px 0;
+}
+
+.navid-comments textarea,
+.navid-comments input[type=text],
+.navid-comments input[type=email],
+.navid-comments input[type=url] {
+	width: 100%;
+	padding: 10px;
+	border: 1px solid var(--navid-line);
+	border-radius: 10px;
+	font: inherit;
 }

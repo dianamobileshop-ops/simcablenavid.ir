@@ -41,7 +41,7 @@ $cart_count  = ( function_exists( 'WC' ) && WC()->cart ) ? WC()->cart->get_cart_
 		<?php endif; ?>
 
 		<div class="navid-footer-col navid-footer-copy">
-			<p>&copy; <?php echo esc_html( gmdate( 'Y' ) ); ?> <?php bloginfo( 'name' ); ?></p>
+			<p>&copy; <?php echo esc_html( function_exists( 'npt_jalali_now' ) ? (function () { $j = npt_jalali_now(); return $j['year']; })() : gmdate( 'Y' ) ); ?> <?php bloginfo( 'name' ); ?></p>
 		</div>
 	</div>
 </footer>
@@ -51,7 +51,7 @@ $cart_count  = ( function_exists( 'WC' ) && WC()->cart ) ? WC()->cart->get_cart_
 		<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"/></svg>
 		<span><?php esc_html_e( 'خانه', 'navid' ); ?></span>
 	</a>
-	<a href="<?php echo esc_url( home_url( '/?post_type=product' ) ); ?>">
+	<a href="#navid-s" data-navid-search>
 		<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
 		<span><?php esc_html_e( 'جستجو', 'navid' ); ?></span>
 	</a>
@@ -62,7 +62,7 @@ $cart_count  = ( function_exists( 'WC' ) && WC()->cart ) ? WC()->cart->get_cart_
 	<a href="<?php echo esc_url( $cart_url ); ?>" class="navid-tab-cart">
 		<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6h15l-1.5 9h-12zM6 6 5 3H2"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg>
 		<span><?php esc_html_e( 'سبد خرید', 'navid' ); ?></span>
-		<?php if ( $cart_count ) : ?><em class="navid-badge"><?php echo esc_html( $cart_count ); ?></em><?php endif; ?>
+		<?php echo navid_cart_count_html( $cart_count ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 	</a>
 	<a href="<?php echo esc_url( $account_url ); ?>">
 		<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>

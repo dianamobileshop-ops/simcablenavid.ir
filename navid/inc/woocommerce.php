@@ -70,7 +70,9 @@ add_action( 'save_post_product', 'navid_price_metabox_save' );
  * @return bool
  */
 function navid_price_is_visible( $product ) {
-	return '0' !== get_post_meta( $product->get_id(), '_navid_show_price', true );
+	// A variation follows the product it belongs to.
+	$id = $product->get_parent_id() ? $product->get_parent_id() : $product->get_id();
+	return '0' !== get_post_meta( $id, '_navid_show_price', true );
 }
 
 /**
@@ -81,7 +83,8 @@ function navid_price_is_visible( $product ) {
  * @return string
  */
 function navid_price_html( $price, $product ) {
-	if ( navid_price_is_visible( $product ) ) {
+	// The admin product list keeps showing the real price to the people who manage it.
+	if ( ( is_admin() && ! wp_doing_ajax() ) || navid_price_is_visible( $product ) ) {
 		return $price;
 	}
 	return '<span class="navid-call-price">' . esc_html__( 'تماس بگیرید', 'navid' ) . '</span>';
@@ -99,3 +102,23 @@ function navid_price_purchasable( $purchasable, $product ) {
 	return navid_price_is_visible( $product ) ? $purchasable : false;
 }
 add_filter( 'woocommerce_is_purchasable', 'navid_price_purchasable', 10, 2 );
+add_filter( 'woocommerce_variation_is_purchasable', 'navid_price_purchasable', 10, 2 );
+
+/**
+ * Variation data sent to the product page must not carry the hidden price either.
+ *
+ * @param array                $data      Variation data.
+ * @param WC_Product           $parent    Variable product.
+ * @param WC_Product_Variation $variation Variation.
+ * @return array
+ */
+function navid_variation_data( $data, $parent, $variation ) {
+	if ( ! navid_price_is_visible( $variation ) ) {
+		$data['price_html']    = '<span class="navid-call-price">' . esc_html__( 'تماس بگیرید', 'navid' ) . '</span>';
+		$data['display_price'] = '';
+		$data['display_regular_price'] = '';
+		$data['is_purchasable'] = false;
+	}
+	return $data;
+}
+add_filter( 'woocommerce_available_variation', 'navid_variation_data', 10, 3 );

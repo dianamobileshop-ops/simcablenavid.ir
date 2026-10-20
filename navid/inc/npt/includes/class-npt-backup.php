@@ -107,7 +107,9 @@ class NPT_Backup {
 	private static function dir() {
 		$up  = wp_upload_dir();
 		$old = trailingslashit( $up['basedir'] ) . 'npt-backups';
-		$dir = $old;
+		// The fallback folder inside uploads gets a secret suffix: nginx ignores
+		// .htaccess, so the folder name itself must not be guessable.
+		$dir = trailingslashit( $up['basedir'] ) . 'npt-backups-' . substr( wp_hash( 'npt-backups' ), 0, 16 );
 		// Preferred: one folder above the web root (not reachable by URL at all).
 		$private = dirname( untrailingslashit( ABSPATH ) ) . '/npt-private-backups';
 		if ( ! is_dir( $private ) ) {
@@ -115,19 +117,19 @@ class NPT_Backup {
 		}
 		if ( is_dir( $private ) && wp_is_writable( $private ) ) {
 			$dir = $private;
-			// Move backups made by older versions out of the uploads folder.
-			if ( is_dir( $old ) ) {
-				foreach ( (array) glob( $old . '/npt-*.json' ) as $path ) {
-					@rename( $path, $dir . '/' . basename( $path ) ); // phpcs:ignore
-				}
-			}
 		}
 		if ( ! is_dir( $dir ) ) {
 			wp_mkdir_p( $dir );
 		}
+		// Move backups made by older versions out of the guessable folder.
+		if ( is_dir( $old ) && is_dir( $dir ) ) {
+			foreach ( (array) glob( $old . '/npt-*.json' ) as $path ) {
+				@rename( $path, $dir . '/' . basename( $path ) ); // phpcs:ignore
+			}
+		}
 		if ( is_dir( $dir ) ) {
 			if ( ! file_exists( $dir . '/.htaccess' ) ) {
-				file_put_contents( $dir . '/.htaccess', "Require all denied\nDeny from all\n" ); // phpcs:ignore
+				file_put_contents( $dir . '/.htaccess', "<IfModule mod_authz_core.c>\nRequire all denied\n</IfModule>\n<IfModule !mod_authz_core.c>\nDeny from all\n</IfModule>\n" ); // phpcs:ignore
 			}
 			if ( ! file_exists( $dir . '/index.html' ) ) {
 				file_put_contents( $dir . '/index.html', '' ); // phpcs:ignore
@@ -249,7 +251,9 @@ class NPT_Backup {
 		}
 
 		// A restore replaces data, so the current state is saved first.
-		self::save_file( 'before-restore' );
+		if ( '' === self::save_file( 'before-restore' ) ) {
+			self::notify( 'error', 'پیش از بازیابی نتوانستم از وضعیت فعلی پشتیبان بگیرم؛ بازیابی انجام نشد.' );
+		}
 
 		$res = self::restore( $data );
 		self::notify( 'success', sprintf( 'بازیابی انجام شد: %d تنظیم و %d ردیف جدول. (نسخه‌ی پشتیبان: %s)', $res['options'], $res['rows'], isset( $data['version'] ) ? $data['version'] : '؟' ) );
@@ -327,6 +331,9 @@ class NPT_Backup {
 
 	public static function handle_update() {
 		self::guard( 'npt_update_zip' );
+		if ( ! current_user_can( 'install_plugins' ) || ! current_user_can( 'update_plugins' ) ) {
+			self::notify( 'error', 'برای بروزرسانی از فایل، دسترسی نصب افزونه لازم است.' );
+		}
 		if ( defined( 'NAVID_VERSION' ) ) {
 			// Inside the theme the plugin is updated with the theme, not from a zip.
 			self::notify( 'error', 'بروزرسانی از فایل zip در حالت قالب فعال نیست؛ قالب را بروزرسانی کنید.' );

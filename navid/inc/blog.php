@@ -16,7 +16,8 @@ defined( 'ABSPATH' ) || exit;
  * @return int
  */
 function navid_reading_minutes( $post ) {
-	$words = str_word_count( wp_strip_all_tags( $post->post_content ) );
+	// str_word_count() ignores non-Latin letters, so Persian text counted as zero words.
+	$words = preg_match_all( '/[\p{L}\p{N}]+/u', wp_strip_all_tags( strip_shortcodes( $post->post_content ) ) );
 	return max( 1, (int) ceil( $words / 200 ) );
 }
 

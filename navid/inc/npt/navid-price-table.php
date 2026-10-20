@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Navid Price Table
  * Description: نمایش جدولی محصولات ووکامرس (نام، قیمت، آخرین به‌روزرسانی) با فیلتر دسته‌بندی، از طریق شورت‌کد [navid_price_table]. کاربران دارای دسترسی مجاز (کارفرما/مدیر فروشگاه) می‌توانند قیمت را مستقیماً از همان جدول ویرایش کنند. شامل پیش‌فاکتور آنلاین با فرم عمومی ([navid_proforma])، فروش متری (ادغام‌شده از افزونه «فروش متری ووکامرس»)، پنل مستقل کارفرما با ورود پیامکی ([navid_panel])، ثبت‌نام مشتری ([navid_register]) و نوار سریع موبایل (ادغام‌شده از افزونه‌ی جداگانه‌ی Mobile Quick Bar).
- * Version: 2.0.16
+ * Version: 2.0.17
  * Plugin URI: https://spadts.ir
  * Author: ویرا فناوران اسپاد
  * Author URI: https://spadts.ir
@@ -15,7 +15,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Direct access not allowed.
 }
 
-define( 'NPT_VERSION', '2.0.16' );
+if ( defined( 'NPT_VERSION' ) ) {
+	// The old standalone plugin is still active: its copy of this code is already
+	// loaded, and loading it twice would be a fatal "cannot redeclare" error.
+	add_action( 'admin_notices', function () {
+		echo '<div class="notice notice-error"><p>' . esc_html( 'افزونه‌ی «Navid Price Table» هنوز فعال است و کدش داخل قالب نوید هم هست. افزونه را غیرفعال و حذف کنید؛ همه‌ی امکانات آن داخل قالب است.' ) . '</p></div>';
+	} );
+	return;
+}
+
+define( 'NPT_VERSION', '2.0.17' );
 define( 'NPT_PATH', plugin_dir_path( __FILE__ ) );
 define( 'NPT_URL', get_template_directory_uri() . '/inc/npt/' );
 
@@ -45,25 +54,20 @@ NPT_Log::init();
 /**
  * Load translations.
  */
-add_action( 'plugins_loaded', function () {
-	load_plugin_textdomain( 'navid-price-table', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
-} );
+// Inside the theme there are no translation files and no plugins_loaded hook
+// (a theme loads after it fires), so nothing is registered here.
 
 /**
  * Bail early with an admin notice if WooCommerce is not active.
  */
 function npt_check_woocommerce() {
 	if ( ! class_exists( 'WooCommerce' ) ) {
-		add_action( 'admin_notices', function () {
-			echo '<div class="notice notice-error"><p>' .
-				esc_html__( 'افزونه «Navid Price Table» برای کار کردن به ووکامرس نیاز دارد. لطفاً ابتدا ووکامرس را فعال کنید.', 'navid-price-table' ) .
-				'</p></div>';
-		} );
-		return false;
+		echo '<div class="notice notice-error"><p>' .
+			esc_html__( 'جدول قیمت و پیش‌فاکتور قالب نوید برای کار کردن به ووکامرس نیاز دارد. لطفاً ابتدا ووکامرس را فعال کنید.', 'navid-price-table' ) .
+			'</p></div>';
 	}
-	return true;
 }
-add_action( 'plugins_loaded', 'npt_check_woocommerce' );
+add_action( 'admin_notices', 'npt_check_woocommerce' );
 
 /**
  * Whitelist for the «چه کسانی اجازه ویرایش قیمت دارند» select. An empty or
@@ -101,7 +105,13 @@ function npt_current_user_can_edit() {
 	// The business panel (نقش «مدیر کسب و کار») intentionally shares these
 	// gates: the panel shows the price table, the proforma archive and the bulk
 	// sender, and every one of those endpoints checks this function.
-	return current_user_can( npt_edit_capability() ) || current_user_can( 'npt_manage_panel' );
+	if ( current_user_can( npt_edit_capability() ) ) {
+		return true;
+	}
+	// Panel-only accounts (role «مدیر کسب و کار») are chosen by hand by the owner.
+	// Shop managers and editors also hold the panel capability, but they must
+	// follow the «who may edit prices» setting like everybody else.
+	return current_user_can( 'npt_manage_panel' ) && NPT_Panel::is_panel_only();
 }
 
 /**
@@ -144,9 +154,22 @@ add_action( 'delete_product_cat', 'npt_bump_table_cache_version' );
 // the table, online view and PDF render, so a settings save invalidates the
 // caches too. The version option itself is excluded to avoid recursion.
 add_action( 'update_option', function ( $option ) {
-	if ( is_string( $option ) && 0 === strpos( $option, 'npt_' ) && 'npt_table_cache_v' !== $option ) {
-		npt_bump_table_cache_version();
+	if ( ! is_string( $option ) || 0 !== strpos( $option, 'npt_' ) ) {
+		return;
 	}
+	// Counters, logs, queues and bookkeeping change on almost every request (the
+	// visit counter on every page view) and never change what the table renders.
+	static $ignore = array(
+		'npt_table_cache_v', 'npt_purged_v', 'npt_panel_ver', 'npt_panel_page', 'npt_register_page',
+		'npt_price_backup', 'npt_adjust_percent', 'npt_error_log', 'npt_activity', 'npt_proforma_seq',
+		'npt_proforma_db_ver', 'npt_sms_db_ver', 'npt_push_keys', 'npt_push_subs', 'npt_push_last',
+		'npt_bar_imported', 'npt_rules_v', 'npt_visits_total', 'npt_notify_push', 'npt_notify_sms',
+		'npt_notify_mobiles', 'npt_pf_sms_site',
+	);
+	if ( in_array( $option, $ignore, true ) || 0 === strpos( $option, 'npt_visits_' ) ) {
+		return;
+	}
+	npt_bump_table_cache_version();
 } );
 
 function npt_table_cache_key( $category_slug, $can_edit ) {
@@ -525,14 +548,18 @@ function npt_render_settings_page() {
 				<p><?php echo esc_html( sprintf( __( 'درصد وارد شده روی قیمت %d محصول اعمال و ذخیره شد.', 'navid-price-table' ), (int) $_GET['npt_applied'] ) ); // phpcs:ignore ?></p>
 			</div>
 		<?php endif; ?>
-		<?php if ( isset( $_GET['npt_undone'] ) ) : // phpcs:ignore ?>
-			<div class="notice notice-success is-dismissible"><p><?php echo esc_html( sprintf( 'قیمت %d محصول/وارییشن به مقدار قبل از تعدیل برگردانده شد.', (int) $_GET['npt_undone'] ) ); // phpcs:ignore ?></p></div>
+		<?php if ( isset( $_GET['npt_undone'] ) ) : // phpcs:ignore
+			$npt_skipped = (int) get_transient( 'npt_undo_skipped' );
+			delete_transient( 'npt_undo_skipped' );
+			?>
+			<div class="notice notice-success is-dismissible"><p><?php echo esc_html( sprintf( 'قیمت %d محصول/وارییشن به مقدار قبل از تعدیل برگردانده شد.', (int) $_GET['npt_undone'] ) ); // phpcs:ignore ?><?php echo $npt_skipped ? esc_html( sprintf( ' %d مورد که بعد از تعدیل دستی تغییر کرده بود دست نخورد.', $npt_skipped ) ) : ''; ?></p></div>
 		<?php endif; ?>
 		<?php if ( isset( $_GET['npt_pct_err'] ) ) : // phpcs:ignore
 			$npt_pct_msgs = array(
 				'range'    => sprintf( 'درصد باید بین %d و %d باشد.', NPT_PCT_MIN, NPT_PCT_MAX ),
 				'busy'     => 'یک تعدیل قیمت تازه اجرا شده است؛ چند دقیقه صبر کنید (از اعمال دوباره‌ی ناخواسته جلوگیری شد).',
 				'nobackup' => 'نسخه‌ی پشتیبانی برای برگرداندن وجود ندارد.',
+				'pending'  => 'تغییر قبلی هنوز برنگشته است. اول «برگرداندن آخرین تعدیل» را بزنید، بعد تغییر جدید را اعمال کنید.',
 			);
 			$npt_pct_key = sanitize_key( wp_unslash( $_GET['npt_pct_err'] ) ); // phpcs:ignore
 			?>
@@ -1083,6 +1110,11 @@ function npt_render_shortcode( $atts ) {
 
 	$instance_id = 'npt-' . wp_generate_password( 6, false, false );
 
+	// Texts of the bar above the table come from the theme panel.
+	$navid_opts    = function_exists( 'navid_options' ) ? navid_options() : array();
+	$toolbar_title = ! empty( $navid_opts['toolbar_title'] ) ? $navid_opts['toolbar_title'] : 'دریافت لیست قیمت رسمی سیم و کابل نوید';
+	$toolbar_sub   = isset( $navid_opts['toolbar_sub'] ) ? $navid_opts['toolbar_sub'] : '';
+
 	$heading     = null !== $atts['heading'] ? sanitize_text_field( $atts['heading'] ) : get_option( 'npt_seo_heading', '' );
 	$heading_tag = npt_sanitize_heading_tag( get_option( 'npt_seo_heading_tag', 'h2' ) );
 	$intro       = get_option( 'npt_seo_intro', '' );
@@ -1116,11 +1148,11 @@ function npt_render_shortcode( $atts ) {
 			<p class="npt-seo-intro"><?php echo esc_html( $intro ); ?></p>
 		<?php endif; ?>
 		<div class="npt-toolbar">
-			<div class="npt-tb-title"><?php echo npt_pdf_icon(); // phpcs:ignore ?><span><?php echo esc_html( get_option( 'npt_toolbar_title', 'دریافت لیست قیمت رسمی سیم و کابل نوید' ) ); ?></span></div>
-			<div class="npt-tb-sub"><?php echo esc_html( get_option( 'npt_toolbar_sub', 'آخرین به‌روزرسانی: امروز | شامل قیمت‌های بازار لاله زار' ) ); ?></div>
+			<div class="npt-tb-title"><?php echo npt_pdf_icon(); // phpcs:ignore ?><span><?php echo esc_html( $toolbar_title ); ?></span></div>
+			<?php if ( '' !== $toolbar_sub ) : ?><div class="npt-tb-sub"><?php echo esc_html( $toolbar_sub ); ?></div><?php endif; ?>
 			<div class="npt-tb-btns">
 				<a href="<?php echo esc_url( npt_pdf_download_url( $atts['category'] ) ); ?>" class="npt-pdf-btn" rel="nofollow"><?php echo npt_pdf_icon(); // phpcs:ignore ?><span><?php esc_html_e( 'دانلود PDF', 'navid-price-table' ); ?></span></a>
-				<a href="<?php echo esc_url( get_permalink() ? get_permalink() : home_url( '/' ) ); ?>#<?php echo esc_attr( $instance_id ); ?>" class="npt-view-btn"><?php echo npt_eye_icon(); // phpcs:ignore ?><span><?php esc_html_e( 'مشاهده آنلاین', 'navid-price-table' ); ?></span></a>
+				<a href="<?php echo esc_url( npt_online_view_url( $atts['category'] ) ); ?>" class="npt-view-btn" rel="nofollow"><?php echo npt_eye_icon(); // phpcs:ignore ?><span><?php esc_html_e( 'مشاهده آنلاین', 'navid-price-table' ); ?></span></a>
 			</div>
 		</div>
 		<div class="npt-filter-row">
@@ -1194,6 +1226,20 @@ function npt_query_products( $category_slug = '' ) {
 }
 
 /**
+ * True when the product's price is hidden («تماس بگیرید» in the theme). The
+ * price table, PDF, online view, structured data and the public proforma must
+ * honour it too, not just the shop pages.
+ */
+function npt_price_hidden( $product ) {
+	if ( is_object( $product ) ) {
+		$id = $product->get_parent_id() ? $product->get_parent_id() : $product->get_id();
+	} else {
+		$id = (int) $product;
+	}
+	return '0' === (string) get_post_meta( $id, '_navid_show_price', true );
+}
+
+/**
  * Convert ASCII 0-9 digits inside a string to Persian digits.
  */
 function npt_to_persian_digits( $string ) {
@@ -1258,7 +1304,7 @@ function npt_unit_sentence() {
  */
 function npt_format_price( $price, $with_currency = false ) {
 	if ( '' === $price || null === $price || ! is_numeric( $price ) ) {
-		return '—';
+		return 'تماس بگیرید';
 	}
 	$value     = (float) $price * npt_currency_factor();
 	$formatted = npt_to_persian_digits( number_format( $value ) );
@@ -1616,7 +1662,7 @@ function npt_catalog_data( $category_slug = '' ) {
 			$rows[] = array(
 				'name'  => $product->get_name(),
 				'label' => npt_product_list_label( $product, $cat->name ),
-				'price' => $product->get_price(),
+				'price' => npt_price_hidden( $product ) ? '' : $product->get_price(),
 				'meter' => npt_meter_is_meter_product( $product->get_id() ),
 			);
 		}
@@ -1939,7 +1985,8 @@ function npt_render_table( $category_slug = '' ) {
 			$cat_rows[] = array(
 				'id'          => $product->get_id(),
 				'name'        => $product->get_name(),
-				'price'       => $product->get_price(),
+				'price'       => npt_price_hidden( $product ) ? '' : $product->get_price(),
+				'price_raw'   => $product->get_price(),
 				'modified'    => $modified,
 				'is_editable' => $product->is_type( 'simple' ),
 				'meter'       => npt_meter_is_meter_product( $product->get_id() ),
@@ -1996,7 +2043,7 @@ function npt_render_table( $category_slug = '' ) {
 											<span class="npt-col-name"><?php echo esc_html( $row['name'] ); ?></span>
 											<span class="npt-col-price npt-inline-price"><span class="npt-price-display"><?php echo esc_html( npt_format_price( $row['price'] ) ); ?></span><?php echo npt_row_meter_badge( $row ); // phpcs:ignore ?></span>
 											<?php if ( $can_edit ) : ?>
-												<input type="number" step="1" min="0" class="npt-price-input" style="display:none;" value="<?php echo esc_attr( npt_display_price_value( $row['price'] ) ); ?>">
+												<input type="number" step="1" min="0" class="npt-price-input" style="display:none;" value="<?php echo esc_attr( npt_display_price_value( $row['price_raw'] ) ); ?>">
 											<?php endif; ?>
 										</div>
 									</td>
@@ -2017,7 +2064,7 @@ function npt_render_table( $category_slug = '' ) {
 								<span class="npt-col-name"><?php echo esc_html( $row['name'] ); ?></span>
 								<span class="npt-col-price npt-inline-price"><span class="npt-price-display"><?php echo esc_html( npt_format_price( $row['price'], true ) ); ?></span><?php echo npt_row_meter_badge( $row ); // phpcs:ignore ?></span>
 								<?php if ( $can_edit ) : ?>
-									<input type="number" step="1" min="0" class="npt-price-input" style="display:none;" value="<?php echo esc_attr( npt_display_price_value( $row['price'] ) ); ?>">
+									<input type="number" step="1" min="0" class="npt-price-input" style="display:none;" value="<?php echo esc_attr( npt_display_price_value( $row['price_raw'] ) ); ?>">
 								<?php endif; ?>
 							</div>
 							<?php if ( $can_edit ) : ?>
@@ -2105,18 +2152,28 @@ function npt_render_schema_json_ld( $category_slug = '' ) {
 		return '';
 	}
 
+	$cache_key = 'npt_ld_' . md5( $category_slug . '|' . npt_table_cache_version() . '|' . NPT_VERSION );
+	$cached    = get_transient( $cache_key );
+	if ( false !== $cached ) {
+		return $cached;
+	}
+
 	$query = npt_query_products( $category_slug );
 	if ( ! $query->have_posts() ) {
 		return '';
 	}
 
-	$currency = npt_currency_unit();
+	// Google only knows ISO 4217 codes (there is no «IRT»), so the data is always
+	// given in rials, whatever unit the table displays.
 	$items    = array();
 	$position = 1;
 
 	foreach ( $query->posts as $post ) {
 		$product = wc_get_product( $post->ID );
 		if ( ! $product ) {
+			continue;
+		}
+		if ( npt_price_hidden( $product ) ) {
 			continue;
 		}
 		$price = $product->get_price();
@@ -2130,8 +2187,8 @@ function npt_render_schema_json_ld( $category_slug = '' ) {
 				'url'    => get_permalink( $product->get_id() ),
 				'offers' => array(
 					'@type'         => 'Offer',
-					'price'         => $price !== '' ? (string) round( (float) $price * npt_currency_factor() ) : '0',
-					'priceCurrency' => $currency,
+					'price'         => $price !== '' ? (string) round( (float) $price * 10 ) : '0',
+					'priceCurrency' => 'IRR',
 					'url'           => get_permalink( $product->get_id() ),
 					'availability'  => $product->is_in_stock() ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
 				),
@@ -2141,6 +2198,7 @@ function npt_render_schema_json_ld( $category_slug = '' ) {
 	wp_reset_postdata();
 
 	if ( empty( $items ) ) {
+		set_transient( $cache_key, '', 6 * HOUR_IN_SECONDS );
 		return '';
 	}
 
@@ -2150,7 +2208,10 @@ function npt_render_schema_json_ld( $category_slug = '' ) {
 		'itemListElement' => $items,
 	);
 
-	return '<script type="application/ld+json">' . wp_json_encode( $schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '</script>';
+	// JSON_HEX_TAG keeps a product name containing «</script>» from closing the tag.
+	$json = '<script type="application/ld+json">' . wp_json_encode( $schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP ) . '</script>';
+	set_transient( $cache_key, $json, 6 * HOUR_IN_SECONDS );
+	return $json;
 }
 
 /**
@@ -2361,7 +2422,7 @@ function npt_ajax_update_price() {
 	// Persian digits, no currency word — the client appends "تومان" itself
 	// only for mobile rows (desktop already has it in the column header).
 	wp_send_json_success( array(
-		'price_display' => npt_format_price( $product->get_price() ),
+		'price_display' => npt_format_price( npt_price_hidden( $product ) ? '' : $product->get_price() ),
 		'date_display'  => npt_to_persian_digits( npt_format_date( $modified ) ),
 	) );
 }
@@ -2499,6 +2560,22 @@ function npt_price_percent_apply( $pct ) {
 	$backup = array();
 	$after  = array();
 	$count  = 0;
+	$done   = false;
+	// If PHP dies midway (timeout, memory) the prices already changed must still be
+	// undoable, so the backup is written on shutdown as well.
+	register_shutdown_function( function () use ( &$backup, &$after, &$done, $pct ) {
+		if ( ! $done && $backup ) {
+			update_option( 'npt_price_backup', array(
+				'time'    => time(),
+				'pct'     => $pct,
+				'prices'  => $backup,
+				'after'   => $after,
+				'partial' => true,
+			), false );
+			delete_transient( 'npt_pct_lock' );
+			npt_bump_table_cache_version();
+		}
+	} );
 	foreach ( $ids as $id ) {
 		$product = wc_get_product( $id );
 		if ( ! $product ) {
@@ -2553,6 +2630,7 @@ function npt_price_percent_apply( $pct ) {
 		}
 	}
 
+	$done = true;
 	update_option( 'npt_price_backup', array(
 		'time'   => time(),
 		'pct'    => $pct,

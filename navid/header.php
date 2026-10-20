@@ -62,7 +62,7 @@ $tel          = preg_replace( '/[^0-9+]/', '', (string) $navid_opt['phone'] );
 			<a class="navid-iconbtn-text" href="<?php echo esc_url( $account_url ); ?>"><?php esc_html_e( 'حساب کاربری', 'navid' ); ?></a>
 			<a class="navid-iconbtn-text navid-cart" href="<?php echo esc_url( $cart_url ); ?>">
 				<?php esc_html_e( 'سبد خرید', 'navid' ); ?>
-				<?php if ( $cart_count ) : ?><span class="navid-badge"><?php echo esc_html( $cart_count ); ?></span><?php endif; ?>
+				<?php echo navid_cart_count_html( $cart_count ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 			</a>
 		</div>
 	</div>

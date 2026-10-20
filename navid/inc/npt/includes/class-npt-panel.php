@@ -98,11 +98,17 @@ class NPT_Panel {
 				self::CAP         => true,
 			) );
 		}
-		foreach ( array( 'administrator', 'shop_manager', 'editor' ) as $slug ) {
+		foreach ( array( 'administrator', 'shop_manager' ) as $slug ) {
 			$role = get_role( $slug );
 			if ( $role && ! $role->has_cap( self::CAP ) ) {
 				$role->add_cap( self::CAP );
 			}
+		}
+		// Older versions also gave this to editors, which handed blog editors the
+		// price list, customer data and the bulk SMS sender.
+		$editor = get_role( 'editor' );
+		if ( $editor && $editor->has_cap( self::CAP ) ) {
+			$editor->remove_cap( self::CAP );
 		}
 		self::ensure_page();
 	}
@@ -625,7 +631,13 @@ class NPT_Panel {
 			exit;
 		}
 
-		$user = self::user_by_mobile( $phone );
+		// Only the number stored by this plugin counts: billing phones are typed by
+		// customers themselves, so matching on them could give the role to a stranger.
+		$user = false;
+		$ids  = get_users( array( 'meta_key' => 'npt_mobile', 'meta_value' => $phone, 'number' => 1, 'count_total' => false, 'fields' => 'ID' ) ); // phpcs:ignore
+		if ( $ids ) {
+			$user = get_user_by( 'id', (int) $ids[0] );
+		}
 		if ( ! $user && '' !== $email ) {
 			$user = get_user_by( 'email', $email );
 		}

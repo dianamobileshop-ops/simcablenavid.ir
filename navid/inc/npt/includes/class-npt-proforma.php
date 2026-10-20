@@ -229,7 +229,7 @@ class NPT_Proforma {
 				continue;
 			}
 			$price = $product->get_price();
-			if ( '' === $price || ! is_numeric( $price ) ) {
+			if ( '' === $price || ! is_numeric( $price ) || npt_price_hidden( $product ) ) {
 				continue;
 			}
 			// First category name, so the dropdown can show *where* each hit
@@ -399,7 +399,7 @@ class NPT_Proforma {
 				continue;
 			}
 			$price = $product->get_price();
-			if ( '' === $price || ! is_numeric( $price ) ) {
+			if ( '' === $price || ! is_numeric( $price ) || npt_price_hidden( $product ) ) {
 				continue;
 			}
 			$clean[] = array(
@@ -600,7 +600,11 @@ class NPT_Proforma {
 			return null;
 		}
 		// Every new proforma also goes to the contacts list (duplicates are skipped there).
-		NPT_SMS::save_customer_contact( $customer['name'], $customer['phone'] );
+		// A public visitor only typed a number: it joins the bulk-SMS list only when
+		// the number was verified by a code (or the owner entered it himself).
+		if ( 'site' !== $source || NPT_OTP::is_verified( $customer['phone'] ) ) {
+			NPT_SMS::save_customer_contact( $customer['name'], $customer['phone'] );
+		}
 		return array( 'id' => $id, 'number' => $number, 'token' => $token, 'short' => $short, 'total' => $subtotal - $discount );
 	}
 
@@ -1321,7 +1325,12 @@ class NPT_Proforma {
 		if ( ! $number ) {
 			wp_send_json_error( array( 'message' => 'پیش‌فاکتور پیدا نشد.' ), 404 );
 		}
+		$token = (string) $wpdb->get_var( $wpdb->prepare( 'SELECT token FROM ' . self::table_proformas() . ' WHERE id = %d', $id ) ); // phpcs:ignore
 		$wpdb->delete( self::table_proformas(), array( 'id' => $id ), array( '%d' ) );
+		if ( '' !== $token ) {
+			// The printable copy is cached for an hour; a deleted proforma must vanish now.
+			delete_transient( 'npt_pf_' . md5( $token . '|' . NPT_VERSION ) );
+		}
 		NPT_Log::activity( 'حذف پیش‌فاکتور #' . $number );
 		wp_send_json_success( array( 'message' => 'حذف شد.' ) );
 	}
@@ -1354,6 +1363,12 @@ class NPT_Proforma {
 		$html = self::with_back_bar( $html );
 		echo $html; // phpcs:ignore
 		exit;
+	}
+
+	/** 100 → «100», 2.50 → «2.5» (zeros are only trimmed after a decimal point). */
+	private static function format_qty( $qty ) {
+		$text = (string) ( 0 + $qty );
+		return false !== strpos( $text, '.' ) ? rtrim( rtrim( $text, '0' ), '.' ) : $text;
 	}
 
 	private static function build_print_html( $token ) {
@@ -1488,7 +1503,7 @@ class NPT_Proforma {
 			<tr>
 				<td><?php echo esc_html( npt_to_persian_digits( (string) $i ) ); ?></td>
 				<td class="desc"><?php echo esc_html( $item['name'] ); ?><?php if ( ! empty( $item['meter'] ) ) : ?><span class="nptp-meter-badge">متر</span><?php endif; ?></td>
-				<td><?php echo esc_html( npt_to_persian_digits( rtrim( rtrim( (string) ( 0 + $item['qty'] ), '0' ), '.' ) ) ); ?></td>
+				<td><?php echo esc_html( npt_to_persian_digits( self::format_qty( $item['qty'] ) ) ); ?></td>
 				<td><?php echo esc_html( ! empty( $item['meter'] ) ? __( 'متر', 'navid-price-table' ) : __( 'کلاف', 'navid-price-table' ) ); ?></td>
 				<td><?php echo esc_html( npt_format_price( $item['price'] ) ); ?></td>
 				<td><?php echo esc_html( npt_format_price( (float) $item['qty'] * (float) $item['price'] ) ); ?></td>

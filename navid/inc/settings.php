@@ -78,6 +78,9 @@ function navid_save_settings() {
 		'address'       => isset( $raw['address'] ) ? sanitize_text_field( $raw['address'] ) : '',
 	);
 	update_option( 'navid_options', $clean );
+	// The price list header, footer and PDF read these two, so they stay in sync.
+	update_option( 'npt_phone', $clean['phone'] );
+	update_option( 'npt_address', $clean['address'] );
 
 	wp_safe_redirect( add_query_arg( array( 'page' => 'navid-settings', 'saved' => '1' ), admin_url( 'admin.php' ) ) );
 	exit;
@@ -138,7 +141,8 @@ function navid_render_settings() {
 	$saved = isset( $_GET['saved'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	$tiles = array(
 		'محصولات'         => admin_url( 'edit.php?post_type=product' ),
-		'پیش‌فاکتورها'     => admin_url( 'admin.php?page=navid-proformas' ),
+		'پنل مدیر (پیش‌فاکتورها)' => function_exists( 'npt_panel_url' ) ? npt_panel_url() : home_url( '/' ),
+		'گزارش خطاها'      => admin_url( 'admin.php?page=navid-settings&tab=errors' ),
 		'تنظیمات ووکامرس'  => admin_url( 'admin.php?page=wc-settings' ),
 		'منوها'           => admin_url( 'nav-menus.php' ),
 		'ویجت‌ها'         => admin_url( 'widgets.php' ),
@@ -203,11 +207,11 @@ function navid_render_settings() {
 							<input id="navid-toolbar-title" type="text" name="navid[toolbar_title]" value="<?php echo esc_attr( $opt['toolbar_title'] ); ?>">
 						</div>
 						<div class="navid-row">
-							<label for="navid-toolbar-sub">خط به‌روزرسانی</label>
+							<label for="navid-toolbar-sub">متن زیر عنوان (اختیاری)</label>
 							<input id="navid-toolbar-sub" type="text" name="navid[toolbar_sub]" value="<?php echo esc_attr( $opt['toolbar_sub'] ); ?>">
 						</div>
 						<div class="navid-row">
-							<label for="navid-price-url">آدرس صفحه قیمت</label>
+							<label for="navid-price-url">آدرس صفحه جدول قیمت</label>
 							<input id="navid-price-url" type="text" name="navid[price_url]" value="<?php echo esc_attr( $opt['price_url'] ); ?>" placeholder="https://">
 						</div>
 					</section>
@@ -218,16 +222,6 @@ function navid_render_settings() {
 							<label for="navid-slides">هر بنر در یک خط: آدرس عکس | لینک | متن جایگزین</label>
 							<textarea id="navid-slides" name="navid[slides]" rows="5" dir="ltr"><?php echo esc_textarea( $opt['slides'] ); ?></textarea>
 						</div>
-					</section>
-
-					<section id="navid-soon" class="navid-admin-card">
-						<h2>پیامک و پیش‌فاکتور</h2>
-						<p>این بخش بعد از ادغام افزونه جدول قیمت در قالب فعال می‌شود.</p>
-					</section>
-
-					<section id="navid-errors" class="navid-admin-card">
-						<h2>گزارش خطاها</h2>
-						<?php if ( class_exists( 'NPT_Log' ) ) { NPT_Log::render(); } else { echo '<p>گزارشی ثبت نشده است.</p>'; } ?>
 					</section>
 
 					<div class="navid-savebar">

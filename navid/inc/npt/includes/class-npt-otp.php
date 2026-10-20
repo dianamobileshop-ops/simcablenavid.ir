@@ -327,7 +327,6 @@ class NPT_OTP {
 		if ( $sent >= self::NUMBER_HOUR_LIMIT ) {
 			self::error( 'برای این شماره در یک ساعت بیش از ' . npt_to_persian_digits( (string) self::NUMBER_HOUR_LIMIT ) . ' کد ارسال نمی‌شود.', 429 );
 		}
-		set_transient( $hour_key, $sent + 1, HOUR_IN_SECONDS );
 		$ip_key = 'npt_ip_' . self::key( npt_client_ip() );
 		$hits   = absint( get_transient( $ip_key ) );
 		if ( $hits >= self::IP_LIMIT ) {
@@ -342,6 +341,9 @@ class NPT_OTP {
 			self::error( 'سقف ارسال کد تأیید امروز پر شده است. بعداً یا فردا تلاش کنید.', 429 );
 		}
 
+		// Counters move only after every check passed, so a blocked request can
+		// never use up somebody else's hourly allowance.
+		set_transient( $hour_key, $sent + 1, HOUR_IN_SECONDS );
 		set_transient( $ip_key, $hits + 1, HOUR_IN_SECONDS );
 		set_transient( $day_key, $day + 1, DAY_IN_SECONDS );
 		return true;
