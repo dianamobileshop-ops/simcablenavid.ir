@@ -7,6 +7,13 @@
 
 defined( 'ABSPATH' ) || exit;
 
+// Shop, product categories and tags use the shop layout even if WooCommerce
+// handed the request to this fallback template (some plugins take over archives).
+if ( function_exists( 'is_woocommerce' ) && ( is_shop() || is_product_taxonomy() ) ) {
+	require get_theme_file_path( 'woocommerce/archive-product.php' );
+	return;
+}
+
 get_header();
 ?>
 <div class="navid-wrap">

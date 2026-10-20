@@ -10,6 +10,11 @@ defined( 'ABSPATH' ) || exit;
 get_header();
 ?>
 <div class="navid-wrap navid-shop">
+	<header class="navid-shop-head">
+		<h1 class="navid-shop-title"><?php woocommerce_page_title(); ?></h1>
+		<?php do_action( 'woocommerce_archive_description' ); ?>
+	</header>
+
 	<?php if ( woocommerce_product_loop() ) : ?>
 		<div class="navid-shop-bar">
 			<p class="navid-count"><?php woocommerce_result_count(); ?></p>

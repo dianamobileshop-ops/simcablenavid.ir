@@ -7,6 +7,11 @@
 
 defined( 'ABSPATH' ) || exit;
 
+if ( 'product' === get_query_var( 'post_type' ) && function_exists( 'wc_get_template_part' ) ) {
+	require get_theme_file_path( 'woocommerce/archive-product.php' );
+	return;
+}
+
 get_header();
 ?>
 <div class="navid-wrap">
