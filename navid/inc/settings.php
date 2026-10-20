@@ -87,8 +87,54 @@ add_action( 'admin_post_navid_save_settings', 'navid_save_settings' );
 /**
  * Renders the settings page.
  */
+/**
+ * Sidebar of the panel. Plugin screens (price table, SMS, contacts, bar, logs...)
+ * are listed next to the theme sections.
+ *
+ * @param string $active Current tab key, or 'overview'.
+ */
+function navid_admin_sidebar( $active ) {
+	$base  = admin_url( 'admin.php?page=navid-settings' );
+	$items = array(
+		'overview'  => array( 'نمای کلی', $base ),
+		'look'      => array( 'پیکربندی نمایش', $base . '#navid-look' ),
+		'header'    => array( 'هدر و فوتر', $base . '#navid-header' ),
+		'home'      => array( 'صفحه اصلی', $base . '#navid-slider' ),
+		'price'     => array( 'جدول قیمت', $base . '&tab=price' ),
+		'contacts'  => array( 'مخاطبین', $base . '&tab=contacts' ),
+		'sms'       => array( 'پیامک', $base . '&tab=sms' ),
+		'seo'       => array( 'سئو', $base . '&tab=seo' ),
+		'bar_menu'  => array( 'منوی پایین موبایل', $base . '&tab=bar_menu' ),
+		'bar_float' => array( 'آیکن شناور', $base . '&tab=bar_float' ),
+		'general'   => array( 'تنظیمات عمومی', $base . '&tab=general' ),
+		'backup'    => array( 'پشتیبان', $base . '&tab=backup' ),
+		'errors'    => array( 'گزارش خطاها', $base . '&tab=errors' ),
+	);
+	echo '<nav class="navid-admin-side" aria-label="' . esc_attr__( 'بخش‌های پنل', 'navid' ) . '">';
+	foreach ( $items as $key => $item ) {
+		printf(
+			'<a href="%s" class="%s">%s</a>',
+			esc_url( $item[1] ),
+			$key === $active ? 'is-on' : '',
+			esc_html( $item[0] )
+		);
+	}
+	echo '</nav>';
+}
+
 function navid_render_settings() {
 	$opt   = navid_options();
+	$tab   = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	// Screens that belong to the price table plugin, rendered inside this panel.
+	$plugin_tabs = array( 'general', 'price', 'seo', 'sms', 'contacts', 'bar_menu', 'bar_float', 'login_page', 'panel_dash', 'backup', 'managers', 'errors', 'header', 'content', 'footer', 'otp', 'templates', 'sms_login' );
+	if ( '' !== $tab && in_array( $tab, $plugin_tabs, true ) && function_exists( 'npt_render_settings_page' ) ) {
+		echo '<div class="navid-admin-wrap"><div class="navid-admin">';
+		navid_admin_sidebar( $tab );
+		echo '<div class="navid-admin-main">';
+		npt_render_settings_page();
+		echo '</div></div></div>';
+		return;
+	}
 	$saved = isset( $_GET['saved'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	$tiles = array(
 		'محصولات'         => admin_url( 'edit.php?post_type=product' ),
@@ -106,15 +152,7 @@ function navid_render_settings() {
 		<?php endif; ?>
 
 		<div class="navid-admin">
-			<nav class="navid-admin-side" aria-label="بخش‌های تنظیمات">
-				<a href="#navid-quick" class="is-on">نمای کلی</a>
-				<a href="#navid-look">پیکربندی نمایش</a>
-				<a href="#navid-header">هدر و فوتر</a>
-				<a href="#navid-slider">صفحه اصلی</a>
-				<a href="#navid-price">جدول قیمت</a>
-				<a href="#navid-soon">پیامک و پیش‌فاکتور (به‌زودی)</a>
-				<a href="#navid-errors">گزارش خطاها</a>
-			</nav>
+			<?php navid_admin_sidebar( 'overview' ); ?>
 
 			<div>
 				<section id="navid-quick" class="navid-admin-card">

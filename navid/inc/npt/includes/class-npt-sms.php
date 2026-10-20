@@ -330,7 +330,7 @@ class NPT_SMS {
 
 	/** Where the SMS tabs live now that they are part of the settings page. */
 	public static function settings_url( $tab = 'contacts' ) {
-		return admin_url( 'admin.php?page=navid-price-table-settings&tab=' . $tab );
+		return admin_url( 'admin.php?page=navid-settings&tab=' . $tab );
 	}
 
 	private static function credentials() {

@@ -63,7 +63,7 @@ class NPT_Log {
 		}
 		check_admin_referer( 'npt_log_clear' );
 		delete_option( self::OPT );
-		wp_safe_redirect( admin_url( 'admin.php?page=navid-price-table-settings&tab=errors' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=navid-settings&tab=errors' ) );
 		exit;
 	}
 

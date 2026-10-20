@@ -19,42 +19,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 /* ---------------------------------------------------------------------
  * Admin menu: the parent entry opens the tabbed settings page
  * ------------------------------------------------------------------- */
-add_action( 'admin_menu', function () {
-	add_menu_page(
-		'جدول قیمت نوید',
-		'جدول قیمت نوید',
-		'manage_options',
-		'navid-price-table-settings',
-		'npt_render_settings_page',
-		'dashicons-list-view',
-		58
-	);
-	// Same slug as the parent with an empty callback: it only renames the
-	// auto-added first submenu entry to «تنظیمات». Registering a callback
-	// here too would render the page twice.
-	add_submenu_page(
-		'navid-price-table-settings',
-		'تنظیمات',
-		'تنظیمات',
-		'manage_options',
-		'navid-price-table-settings',
-		''
-	);
-}, 9 );
+// Admin menus are registered by the theme's panel (inc/settings.php).
+
 
 /**
  * Hook names of the settings screen.
  *
  * The page used to be a submenu of a separate dashboard entry, which named
- * its hook «navid-price-table_page_navid-price-table-settings»; now that it
+ * its hook «navid-price-table_page_navid-settings»; now that it
  * is the top-level entry WordPress may name it either of the two below,
  * depending on how the menu was resolved. Both are accepted so the assets
  * never silently stop loading.
  */
 function npt_is_settings_hook( $hook ) {
-	return 'toplevel_page_navid-price-table-settings' === $hook
-		|| 'navid-price-table-settings_page_navid-price-table-settings' === $hook
-		|| 'navid-price-table_page_navid-price-table-settings' === $hook;
+	return 'toplevel_page_navid-settings' === $hook;
 }
 
 /* ---------------------------------------------------------------------

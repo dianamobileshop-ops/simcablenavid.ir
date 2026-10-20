@@ -161,7 +161,7 @@ function npt_table_cache_key( $category_slug, $can_edit ) {
  * ------------------------------------------------------------------- */
 // The admin menu itself (dashboard parent + settings submenu) is registered
 // in includes/npt-dashboard.php at priority 9, with the settings page living
-// under the 'navid-price-table-settings' slug.
+// under the 'navid-settings' slug.
 
 add_action( 'admin_init', function () {
 	register_setting( 'npt_settings', 'npt_edit_capability', array(
@@ -490,7 +490,7 @@ function npt_render_settings_page() {
 	}
 	// Panels that hold their own <form> (contacts/templates CRUD) must sit
 	// outside the settings form, and the shared submit button hides on them.
-	$base_url              = admin_url( 'admin.php?page=navid-price-table-settings' );
+	$base_url              = admin_url( 'admin.php?page=navid-settings' );
 	$GLOBALS['npt_active_tab'] = $tab;
 
 	$current          = get_option( 'npt_edit_capability', 'manage_woocommerce' );
@@ -2647,7 +2647,7 @@ function npt_handle_apply_percent() {
 	}
 	check_admin_referer( 'npt_apply_percent', 'npt_apply_nonce' );
 
-	$back   = admin_url( 'admin.php?page=navid-price-table-settings&tab=price' );
+	$back   = admin_url( 'admin.php?page=navid-settings&tab=price' );
 	$pct    = isset( $_POST['npt_adjust_percent'] ) ? (float) wp_unslash( $_POST['npt_adjust_percent'] ) : 0.0;
 	$result = npt_price_percent_apply( $pct );
 	if ( is_wp_error( $result ) ) {
@@ -2665,7 +2665,7 @@ function npt_handle_undo_percent() {
 	}
 	check_admin_referer( 'npt_undo_percent', 'npt_undo_nonce' );
 
-	$back   = admin_url( 'admin.php?page=navid-price-table-settings&tab=price' );
+	$back   = admin_url( 'admin.php?page=navid-settings&tab=price' );
 	$result = npt_price_percent_undo();
 	if ( is_wp_error( $result ) ) {
 		wp_safe_redirect( add_query_arg( 'npt_pct_err', $result->get_error_code(), $back ) );

@@ -182,7 +182,7 @@ class NPT_Backup {
 	}
 
 	private static function back() {
-		return admin_url( 'admin.php?page=navid-price-table-settings&tab=backup' );
+		return admin_url( 'admin.php?page=navid-settings&tab=backup' );
 	}
 
 	private static function notify( $type, $text ) {
