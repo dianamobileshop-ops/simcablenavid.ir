@@ -2,7 +2,8 @@
 Theme Name: Navid
 Theme URI: https://simcablenavid.ir
 Description: قالب اختصاصی نوید. شامل جدول قیمت و پنل مدیریت در یک بسته.
-Version: 1.0.0
+Version: 1.0.1
+Update URI: https://simcablenavid.ir/navid
 Requires PHP: 7.4
 Text Domain: navid
 License: GPL v2 or later
@@ -70,8 +71,9 @@ img {
 }
 
 .navid-brand .custom-logo {
-	max-height: 48px;
+	height: 48px;
 	width: auto;
+	max-width: 180px;
 }
 
 .navid-search {
@@ -245,7 +247,8 @@ img {
 	}
 
 	.navid-brand .custom-logo {
-		max-height: 40px;
+		height: 36px;
+		max-width: 140px;
 	}
 
 	.navid-phone,
