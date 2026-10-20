@@ -63,3 +63,5 @@ function navid_options() {
 require_once get_template_directory() . '/inc/settings.php';
 require_once get_template_directory() . '/inc/woocommerce.php';
 require_once get_template_directory() . '/inc/home.php';
+// Price table, proforma, SMS and panel code (formerly the navid-price-table plugin).
+require_once get_template_directory() . '/inc/npt/navid-price-table.php';

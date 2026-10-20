@@ -1,0 +1,589 @@
+.npt-wrap {
+	direction: rtl;
+	text-align: right;
+	font-family: inherit;
+	max-width: 100%;
+	--npt-primary: #0f4c5c;   /* deep teal - header/accent */
+	--npt-primary-dark: #0b3a46;
+	--npt-amber: #f2a71b;     /* copper accent for CTAs on white bg */
+	--npt-border: #e6e9ec;
+	--npt-text: #263238;
+	--npt-muted: #78838a;
+	--npt-zebra: #f7f9fa;
+}
+
+.npt-seo-heading {
+	margin: 0 0 6px;
+	color: var(--npt-text);
+	font-weight: 700;
+	line-height: 1.35;
+}
+
+.npt-seo-intro {
+	margin: 0 0 16px;
+	color: var(--npt-muted);
+	font-size: 14px;
+	line-height: 1.7;
+}
+
+.npt-toolbar {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-bottom: 16px;
+	flex-wrap: wrap;
+}
+
+.npt-filter-label {
+	font-weight: 600;
+	font-size: 14px;
+	color: var(--npt-text);
+}
+
+.npt-cat-filter {
+	padding: 7px 12px;
+	border: 1px solid var(--npt-border);
+	border-radius: 8px;
+	font-size: 14px;
+	background: #fff;
+	color: var(--npt-text);
+	cursor: pointer;
+}
+
+.npt-cat-filter:focus {
+	outline: none;
+	border-color: var(--npt-primary);
+	box-shadow: 0 0 0 3px rgba(15, 76, 92, 0.12);
+}
+
+.npt-pdf-btn {
+	display: inline-flex;
+	align-items: center;
+	padding: 7px 14px;
+	border-radius: 8px;
+	background: var(--npt-amber);
+	color: #1a1a1a;
+	font-size: 13px;
+	font-weight: 600;
+	text-decoration: none;
+	transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.npt-pdf-btn:hover {
+	background: #e0980f;
+	color: #1a1a1a;
+}
+
+.npt-pdf-btn:active {
+	transform: scale(0.98);
+}
+
+.npt-view-btn {
+	display: inline-flex;
+	align-items: center;
+	padding: 7px 14px;
+	border-radius: 8px;
+	border: 1.5px solid var(--npt-primary);
+	background: #fff;
+	color: var(--npt-primary);
+	font-size: 13px;
+	font-weight: 600;
+	text-decoration: none;
+	transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.npt-view-btn:hover {
+	background: #eef4f5;
+	color: var(--npt-primary-dark);
+}
+
+.npt-view-btn:active {
+	transform: scale(0.98);
+}
+
+.npt-loading {
+	font-size: 13px;
+	color: var(--npt-muted);
+}
+
+.npt-table-holder {
+	overflow-x: auto;
+	border-radius: 12px;
+	border: 1px solid var(--npt-border);
+	background: #fff;
+	box-shadow: 0 1px 2px rgba(15, 76, 92, 0.04);
+}
+
+.npt-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 14px;
+	color: var(--npt-text);
+	direction: rtl !important;
+}
+
+.npt-table th,
+.npt-table td {
+	text-align: right !important;
+}
+
+.npt-table thead th {
+	background: var(--npt-primary);
+	color: #fff;
+	padding: 12px 14px;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.npt-table tbody td {
+	padding: 11px 14px;
+	border-top: 1px solid var(--npt-border);
+	vertical-align: middle;
+}
+
+.npt-table tbody tr:nth-child(even) {
+	background: var(--npt-zebra);
+}
+
+.npt-table tbody tr:hover {
+	background: #eef4f5;
+}
+
+.npt-col-price {
+	white-space: nowrap;
+	font-weight: 600;
+	color: var(--npt-primary-dark);
+	unicode-bidi: plaintext;
+}
+
+/* The edit column: stays a real table cell on desktop. The buttons inside
+   are laid out by .npt-edit-actions (see below), NOT by flexing the <td>
+   itself — `display:flex` on a table cell breaks the table layout. */
+.npt-col-edit {
+	width: 40px;
+	text-align: center !important;
+}
+
+/* Stacked edit controls (pencil / save / cancel), shared by the desktop
+   table cell and the mobile div row. */
+.npt-edit-actions {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+}
+
+.npt-edit-btn {
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	color: var(--npt-primary);
+	padding: 5px;
+	border-radius: 6px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	transition: background 0.15s ease;
+}
+
+/* Main combined cell for name + price (desktop) */
+.npt-col-main {
+    text-align: right !important;
+    padding: 8px 6px;
+}
+.npt-main-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+.npt-inline-price { font-weight: 800; color: var(--npt-primary-dark); }
+
+.npt-edit-btn { width: 32px; height: 32px; padding: 6px; border-radius: 6px; background: #fff; border: 1px solid var(--npt-border); }
+.npt-edit-btn svg { width: 14px; height: 14px; }
+.npt-edit-link { display: inline-flex; width: 32px; height: 32px; align-items: center; justify-content: center; background: #fff; border: 1px solid var(--npt-border); border-radius: 6px; color: inherit; }
+.npt-edit-disabled { display: inline-block; width: 32px; height: 32px; line-height: 32px; text-align: center; color: var(--npt-muted); }
+
+.npt-edit-btn:hover {
+	background: #eef4f5;
+}
+
+.npt-save-btn,
+.npt-cancel-btn {
+	font-size: 12px;
+	padding: 4px 9px;
+	border-radius: 6px;
+	border: 1px solid var(--npt-border);
+	cursor: pointer;
+	margin-inline-start: 4px;
+	background: #fff;
+	color: var(--npt-text);
+}
+
+.npt-save-btn {
+	background: var(--npt-primary);
+	color: #fff;
+	border-color: var(--npt-primary);
+}
+
+.npt-save-btn:hover {
+	background: var(--npt-primary-dark);
+}
+
+.npt-price-input {
+	width: 110px;
+	padding: 5px 8px;
+	border: 1px solid var(--npt-border);
+	border-radius: 6px;
+	font-size: 14px;
+}
+
+.npt-price-input:focus {
+	outline: none;
+	border-color: var(--npt-primary);
+	box-shadow: 0 0 0 3px rgba(15, 76, 92, 0.12);
+}
+
+.npt-row.npt-editing .npt-price-display {
+	display: none;
+}
+
+.npt-row.npt-saving {
+	opacity: 0.6;
+	pointer-events: none;
+}
+
+.npt-empty {
+	padding: 24px;
+	text-align: center;
+	color: var(--npt-muted);
+}
+
+/* ------------------------------------------------------------------
+ * Mobile row list — a completely separate, plain <div>-based markup
+ * (see PHP), not a <table>. Some themes carry generic responsive CSS
+ * that forces every <table>/<tr>/<td> on the site into a stacked "card"
+ * layout, and that rule can win the cascade over a plugin stylesheet
+ * regardless of !important (load order ties go to whichever loads
+ * last, which is often the theme). Because this markup uses plain divs
+ * with our own classes, that theme rule has nothing to match — it can
+ * only ever touch actual table elements, and there are none here.
+ * ------------------------------------------------------------------ */
+.npt-mobile-rows {
+	direction: rtl !important;
+}
+
+/* Brand-colored product card: white surface, brand rail on the inline
+   start, price highlighted in the accent color. Fallback values keep the
+   cards on-brand if the inline color variables are unavailable. */
+.npt-mobile-row {
+	display: flex !important;
+	align-items: center !important;
+	justify-content: space-between !important;
+	gap: 10px;
+	margin: 0 2px 8px;
+	padding: 12px 14px;
+	background: #fff;
+	border: 1px solid var(--npt-border);
+	border-inline-start: 4px solid var(--npt-brand, #2350b4);
+	border-radius: 10px;
+	box-shadow: 0 1px 4px rgba(20, 40, 90, 0.07);
+}
+
+.npt-mobile-row.npt-editing {
+	border-inline-start-color: var(--npt-accent, #ed1c24);
+}
+
+.npt-mobile-row-main {
+	display: flex !important;
+	flex: 1 1 auto;
+	align-items: center !important;
+	justify-content: space-between !important;
+	gap: 10px;
+	min-width: 0;
+	text-align: right !important;
+}
+
+.npt-mobile-row-main .npt-col-name {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow-wrap: break-word;
+	font-size: 13.5px;
+	font-weight: 600;
+	color: var(--npt-text);
+}
+
+.npt-mobile-row-main .npt-col-price {
+	flex: 0 0 auto;
+	white-space: nowrap;
+	font-size: 15px;
+	font-weight: 800;
+	color: var(--npt-accent, #ed1c24);
+	unicode-bidi: plaintext;
+}
+
+.npt-mobile-row .npt-col-edit {
+	flex: 0 0 auto;
+	width: auto;
+}
+
+.npt-mobile-row .npt-price-input {
+	width: 90px;
+	font-size: 13px;
+}
+
+/* Desktop/mobile toggle: default = desktop table visible, mobile rows
+   hidden. Flipped under the breakpoint below. */
+.npt-mobile-only {
+	display: none !important;
+}
+
+@media (max-width: 600px) {
+	.npt-desktop-only {
+		display: none !important;
+	}
+
+	.npt-mobile-only {
+		display: block !important;
+	}
+
+	.npt-mobile-rows {
+		display: block !important;
+	}
+
+	/* On phones the outer category card drops its own chrome so the
+	   product cards float directly on the page background, under a
+	   brand-gradient category band. */
+	.npt-cat-card {
+		border: none;
+		background: transparent;
+		box-shadow: none;
+		border-radius: 0;
+		overflow: visible;
+		margin-bottom: 16px;
+	}
+
+	.npt-cat-header {
+		background: linear-gradient(120deg, var(--npt-brand, #2350b4), var(--npt-accent, #ed1c24));
+		border-radius: 12px;
+		padding: 10px 14px;
+		box-shadow: 0 2px 6px rgba(20, 40, 90, 0.18);
+	}
+
+	.npt-cat-title {
+		font-size: 15px;
+	}
+
+	.npt-pdf-btn {
+		font-size: 12px;
+		padding: 6px 10px;
+	}
+
+	.npt-view-btn {
+		font-size: 12px;
+		padding: 6px 10px;
+	}
+}
+
+/* ------------------------------------------------------------------
+ * Catalog grid & category cards (used by the PHP card-based renderer)
+ * ------------------------------------------------------------------ */
+.npt-catalog-grid {
+	column-count: 4;
+	column-gap: 12px;
+	width: 100%;
+	margin: 6px 0;
+}
+
+@media (max-width: 1200px) {
+	.npt-catalog-grid { column-count: 3; }
+}
+@media (max-width: 860px) {
+	.npt-catalog-grid { column-count: 2; }
+}
+@media (max-width: 580px) {
+	.npt-catalog-grid { column-count: 1; }
+}
+
+.npt-cat-card {
+	break-inside: avoid;
+	page-break-inside: avoid;
+	margin-bottom: 12px;
+	background: #ffffff;
+	border: 1.5px solid var(--npt-border);
+	border-radius: 4px;
+	overflow: hidden;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.npt-cat-header {
+	background: var(--npt-primary);
+	color: #fff;
+	padding: 8px 10px;
+	text-align: center;
+	border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+
+.npt-cat-title { margin: 0; font-size: 14px; font-weight: 800; }
+
+.npt-catalog-meta { margin-bottom: 10px; }
+
+.npt-brand-domain { font-size: 16px; font-weight: 800; }
+
+
+/* ------------------------------------------------------------------
+ * Meter-sold badge ("متر") next to the price
+ * ------------------------------------------------------------------ */
+.npt-meter-badge {
+	display: inline-block;
+	margin-inline-start: 6px;
+	padding: 1px 8px;
+	border-radius: 999px;
+	background: #28a745;
+	color: #fff;
+	font-size: 11px;
+	font-weight: 700;
+	line-height: 1.6;
+	vertical-align: middle;
+	white-space: nowrap;
+}
+
+.npt-mobile-only .npt-meter-badge { font-size: 10px; padding: 1px 7px; }
+
+/* ------------------------------------------------------------------
+ * Overflow guard
+ *
+ * A single element wider than the viewport makes a mobile browser zoom
+ * out the whole document, so every shortcode page looks "scaled wrong"
+ * rather than just having one broken block. Nothing inside the price
+ * list may exceed its own box.
+ * ------------------------------------------------------------------ */
+.npt-wrap,
+.npt-wrap *,
+.npt-wrap *::before,
+.npt-wrap *::after {
+	box-sizing: border-box;
+}
+
+.npt-wrap img,
+.npt-wrap svg,
+.npt-wrap video {
+	max-width: 100%;
+	height: auto;
+}
+
+.npt-wrap select,
+.npt-wrap input,
+.npt-wrap textarea {
+	max-width: 100%;
+}
+
+@media (max-width: 600px) {
+	.npt-toolbar {
+		gap: 8px;
+	}
+
+	.npt-cat-filter {
+		flex: 1 1 100%;
+	}
+
+	.npt-catalog-grid {
+		width: 100%;
+	}
+
+	.npt-mobile-row,
+	.npt-mobile-row-main {
+		gap: 8px;
+		padding: 10px 12px;
+	}
+}
+
+
+/* 2.0.11: the top block stays under the site header while scrolling; it is opaque so products never show through */
+.npt-toolbar {
+	position: sticky;
+	top: var(--npt-sticky-top, 0px);
+	z-index: 50;
+	background: #fff;
+	border: 1px solid #ece6f7;
+	border-radius: 18px;
+	box-shadow: 0 6px 18px rgba(60, 30, 110, .10);
+	padding: 14px 14px 12px;
+	margin: 10px 0 12px;
+}
+
+.npt-tb-title {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	font-weight: 800;
+	font-size: 15px;
+	color: #2b2140;
+	text-align: center;
+}
+
+.npt-tb-sub {
+	font-size: 12.5px;
+	color: #7a7390;
+	text-align: center;
+	margin: 4px 0 10px;
+}
+
+.npt-tb-btns {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 8px;
+}
+
+.npt-tb-btns a {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	padding: 12px 8px;
+	border-radius: 12px;
+	font-weight: 700;
+	font-size: 14px;
+	text-decoration: none;
+}
+
+.npt-tb-btns .npt-pdf-btn {
+	background: linear-gradient(135deg, #4b1d7a, #6d2fb0);
+	color: #fff;
+}
+
+.npt-tb-btns .npt-view-btn {
+	background: #eef1f8;
+	color: #2b2140;
+	border: 1px solid #dfe4ef;
+}
+
+.npt-filter-row {
+	margin: 0 0 10px;
+}
+
+.npt-loading {
+	display: none !important;
+}
+
+/* 2.0.9: toolbar buttons stack full-width on phones */
+@media (max-width: 600px) {
+	.npt-toolbar {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.npt-pdf-btn,
+	.npt-view-btn {
+		width: 100%;
+		justify-content: center;
+		font-size: 14px;
+		padding: 12px 10px;
+	}
+
+	.npt-filter-label {
+		display: block;
+	}
+}
