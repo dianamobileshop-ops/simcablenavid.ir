@@ -20,7 +20,9 @@ $tel          = preg_replace( '/[^0-9+]/', '', (string) $navid_opt['phone'] );
 	<meta charset="<?php bloginfo( 'charset' ); ?>">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<?php wp_head(); ?>
-	<style>:root{--navid-primary:<?php echo esc_html( $navid_opt['primary_color'] ); ?>}</style>
+	<style>:root{--navid-primary:<?php echo esc_html( $navid_opt['primary_color'] ); ?>}
+	/* Safety net: the logo stays small even if the main stylesheet is cached or blocked. */
+	.navid-brand img,.navid-brand .custom-logo{height:48px;width:auto;max-width:180px}</style>
 </head>
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>

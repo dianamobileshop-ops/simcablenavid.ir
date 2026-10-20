@@ -33,20 +33,55 @@ function navid_settings_styles( $hook ) {
 		return;
 	}
 	$css = '
-		.navid-admin{display:grid;grid-template-columns:260px 1fr;gap:20px;margin-top:16px;font-family:inherit}
-		.navid-admin-side{background:#fff;border:1px solid #e5e8ee;border-radius:14px;padding:10px}
-		.navid-admin-side a{display:block;padding:10px 14px;border-radius:10px;color:#1f2430;text-decoration:none;font-weight:600}
-		.navid-admin-side a.is-on,.navid-admin-side a:hover{background:#e9f8f0;color:#1faa6b}
-		.navid-admin-card{background:#fff;border:1px solid #e5e8ee;border-radius:14px;padding:18px;margin-bottom:16px}
+		.navid-app{--n-primary:#1faa6b;--n-soft:#e9f8f0;--n-ink:#1f2430;--n-muted:#6b7280;--n-line:#e5e8ee;--n-bg:#f4f6f8;direction:rtl;font-family:inherit;color:var(--n-ink);margin:0}
+		.navid-app *{box-sizing:border-box}
+		.navid-topbar{position:sticky;top:32px;z-index:50;display:flex;align-items:center;gap:14px;background:#fff;border-bottom:1px solid var(--n-line);padding:12px 22px}
+		.navid-brandbox{display:flex;align-items:center;gap:12px;min-width:230px}
+		.navid-brandmark{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;background:var(--n-primary);color:#fff;font-weight:800;font-size:20px}
+		.navid-brandbox strong{display:block;font-size:20px;line-height:1.2}
+		.navid-brandbox small{color:var(--n-muted)}
+		.navid-status{display:flex;align-items:center;gap:10px;margin-inline-start:12px}
+		.navid-pill{display:inline-flex;align-items:center;gap:6px;background:var(--n-primary);color:#fff;border-radius:999px;padding:4px 14px;font-weight:700}
+		.navid-pill:before{content:"";width:8px;height:8px;border-radius:50%;background:#fff}
+		.navid-ver{color:var(--n-muted);font-size:12px}
+		.navid-topbar-actions{display:flex;align-items:center;gap:10px;margin-inline-start:auto}
+		.navid-qsearch{width:240px;border:1px solid var(--n-line);border-radius:10px;padding:8px 12px;background:#fff}
+		.navid-savebtn{border:0;border-radius:10px;background:var(--n-primary);color:#fff;font:inherit;font-weight:700;padding:10px 26px;cursor:pointer}
+		.navid-savebtn:hover{filter:brightness(.95)}
+		.navid-layout{display:grid;grid-template-columns:290px 1fr;gap:22px;padding:20px 22px;align-items:start}
+		.navid-side{position:sticky;top:112px;background:#fff;border:1px solid var(--n-line);border-radius:16px;padding:10px;max-height:calc(100vh - 130px);overflow:auto}
+		.navid-side a,.navid-side summary{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:12px;color:var(--n-ink);text-decoration:none;font-weight:600;cursor:pointer;list-style:none}
+		.navid-side summary::-webkit-details-marker{display:none}
+		.navid-side summary:after{content:"\f347";font-family:dashicons;margin-inline-start:auto;color:var(--n-muted);transition:transform .15s}
+		.navid-side details[open]>summary:after{transform:rotate(180deg)}
+		.navid-side .dashicons{color:var(--n-muted);width:22px;height:22px;font-size:20px}
+		.navid-side a:hover,.navid-side summary:hover{background:var(--n-bg)}
+		.navid-side a.is-on{background:var(--n-soft);color:var(--n-primary)}
+		.navid-side a.is-on .dashicons{color:var(--n-primary)}
+		.navid-side .navid-sub{margin:0 14px 6px 0;border-right:2px solid var(--n-line)}
+		.navid-side .navid-sub a{padding:8px 12px;font-weight:500;font-size:13px}
+		.navid-main{min-width:0}
+		.navid-sec-title{font-size:16px;font-weight:800;margin:0 0 12px}
+		.navid-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-bottom:26px}
+		.navid-tile{display:flex;align-items:center;gap:12px;min-height:56px;background:#fff;border:1px solid var(--n-line);border-radius:14px;padding:12px 14px;color:var(--n-ink);text-decoration:none;font-weight:600}
+		.navid-tile:hover{border-color:var(--n-primary);color:var(--n-primary)}
+		.navid-tile .dashicons{color:var(--n-primary)}
+		.navid-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:26px}
+		.navid-stat{background:#fff;border:1px solid var(--n-line);border-radius:14px;padding:14px 16px}
+		.navid-stat b{display:block;font-size:22px}
+		.navid-stat span{color:var(--n-muted);font-size:13px}
+		.navid-stat.is-bad b{color:#d63638}
+		.navid-stat.is-ok b{color:var(--n-primary)}
+		.navid-admin-card{background:#fff;border:1px solid var(--n-line);border-radius:16px;padding:18px;margin-bottom:16px}
 		.navid-admin-card h2{margin:0 0 12px;font-size:16px}
-		.navid-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
-		.navid-tile{display:flex;align-items:center;justify-content:center;min-height:52px;border:1px solid #e5e8ee;border-radius:12px;padding:10px;color:#1f2430;text-decoration:none;font-weight:600;background:#fff}
-		.navid-tile:hover{border-color:#1faa6b;color:#1faa6b}
-		.navid-row{display:grid;grid-template-columns:200px 1fr;gap:12px;align-items:center;padding:10px 0;border-top:1px solid #f0f2f5}
-		.navid-row:first-child{border-top:0}
-		.navid-row input[type=text],.navid-row input[type=color]{width:100%;max-width:320px}
-		.navid-savebar{position:sticky;bottom:0;background:#fff;border:1px solid #e5e8ee;border-radius:14px;padding:12px;display:flex;justify-content:flex-end}
-		@media (max-width:782px){.navid-admin{grid-template-columns:1fr}.navid-row{grid-template-columns:1fr}}
+		.navid-row{display:grid;grid-template-columns:220px 1fr;gap:12px;align-items:center;padding:10px 0;border-top:1px solid #f0f2f5}
+		.navid-row:first-of-type{border-top:0}
+		.navid-row input[type=text],.navid-row textarea{width:100%;max-width:520px}
+		/* The price table plugin screens, shown inside the same shell */
+		.navid-embedded .npt-settings{margin:0;background:#fff;border:1px solid var(--n-line);border-radius:16px;padding:18px}
+		.navid-embedded .npt-settings>h1,.navid-embedded .npt-settings>.description,.navid-embedded #npt-tabs,.navid-embedded .npt-subnav,.navid-embedded .npt-submit-row{display:none!important}
+		.navid-embedded .npt-settings h2{font-size:16px}
+		@media (max-width:960px){.navid-layout{grid-template-columns:1fr}.navid-side{position:static;max-height:none}.navid-topbar{flex-wrap:wrap;top:46px}.navid-qsearch{width:100%}.navid-row{grid-template-columns:1fr}}
 	';
 	wp_register_style( 'navid-settings', false, array(), NAVID_VERSION );
 	wp_enqueue_style( 'navid-settings' );
@@ -88,148 +123,296 @@ function navid_save_settings() {
 add_action( 'admin_post_navid_save_settings', 'navid_save_settings' );
 
 /**
- * Renders the settings page.
+ * Menu of the panel: groups open/close, items open one screen. Items that point
+ * to a '#' anchor are sections of the overview page; the rest are the price
+ * table screens, rendered inside the same shell.
+ *
+ * @return array
  */
+function navid_admin_tree() {
+	$base = admin_url( 'admin.php?page=navid-settings' );
+	$tab  = static function ( $key ) use ( $base ) {
+		return $base . '&tab=' . $key;
+	};
+	return array(
+		array( 'label' => 'هاب نوید', 'icon' => 'dashicons-admin-home', 'items' => array( 'overview' => array( 'هاب نوید', $base ) ), 'single' => true ),
+		array(
+			'label' => 'پیکربندی نمایش',
+			'icon'  => 'dashicons-art',
+			'items' => array(
+				'a-look'   => array( 'ظاهر و رنگ', $base . '#navid-look' ),
+				'a-header' => array( 'هدر و فوتر', $base . '#navid-header' ),
+				'a-bar'    => array( 'نوار جدول قیمت', $base . '#navid-price' ),
+				'a-slider' => array( 'بنرهای صفحه اصلی', $base . '#navid-slider' ),
+			),
+		),
+		array(
+			'label' => 'جدول قیمت',
+			'icon'  => 'dashicons-list-view',
+			'items' => array(
+				'price'   => array( 'قیمت‌ها و تعدیل', $tab( 'price' ) ),
+				'header'  => array( 'سربرگ PDF', $tab( 'header' ) ),
+				'content' => array( 'محتوا', $tab( 'content' ) ),
+				'footer'  => array( 'پابرگ', $tab( 'footer' ) ),
+			),
+		),
+		array( 'label' => 'سئو', 'icon' => 'dashicons-search', 'items' => array( 'seo' => array( 'سئو', $tab( 'seo' ) ) ), 'single' => true ),
+		array(
+			'label' => 'پیامک',
+			'icon'  => 'dashicons-email-alt',
+			'items' => array(
+				'sms'       => array( 'تنظیمات پیامک', $tab( 'sms' ) ),
+				'otp'       => array( 'کدهای الگو', $tab( 'otp' ) ),
+				'templates' => array( 'الگوهای پیامک', $tab( 'templates' ) ),
+				'sms_login' => array( 'ورود پیامکی', $tab( 'sms_login' ) ),
+			),
+		),
+		array( 'label' => 'مخاطبین', 'icon' => 'dashicons-groups', 'items' => array( 'contacts' => array( 'مخاطبین', $tab( 'contacts' ) ) ), 'single' => true ),
+		array(
+			'label' => 'نوار موبایل',
+			'icon'  => 'dashicons-smartphone',
+			'items' => array(
+				'bar_menu'  => array( 'منوی پایین', $tab( 'bar_menu' ) ),
+				'bar_float' => array( 'آیکن شناور', $tab( 'bar_float' ) ),
+			),
+		),
+		array(
+			'label' => 'پنل مدیر',
+			'icon'  => 'dashicons-businessperson',
+			'items' => array(
+				'login_page' => array( 'صفحه ورود', $tab( 'login_page' ) ),
+				'panel_dash' => array( 'داشبورد مدیر', $tab( 'panel_dash' ) ),
+				'managers'   => array( 'مدیران کسب‌وکار', $tab( 'managers' ) ),
+			),
+		),
+		array( 'label' => 'تنظیمات عمومی', 'icon' => 'dashicons-admin-generic', 'items' => array( 'general' => array( 'تنظیمات عمومی', $tab( 'general' ) ) ), 'single' => true ),
+		array( 'label' => 'پشتیبان و بروزرسانی', 'icon' => 'dashicons-backup', 'items' => array( 'backup' => array( 'پشتیبان و بروزرسانی', $tab( 'backup' ) ) ), 'single' => true ),
+		array( 'label' => 'گزارش خطاها', 'icon' => 'dashicons-warning', 'items' => array( 'errors' => array( 'گزارش خطاها', $tab( 'errors' ) ) ), 'single' => true ),
+	);
+}
+
 /**
- * Sidebar of the panel. Plugin screens (price table, SMS, contacts, bar, logs...)
- * are listed next to the theme sections.
+ * Sidebar of the panel.
  *
  * @param string $active Current tab key, or 'overview'.
  */
 function navid_admin_sidebar( $active ) {
-	$base  = admin_url( 'admin.php?page=navid-settings' );
-	$items = array(
-		'overview'  => array( 'نمای کلی', $base ),
-		'look'      => array( 'پیکربندی نمایش', $base . '#navid-look' ),
-		'header'    => array( 'هدر و فوتر', $base . '#navid-header' ),
-		'home'      => array( 'صفحه اصلی', $base . '#navid-slider' ),
-		'price'     => array( 'جدول قیمت', $base . '&tab=price' ),
-		'contacts'  => array( 'مخاطبین', $base . '&tab=contacts' ),
-		'sms'       => array( 'پیامک', $base . '&tab=sms' ),
-		'seo'       => array( 'سئو', $base . '&tab=seo' ),
-		'bar_menu'  => array( 'منوی پایین موبایل', $base . '&tab=bar_menu' ),
-		'bar_float' => array( 'آیکن شناور', $base . '&tab=bar_float' ),
-		'general'   => array( 'تنظیمات عمومی', $base . '&tab=general' ),
-		'backup'    => array( 'پشتیبان', $base . '&tab=backup' ),
-		'errors'    => array( 'گزارش خطاها', $base . '&tab=errors' ),
-	);
-	echo '<nav class="navid-admin-side" aria-label="' . esc_attr__( 'بخش‌های پنل', 'navid' ) . '">';
-	foreach ( $items as $key => $item ) {
-		printf(
-			'<a href="%s" class="%s">%s</a>',
-			esc_url( $item[1] ),
-			$key === $active ? 'is-on' : '',
-			esc_html( $item[0] )
-		);
+	echo '<nav class="navid-side" aria-label="' . esc_attr__( 'بخش‌های پنل', 'navid' ) . '">';
+	foreach ( navid_admin_tree() as $group ) {
+		if ( ! empty( $group['single'] ) ) {
+			$key  = key( $group['items'] );
+			$item = $group['items'][ $key ];
+			printf(
+				'<a href="%s" class="%s" data-navid-find="%s"><span class="dashicons %s"></span>%s</a>',
+				esc_url( $item[1] ),
+				$key === $active ? 'is-on' : '',
+				esc_attr( $item[0] ),
+				esc_attr( $group['icon'] ),
+				esc_html( $item[0] )
+			);
+			continue;
+		}
+		$open = array_key_exists( $active, $group['items'] );
+		printf( '<details%s><summary><span class="dashicons %s"></span>%s</summary><div class="navid-sub">', $open ? ' open' : '', esc_attr( $group['icon'] ), esc_html( $group['label'] ) );
+		foreach ( $group['items'] as $key => $item ) {
+			printf(
+				'<a href="%s" class="%s" data-navid-find="%s">%s</a>',
+				esc_url( $item[1] ),
+				$key === $active ? 'is-on' : '',
+				esc_attr( $item[0] ),
+				esc_html( $item[0] )
+			);
+		}
+		echo '</div></details>';
 	}
 	echo '</nav>';
 }
 
+/**
+ * Opens the panel shell: top bar (name, status, search, save) and the sidebar.
+ *
+ * @param string $active    Current tab key or 'overview'.
+ * @param string $save_form ID of the form the top Save button submits ('' hides it).
+ * @param bool   $embedded  True for the price table screens.
+ */
+function navid_admin_shell_open( $active, $save_form, $embedded ) {
+	echo '<div class="navid-app' . ( $embedded ? ' navid-embedded' : '' ) . '" dir="rtl">';
+	echo '<header class="navid-topbar">';
+	echo '<div class="navid-brandbox"><span class="navid-brandmark">N</span><div><strong>پنل نوید</strong><small>مدیریت قالب و فروشگاه</small></div></div>';
+	echo '<div class="navid-status"><span class="navid-pill">فعال</span><span class="navid-ver">نسخه نصب شد: ' . esc_html( NAVID_VERSION ) . '</span></div>';
+	echo '<div class="navid-topbar-actions">';
+	echo '<input type="search" class="navid-qsearch" id="navid-qsearch" placeholder="' . esc_attr__( 'جستجوی سریع (Ctrl K)', 'navid' ) . '" autocomplete="off">';
+	if ( '' !== $save_form ) {
+		echo '<button type="submit" class="navid-savebtn" form="' . esc_attr( $save_form ) . '">' . esc_html__( 'ذخیره‌کردن', 'navid' ) . '</button>';
+	}
+	echo '</div></header>';
+	echo '<div class="navid-layout">';
+	navid_admin_sidebar( $active );
+	echo '<main class="navid-main">';
+}
+
+/**
+ * Closes the shell and adds the quick-search script.
+ */
+function navid_admin_shell_close() {
+	echo '</main></div></div>';
+	?>
+	<script>
+	(function () {
+		var box = document.getElementById('navid-qsearch');
+		if (!box) { return; }
+		var links = document.querySelectorAll('[data-navid-find], .navid-tile');
+		box.addEventListener('input', function () {
+			var q = box.value.trim().toLowerCase();
+			Array.prototype.forEach.call(links, function (el) {
+				var text = (el.getAttribute('data-navid-find') || el.textContent).toLowerCase();
+				var hit = !q || text.indexOf(q) !== -1;
+				el.style.display = hit ? '' : 'none';
+				var group = el.closest('details');
+				if (group && q && hit) { group.open = true; }
+			});
+		});
+		document.addEventListener('keydown', function (e) {
+			if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); box.focus(); }
+		});
+	}());
+	</script>
+	<?php
+}
+
+/**
+ * Renders the settings page.
+ */
 function navid_render_settings() {
-	$opt   = navid_options();
-	$tab   = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-	// Screens that belong to the price table plugin, rendered inside this panel.
+	$opt = navid_options();
+	$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+	// Screens that belong to the price table code, rendered inside this shell.
 	$plugin_tabs = array( 'general', 'price', 'seo', 'sms', 'contacts', 'bar_menu', 'bar_float', 'login_page', 'panel_dash', 'backup', 'managers', 'errors', 'header', 'content', 'footer', 'otp', 'templates', 'sms_login' );
 	if ( '' !== $tab && in_array( $tab, $plugin_tabs, true ) && function_exists( 'npt_render_settings_page' ) ) {
-		echo '<div class="navid-admin-wrap"><div class="navid-admin">';
-		navid_admin_sidebar( $tab );
-		echo '<div class="navid-admin-main">';
+		// These screens carry their own forms and have nothing for the Save button.
+		$own_form = array( 'templates', 'contacts', 'managers', 'backup', 'errors' );
+		navid_admin_shell_open( $tab, in_array( $tab, $own_form, true ) ? '' : 'npt-settings-form', true );
 		npt_render_settings_page();
-		echo '</div></div></div>';
+		navid_admin_shell_close();
 		return;
 	}
-	$saved = isset( $_GET['saved'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-	$tiles = array(
-		'محصولات'         => admin_url( 'edit.php?post_type=product' ),
-		'پنل مدیر (پیش‌فاکتورها)' => function_exists( 'npt_panel_url' ) ? npt_panel_url() : home_url( '/' ),
-		'گزارش خطاها'      => admin_url( 'admin.php?page=navid-settings&tab=errors' ),
-		'تنظیمات ووکامرس'  => admin_url( 'admin.php?page=wc-settings' ),
-		'منوها'           => admin_url( 'nav-menus.php' ),
-		'ویجت‌ها'         => admin_url( 'widgets.php' ),
+
+	$saved   = isset( $_GET['saved'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	$base    = admin_url( 'admin.php?page=navid-settings' );
+	$tiles   = array(
+		array( 'محصولات', admin_url( 'edit.php?post_type=product' ), 'dashicons-products' ),
+		array( 'تنظیمات ووکامرس', admin_url( 'admin.php?page=wc-settings' ), 'dashicons-cart' ),
+		array( 'سفارشی‌سازی', admin_url( 'customize.php' ), 'dashicons-admin-customizer' ),
+		array( 'منوها', admin_url( 'nav-menus.php' ), 'dashicons-menu' ),
+		array( 'ویجت‌ها', admin_url( 'widgets.php' ), 'dashicons-welcome-widgets-menus' ),
+		array( 'پنل مدیر (پیش‌فاکتورها)', function_exists( 'npt_panel_url' ) ? npt_panel_url() : home_url( '/' ), 'dashicons-businessperson' ),
 	);
+	$tools   = array(
+		array( 'پیکربندی جدول قیمت', $base . '&tab=price', 'dashicons-list-view' ),
+		array( 'پیکربندی پیامک', $base . '&tab=sms', 'dashicons-email-alt' ),
+		array( 'پیکربندی موبایل', $base . '&tab=bar_menu', 'dashicons-smartphone' ),
+		array( 'مخاطبین', $base . '&tab=contacts', 'dashicons-groups' ),
+		array( 'مدیران کسب‌وکار', $base . '&tab=managers', 'dashicons-businessperson' ),
+		array( 'پشتیبان و بروزرسانی', $base . '&tab=backup', 'dashicons-backup' ),
+		array( 'گزارش خطاها', $base . '&tab=errors', 'dashicons-warning' ),
+		array( 'سئو', $base . '&tab=seo', 'dashicons-search' ),
+	);
+	$visits  = (int) get_option( 'npt_visits_' . wp_date( 'Ymd' ), 0 );
+	$total   = (int) get_option( 'npt_visits_total', 0 );
+	$wc_on   = class_exists( 'WooCommerce' );
+	$sms_on  = class_exists( 'NPT_SMS' ) && NPT_SMS::otp_ready();
+	$counts  = $wc_on ? wp_count_posts( 'product' ) : null;
+	$stats   = array(
+		array( 'ووکامرس', $wc_on ? 'فعال' : 'غیرفعال', $wc_on ),
+		array( 'سرویس پیامک', $sms_on ? 'آماده' : 'تنظیم نشده', $sms_on ),
+		array( 'محصولات منتشرشده', $counts ? number_format_i18n( (int) $counts->publish ) : '—', true ),
+		array( 'بازدید امروز / کل', number_format_i18n( $visits ) . ' / ' . number_format_i18n( $total ), true ),
+	);
+
+	navid_admin_shell_open( 'overview', 'navid-settings-form', false );
 	?>
-	<div class="wrap">
-		<h1>تنظیمات قالب نوید</h1>
+	<?php if ( $saved ) : ?>
+		<div class="notice notice-success is-dismissible"><p>تنظیمات ذخیره شد.</p></div>
+	<?php endif; ?>
 
-		<?php if ( $saved ) : ?>
-			<div class="notice notice-success is-dismissible"><p>تنظیمات ذخیره شد.</p></div>
-		<?php endif; ?>
-
-		<div class="navid-admin">
-			<?php navid_admin_sidebar( 'overview' ); ?>
-
-			<div>
-				<section id="navid-quick" class="navid-admin-card">
-					<h2>دسترسی سریع</h2>
-					<div class="navid-tiles">
-						<?php foreach ( $tiles as $label => $url ) : ?>
-							<a class="navid-tile" href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( $label ); ?></a>
-						<?php endforeach; ?>
-					</div>
-				</section>
-
-				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-					<input type="hidden" name="action" value="navid_save_settings">
-					<?php wp_nonce_field( 'navid_save_settings' ); ?>
-
-					<section id="navid-look" class="navid-admin-card">
-						<h2>ظاهر</h2>
-						<div class="navid-row">
-							<label for="navid-primary">رنگ اصلی</label>
-							<input id="navid-primary" type="color" name="navid[primary_color]" value="<?php echo esc_attr( $opt['primary_color'] ); ?>">
-						</div>
-					</section>
-
-					<section id="navid-header" class="navid-admin-card">
-						<h2>هدر و فوتر</h2>
-						<div class="navid-row">
-							<label for="navid-topbar">نمایش نوار بالا</label>
-							<input id="navid-topbar" type="checkbox" name="navid[show_topbar]" value="1" <?php checked( '1', $opt['show_topbar'] ); ?>>
-						</div>
-						<div class="navid-row">
-							<label for="navid-sticky">هدر چسبان</label>
-							<input id="navid-sticky" type="checkbox" name="navid[sticky_header]" value="1" <?php checked( '1', $opt['sticky_header'] ); ?>>
-						</div>
-						<div class="navid-row">
-							<label for="navid-phone">شماره تماس</label>
-							<input id="navid-phone" type="text" name="navid[phone]" value="<?php echo esc_attr( $opt['phone'] ); ?>" dir="ltr">
-						</div>
-						<div class="navid-row">
-							<label for="navid-address">آدرس</label>
-							<input id="navid-address" type="text" name="navid[address]" value="<?php echo esc_attr( $opt['address'] ); ?>">
-						</div>
-					</section>
-
-					<section id="navid-price" class="navid-admin-card">
-						<h2>جدول قیمت</h2>
-						<div class="navid-row">
-							<label for="navid-toolbar-title">عنوان نوار جدول</label>
-							<input id="navid-toolbar-title" type="text" name="navid[toolbar_title]" value="<?php echo esc_attr( $opt['toolbar_title'] ); ?>">
-						</div>
-						<div class="navid-row">
-							<label for="navid-toolbar-sub">متن زیر عنوان (اختیاری)</label>
-							<input id="navid-toolbar-sub" type="text" name="navid[toolbar_sub]" value="<?php echo esc_attr( $opt['toolbar_sub'] ); ?>">
-						</div>
-						<div class="navid-row">
-							<label for="navid-price-url">آدرس صفحه جدول قیمت</label>
-							<input id="navid-price-url" type="text" name="navid[price_url]" value="<?php echo esc_attr( $opt['price_url'] ); ?>" placeholder="https://">
-						</div>
-					</section>
-
-					<section id="navid-slider" class="navid-admin-card">
-						<h2>بنرهای اسلایدر صفحه اصلی</h2>
-						<div class="navid-row">
-							<label for="navid-slides">هر بنر در یک خط: آدرس عکس | لینک | متن جایگزین</label>
-							<textarea id="navid-slides" name="navid[slides]" rows="5" dir="ltr"><?php echo esc_textarea( $opt['slides'] ); ?></textarea>
-						</div>
-					</section>
-
-					<div class="navid-savebar">
-						<button type="submit" class="navid-btn navid-btn--primary">ذخیره تغییرات</button>
-					</div>
-				</form>
-			</div>
-		</div>
+	<h2 class="navid-sec-title">وضعیت</h2>
+	<div class="navid-stats">
+		<?php foreach ( $stats as $stat ) : ?>
+			<div class="navid-stat <?php echo $stat[2] ? 'is-ok' : 'is-bad'; ?>"><b><?php echo esc_html( $stat[1] ); ?></b><span><?php echo esc_html( $stat[0] ); ?></span></div>
+		<?php endforeach; ?>
 	</div>
+
+	<h2 class="navid-sec-title">دسترسی‌های سریع</h2>
+	<div class="navid-tiles">
+		<?php foreach ( $tiles as $tile ) : ?>
+			<a class="navid-tile" href="<?php echo esc_url( $tile[1] ); ?>"><span class="dashicons <?php echo esc_attr( $tile[2] ); ?>"></span><?php echo esc_html( $tile[0] ); ?></a>
+		<?php endforeach; ?>
+	</div>
+
+	<h2 class="navid-sec-title">ابزارها</h2>
+	<div class="navid-tiles">
+		<?php foreach ( $tools as $tile ) : ?>
+			<a class="navid-tile" href="<?php echo esc_url( $tile[1] ); ?>"><span class="dashicons <?php echo esc_attr( $tile[2] ); ?>"></span><?php echo esc_html( $tile[0] ); ?></a>
+		<?php endforeach; ?>
+	</div>
+
+	<form id="navid-settings-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+		<input type="hidden" name="action" value="navid_save_settings">
+		<?php wp_nonce_field( 'navid_save_settings' ); ?>
+
+		<section id="navid-look" class="navid-admin-card">
+			<h2>ظاهر</h2>
+			<div class="navid-row">
+				<label for="navid-primary">رنگ اصلی</label>
+				<input id="navid-primary" type="color" name="navid[primary_color]" value="<?php echo esc_attr( $opt['primary_color'] ); ?>">
+			</div>
+		</section>
+
+		<section id="navid-header" class="navid-admin-card">
+			<h2>هدر و فوتر</h2>
+			<div class="navid-row">
+				<label for="navid-topbar">نمایش نوار بالا</label>
+				<input id="navid-topbar" type="checkbox" name="navid[show_topbar]" value="1" <?php checked( '1', $opt['show_topbar'] ); ?>>
+			</div>
+			<div class="navid-row">
+				<label for="navid-sticky">هدر چسبان</label>
+				<input id="navid-sticky" type="checkbox" name="navid[sticky_header]" value="1" <?php checked( '1', $opt['sticky_header'] ); ?>>
+			</div>
+			<div class="navid-row">
+				<label for="navid-phone">شماره تماس</label>
+				<input id="navid-phone" type="text" name="navid[phone]" value="<?php echo esc_attr( $opt['phone'] ); ?>" dir="ltr">
+			</div>
+			<div class="navid-row">
+				<label for="navid-address">آدرس</label>
+				<input id="navid-address" type="text" name="navid[address]" value="<?php echo esc_attr( $opt['address'] ); ?>">
+			</div>
+		</section>
+
+		<section id="navid-price" class="navid-admin-card">
+			<h2>نوار جدول قیمت</h2>
+			<div class="navid-row">
+				<label for="navid-toolbar-title">عنوان نوار جدول</label>
+				<input id="navid-toolbar-title" type="text" name="navid[toolbar_title]" value="<?php echo esc_attr( $opt['toolbar_title'] ); ?>">
+			</div>
+			<div class="navid-row">
+				<label for="navid-toolbar-sub">متن زیر عنوان (اختیاری)</label>
+				<input id="navid-toolbar-sub" type="text" name="navid[toolbar_sub]" value="<?php echo esc_attr( $opt['toolbar_sub'] ); ?>">
+			</div>
+			<div class="navid-row">
+				<label for="navid-price-url">آدرس صفحه جدول قیمت</label>
+				<input id="navid-price-url" type="text" name="navid[price_url]" value="<?php echo esc_attr( $opt['price_url'] ); ?>" placeholder="https://" dir="ltr">
+			</div>
+		</section>
+
+		<section id="navid-slider" class="navid-admin-card">
+			<h2>بنرهای اسلایدر صفحه اصلی</h2>
+			<div class="navid-row">
+				<label for="navid-slides">هر بنر در یک خط: آدرس عکس | لینک | متن جایگزین</label>
+				<textarea id="navid-slides" name="navid[slides]" rows="5" dir="ltr"><?php echo esc_textarea( $opt['slides'] ); ?></textarea>
+			</div>
+		</section>
+	</form>
 	<?php
+	navid_admin_shell_close();
 }
