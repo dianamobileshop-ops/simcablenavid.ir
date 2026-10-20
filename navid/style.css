@@ -2,7 +2,7 @@
 Theme Name: Navid
 Theme URI: https://simcablenavid.ir
 Description: قالب اختصاصی نوید. شامل جدول قیمت و پنل مدیریت در یک بسته.
-Version: 1.0.3
+Version: 1.0.4
 Update URI: https://simcablenavid.ir/navid
 Requires PHP: 7.4
 Text Domain: navid
@@ -955,4 +955,238 @@ img {
 	border: 1px solid var(--navid-line);
 	border-radius: 10px;
 	font: inherit;
+}
+
+
+/* ---- 1.0.4: mobile header, footer, text slides ---- */
+:root {
+	--navid-logo-h: 48px;
+	--navid-logo-w: 180px;
+}
+
+.navid-search {
+	flex-direction: row;
+	background: var(--navid-card);
+	border-radius: 16px;
+}
+
+.navid-search button {
+	display: grid;
+	place-items: center;
+	width: 52px;
+	border-radius: 0;
+}
+
+.navid-mcart {
+	display: none;
+	position: relative;
+	color: var(--navid-primary);
+}
+
+.navid-mcart .navid-cart-count {
+	position: absolute;
+	top: -6px;
+	inset-inline-end: -6px;
+}
+
+@media (max-width: 768px) {
+	:root {
+		--navid-logo-h: 40px;
+		--navid-logo-w: 150px;
+	}
+
+	.navid-top {
+		display: grid;
+		grid-template-columns: auto 1fr auto;
+		grid-template-areas: "menu brand phone" "search search cart";
+		align-items: center;
+		gap: 10px 12px;
+		padding: 10px 14px;
+		min-height: 0;
+	}
+
+	.navid-menu-toggle {
+		grid-area: menu;
+		justify-self: start;
+		font-size: 15px;
+		font-weight: 700;
+		color: #6b7280;
+	}
+
+	.navid-brand {
+		grid-area: brand;
+		justify-self: center;
+	}
+
+	.navid-phone {
+		grid-area: phone;
+		justify-self: end;
+	}
+
+	.navid-search,
+	.navid-search-open .navid-search {
+		display: flex;
+		grid-area: search;
+		max-width: none;
+		margin: 0;
+		height: 50px;
+		border-radius: 16px;
+		border: 1px solid var(--navid-line);
+		background: #fff;
+	}
+
+	.navid-search button {
+		width: 54px;
+		border-radius: 0 14px 14px 0;
+	}
+
+	.navid-search input {
+		font-size: 14px;
+	}
+
+	.navid-mcart {
+		display: inline-flex;
+		grid-area: cart;
+		justify-self: end;
+	}
+
+	.navid-desk-actions {
+		display: none;
+	}
+
+	body {
+		padding-bottom: 72px;
+	}
+}
+
+/* Footer */
+.navid-footer {
+	background: #14202b;
+	color: #cdd5de;
+	padding: 0;
+	margin-top: 32px;
+	border-top: 0;
+}
+
+.navid-footer-grid {
+	grid-template-columns: 1.4fr 1fr 1fr 1.2fr;
+	gap: 28px;
+	padding-block: 36px 24px;
+}
+
+.navid-footer a {
+	color: #e8edf2;
+	text-decoration: none;
+}
+
+.navid-footer a:hover {
+	color: var(--navid-primary);
+}
+
+.navid-footer-title {
+	color: #fff;
+	font-size: 15px;
+	margin: 0 0 12px;
+}
+
+.navid-footer-about p {
+	margin: 12px 0;
+	line-height: 2;
+}
+
+.navid-footer-logo img {
+	background: #fff;
+	border-radius: 10px;
+	padding: 6px 10px;
+}
+
+.navid-social {
+	display: flex;
+	gap: 10px;
+}
+
+.navid-social a {
+	border: 1px solid #34465a;
+	border-radius: 999px;
+	padding: 4px 14px;
+	font-size: 13px;
+}
+
+.navid-footer-contact li {
+	line-height: 1.9;
+}
+
+.navid-footer-bottom {
+	border-top: 1px solid #263646;
+	padding: 14px 0;
+	font-size: 13px;
+	text-align: center;
+	color: #98a6b5;
+}
+
+@media (max-width: 960px) {
+	.navid-footer-grid {
+		grid-template-columns: 1fr 1fr;
+	}
+}
+
+@media (max-width: 768px) {
+	.navid-footer-grid {
+		grid-template-columns: 1fr;
+		padding-block: 26px 14px;
+	}
+}
+
+/* Text banners of the default slider */
+.navid-slide-card {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: center;
+	gap: 8px;
+	min-height: 220px;
+	padding: 28px 36px;
+	color: #fff;
+	background: linear-gradient(120deg, #1faa6b, #0f6e47);
+}
+
+.navid-slide-card.navid-tone-2 {
+	background: linear-gradient(120deg, #2350b4, #14307a);
+}
+
+.navid-slide-card.navid-tone-3 {
+	background: linear-gradient(120deg, #ed1c24, #a3121a);
+}
+
+.navid-slide-card h2 {
+	margin: 0;
+	font-size: 28px;
+	color: #fff;
+}
+
+.navid-slide-card p {
+	margin: 0 0 8px;
+	font-size: 16px;
+	opacity: .95;
+}
+
+.navid-slide-card .navid-btn {
+	background: #fff;
+	color: #14202b;
+	border-color: #fff;
+}
+
+@media (max-width: 768px) {
+	.navid-slide-card {
+		min-height: 170px;
+		padding: 20px;
+	}
+
+	.navid-slide-card h2 {
+		font-size: 20px;
+	}
+
+	.navid-slide-card p {
+		font-size: 13px;
+	}
 }

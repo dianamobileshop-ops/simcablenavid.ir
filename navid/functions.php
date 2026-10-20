@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'NAVID_VERSION', '1.0.3' );
+define( 'NAVID_VERSION', '1.0.4' );
 
 /**
  * Basic theme support.
@@ -60,6 +60,8 @@ function navid_options() {
 		'price_url'     => '',
 		'slides'        => '',
 		// Same contact details the price list header/footer already uses.
+		'email'         => '',
+		'about'         => '',
 		'phone'         => (string) get_option( 'npt_phone', '' ),
 		'address'       => (string) get_option( 'npt_address', '' ),
 	);
@@ -93,4 +95,26 @@ add_filter( 'woocommerce_add_to_cart_fragments', 'navid_cart_fragments' );
  */
 function navid_cart_count_html( $count ) {
 	return '<span class="navid-cart-count">' . ( $count ? '<em class="navid-badge">' . esc_html( $count ) . '</em>' : '' ) . '</span>';
+}
+
+/**
+ * Site logo as an <img> whose size is fixed by CSS variables and an inline style, so a
+ * huge uploaded file or another stylesheet can never blow the header up.
+ *
+ * @return string
+ */
+function navid_logo_html() {
+	$id = (int) get_theme_mod( 'custom_logo' );
+	if ( $id ) {
+		$img = wp_get_attachment_image( $id, 'medium', false, array(
+			'class'    => 'custom-logo',
+			'alt'      => get_bloginfo( 'name' ),
+			'style'    => 'height:var(--navid-logo-h,48px);width:auto;max-width:var(--navid-logo-w,180px)',
+			'decoding' => 'async',
+		) );
+		if ( $img ) {
+			return $img;
+		}
+	}
+	return esc_html( get_bloginfo( 'name' ) );
 }

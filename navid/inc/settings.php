@@ -83,6 +83,7 @@ function navid_settings_styles( $hook ) {
 		.navid-embedded .npt-settings h2{font-size:16px}
 		@media (max-width:960px){.navid-layout{grid-template-columns:1fr}.navid-side{position:static;max-height:none}.navid-topbar{flex-wrap:wrap;top:46px}.navid-qsearch{width:100%}.navid-row{grid-template-columns:1fr}}
 	';
+	wp_enqueue_media();
 	wp_register_style( 'navid-settings', false, array(), NAVID_VERSION );
 	wp_enqueue_style( 'navid-settings' );
 	wp_add_inline_style( 'navid-settings', $css );
@@ -109,6 +110,8 @@ function navid_save_settings() {
 		'toolbar_sub'   => isset( $raw['toolbar_sub'] ) ? sanitize_text_field( $raw['toolbar_sub'] ) : '',
 		'price_url'     => isset( $raw['price_url'] ) ? esc_url_raw( $raw['price_url'] ) : '',
 		'slides'        => isset( $raw['slides'] ) ? sanitize_textarea_field( $raw['slides'] ) : '',
+		'email'         => isset( $raw['email'] ) ? sanitize_email( $raw['email'] ) : '',
+		'about'         => isset( $raw['about'] ) ? sanitize_textarea_field( $raw['about'] ) : '',
 		'phone'         => isset( $raw['phone'] ) ? sanitize_text_field( $raw['phone'] ) : '',
 		'address'       => isset( $raw['address'] ) ? sanitize_text_field( $raw['address'] ) : '',
 	);
@@ -384,6 +387,14 @@ function navid_render_settings() {
 				<input id="navid-phone" type="text" name="navid[phone]" value="<?php echo esc_attr( $opt['phone'] ); ?>" dir="ltr">
 			</div>
 			<div class="navid-row">
+				<label for="navid-email">ایمیل</label>
+				<input id="navid-email" type="text" name="navid[email]" value="<?php echo esc_attr( $opt['email'] ); ?>" dir="ltr">
+			</div>
+			<div class="navid-row">
+				<label for="navid-about">متن معرفی در فوتر</label>
+				<textarea id="navid-about" name="navid[about]" rows="3"><?php echo esc_textarea( $opt['about'] ); ?></textarea>
+			</div>
+			<div class="navid-row">
 				<label for="navid-address">آدرس</label>
 				<input id="navid-address" type="text" name="navid[address]" value="<?php echo esc_attr( $opt['address'] ); ?>">
 			</div>
@@ -409,7 +420,28 @@ function navid_render_settings() {
 			<h2>بنرهای اسلایدر صفحه اصلی</h2>
 			<div class="navid-row">
 				<label for="navid-slides">هر بنر در یک خط: آدرس عکس | لینک | متن جایگزین</label>
-				<textarea id="navid-slides" name="navid[slides]" rows="5" dir="ltr"><?php echo esc_textarea( $opt['slides'] ); ?></textarea>
+				<div>
+					<textarea id="navid-slides" name="navid[slides]" rows="5" dir="ltr" placeholder="https://.../banner.jpg | https://.../link | متن جایگزین"><?php echo esc_textarea( $opt['slides'] ); ?></textarea>
+					<p><button type="button" class="button" id="navid-add-slide">افزودن تصویر از کتابخانه رسانه</button>
+					<span class="description">اگر خالی بماند، سه بنر پیش‌فرض نمایش داده می‌شود. اندازهٔ پیشنهادی تصویر ۱۲۰۰×۴۰۰.</span></p>
+				</div>
+				<script>
+				jQuery(function ($) {
+					$('#navid-add-slide').on('click', function (e) {
+						e.preventDefault();
+						var frame = wp.media({ title: 'انتخاب بنر', multiple: true, library: { type: 'image' } });
+						frame.on('select', function () {
+							var box = $('#navid-slides'), lines = box.val().replace(/\s+$/, '');
+							frame.state().get('selection').each(function (att) {
+								var a = att.toJSON();
+								lines += (lines ? '\n' : '') + a.url + ' | | ' + (a.alt || a.title || '');
+							});
+							box.val(lines);
+						});
+						frame.open();
+					});
+				});
+				</script>
 			</div>
 		</section>
 	</form>

@@ -14,11 +14,24 @@ $navid_cats   = navid_home_categories();
 $navid_opt    = navid_options();
 ?>
 
+<div class="navid-wrap navid-home">
 <?php if ( $navid_slides ) : ?>
 	<section class="navid-slider" aria-label="<?php esc_attr_e( 'بنرها', 'navid' ); ?>" data-navid-slider>
 		<div class="navid-slider-track">
 			<?php foreach ( $navid_slides as $i => $slide ) : ?>
 				<?php
+				if ( isset( $slide['title'] ) ) :
+					?>
+					<div class="navid-slide<?php echo 0 === $i ? ' is-on' : ''; ?>">
+						<div class="navid-slide-card navid-tone-<?php echo (int) $slide['tone']; ?>">
+							<h2><?php echo esc_html( $slide['title'] ); ?></h2>
+							<p><?php echo esc_html( $slide['text'] ); ?></p>
+							<a class="navid-btn" href="<?php echo esc_url( $slide['link'] ); ?>"><?php echo esc_html( $slide['cta'] ); ?></a>
+						</div>
+					</div>
+					<?php
+					continue;
+				endif;
 				$img = sprintf(
 					'<img src="%s" alt="%s" width="1200" height="400" %s>',
 					esc_url( $slide['image'] ),
@@ -79,6 +92,7 @@ $navid_opt    = navid_options();
 <?php endif; ?>
 
 <?php echo do_shortcode( '[navid_blog count="4"]' ); ?>
+</div>
 
 <?php
 get_footer();
