@@ -75,5 +75,7 @@ $navid_opt    = navid_options();
 	</section>
 <?php endif; ?>
 
+<?php echo do_shortcode( '[navid_blog count="4"]' ); ?>
+
 <?php
 get_footer();

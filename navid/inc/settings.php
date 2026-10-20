@@ -113,6 +113,7 @@ function navid_render_settings() {
 				<a href="#navid-slider">صفحه اصلی</a>
 				<a href="#navid-price">جدول قیمت</a>
 				<a href="#navid-soon">پیامک و پیش‌فاکتور (به‌زودی)</a>
+				<a href="#navid-errors">گزارش خطاها</a>
 			</nav>
 
 			<div>
@@ -184,6 +185,11 @@ function navid_render_settings() {
 					<section id="navid-soon" class="navid-admin-card">
 						<h2>پیامک و پیش‌فاکتور</h2>
 						<p>این بخش بعد از ادغام افزونه جدول قیمت در قالب فعال می‌شود.</p>
+					</section>
+
+					<section id="navid-errors" class="navid-admin-card">
+						<h2>گزارش خطاها</h2>
+						<?php if ( class_exists( 'NPT_Log' ) ) { NPT_Log::render(); } else { echo '<p>گزارشی ثبت نشده است.</p>'; } ?>
 					</section>
 
 					<div class="navid-savebar">
