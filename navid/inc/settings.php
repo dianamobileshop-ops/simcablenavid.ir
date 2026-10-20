@@ -11,12 +11,14 @@ defined( 'ABSPATH' ) || exit;
  * Adds the menu entry under Appearance.
  */
 function navid_settings_menu() {
-	add_theme_page(
-		'تنظیمات قالب نوید',
-		'تنظیمات قالب نوید',
+	add_menu_page(
+		'پنل نوید',
+		'پنل نوید',
 		'manage_options',
 		'navid-settings',
-		'navid_render_settings'
+		'navid_render_settings',
+		'dashicons-admin-generic',
+		3
 	);
 }
 add_action( 'admin_menu', 'navid_settings_menu' );
@@ -27,7 +29,7 @@ add_action( 'admin_menu', 'navid_settings_menu' );
  * @param string $hook Current admin page.
  */
 function navid_settings_styles( $hook ) {
-	if ( 'appearance_page_navid-settings' !== $hook ) {
+	if ( 'toplevel_page_navid-settings' !== $hook ) {
 		return;
 	}
 	$css = '
@@ -77,7 +79,7 @@ function navid_save_settings() {
 	);
 	update_option( 'navid_options', $clean );
 
-	wp_safe_redirect( add_query_arg( array( 'page' => 'navid-settings', 'saved' => '1' ), admin_url( 'themes.php' ) ) );
+	wp_safe_redirect( add_query_arg( array( 'page' => 'navid-settings', 'saved' => '1' ), admin_url( 'admin.php' ) ) );
 	exit;
 }
 add_action( 'admin_post_navid_save_settings', 'navid_save_settings' );
@@ -105,10 +107,12 @@ function navid_render_settings() {
 
 		<div class="navid-admin">
 			<nav class="navid-admin-side" aria-label="بخش‌های تنظیمات">
-				<a href="#navid-quick" class="is-on">دسترسی سریع</a>
-				<a href="#navid-look">ظاهر</a>
-				<a href="#navid-header">هدر و نوار بالا</a>
+				<a href="#navid-quick" class="is-on">نمای کلی</a>
+				<a href="#navid-look">پیکربندی نمایش</a>
+				<a href="#navid-header">هدر و فوتر</a>
+				<a href="#navid-slider">صفحه اصلی</a>
 				<a href="#navid-price">جدول قیمت</a>
+				<a href="#navid-soon">پیامک و پیش‌فاکتور (به‌زودی)</a>
 			</nav>
 
 			<div>
@@ -175,6 +179,11 @@ function navid_render_settings() {
 							<label for="navid-slides">هر بنر در یک خط: آدرس عکس | لینک | متن جایگزین</label>
 							<textarea id="navid-slides" name="navid[slides]" rows="5" dir="ltr"><?php echo esc_textarea( $opt['slides'] ); ?></textarea>
 						</div>
+					</section>
+
+					<section id="navid-soon" class="navid-admin-card">
+						<h2>پیامک و پیش‌فاکتور</h2>
+						<p>این بخش بعد از ادغام افزونه جدول قیمت در قالب فعال می‌شود.</p>
 					</section>
 
 					<div class="navid-savebar">
