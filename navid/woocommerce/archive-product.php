@@ -66,6 +66,29 @@ $navid_active  = '' !== $navid_min || '' !== $navid_max || $navid_stock;
 						</div>
 					</details>
 
+					<?php foreach ( wc_get_attribute_taxonomies() as $navid_attr ) : ?>
+						<?php
+						$navid_tax   = wc_attribute_taxonomy_name( $navid_attr->attribute_name );
+						$navid_terms = navid_archive_attribute_terms( $navid_tax );
+						if ( ! $navid_terms ) {
+							continue;
+						}
+						$navid_param  = 'filter_' . $navid_attr->attribute_name;
+						$navid_chosen = isset( $_GET[ $navid_param ] ) ? array_filter( explode( ',', wc_clean( wp_unslash( $_GET[ $navid_param ] ) ) ) ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+						if ( $navid_chosen ) {
+							$navid_active = true;
+						}
+						?>
+						<details class="navid-filter" data-navid-attr="<?php echo esc_attr( $navid_attr->attribute_name ); ?>" <?php echo $navid_chosen ? 'open' : ''; ?>>
+							<summary><?php echo esc_html( $navid_attr->attribute_label ); ?></summary>
+							<div class="navid-filter-terms">
+								<?php foreach ( $navid_terms as $navid_term ) : ?>
+									<label><input type="checkbox" value="<?php echo esc_attr( $navid_term->slug ); ?>" <?php checked( in_array( $navid_term->slug, $navid_chosen, true ) ); ?>> <?php echo esc_html( $navid_term->name ); ?></label>
+								<?php endforeach; ?>
+							</div>
+						</details>
+					<?php endforeach; ?>
+
 					<label class="navid-switch">
 						<span><?php esc_html_e( 'فقط کالاهای موجود در انبار', 'navid' ); ?></span>
 						<input type="checkbox" name="instock" value="1" <?php checked( $navid_stock ); ?>>

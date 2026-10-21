@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'NAVID_VERSION', '1.0.9' );
+define( 'NAVID_VERSION', '1.1.0' );
 
 /**
  * Basic theme support.
@@ -39,6 +39,10 @@ function navid_assets() {
 	wp_enqueue_script( 'navid-header', get_template_directory_uri() . '/assets/js/header.js', array(), NAVID_VERSION, true );
 	// Search in the mobile tab bar focuses the header search field.
 	wp_add_inline_script( 'navid-header', "document.addEventListener('DOMContentLoaded',function(){var a=document.querySelector('[data-navid-search]'),i=document.getElementById('navid-s');if(a&&i){a.addEventListener('click',function(e){e.preventDefault();document.body.classList.toggle('navid-search-open');window.scrollTo({top:0,behavior:'smooth'});i.focus();});}});" );
+	wp_localize_script( 'navid-header', 'NAVID', array( 'ajaxUrl' => admin_url( 'admin-ajax.php' ) ) );
+	if ( function_exists( 'is_woocommerce' ) && ( is_woocommerce() || is_cart() || is_checkout() ) ) {
+		wp_enqueue_script( 'navid-shop', get_template_directory_uri() . '/assets/js/shop.js', array(), NAVID_VERSION, true );
+	}
 	if ( is_front_page() ) {
 		wp_enqueue_script( 'navid-slider', get_template_directory_uri() . '/assets/js/slider.js', array(), NAVID_VERSION, true );
 	}
@@ -78,6 +82,9 @@ require_once get_template_directory() . '/inc/settings.php';
 require_once get_template_directory() . '/inc/woocommerce.php';
 require_once get_template_directory() . '/inc/home.php';
 require_once get_template_directory() . '/inc/blog.php';
+require_once get_template_directory() . '/inc/search.php';
+require_once get_template_directory() . '/inc/performance.php';
+require_once get_template_directory() . '/inc/seo.php';
 // Price table, proforma, SMS and panel code (formerly the navid-price-table plugin).
 require_once get_template_directory() . '/inc/npt/navid-price-table.php';
 

@@ -209,3 +209,77 @@ add_filter( 'woocommerce_breadcrumb_defaults', 'navid_breadcrumb_args' );
 // The theme draws its own sorting links and result count.
 remove_action( 'woocommerce_before_shop_loop', 'woocommerce_result_count', 20 );
 remove_action( 'woocommerce_before_shop_loop', 'woocommerce_catalog_ordering', 30 );
+
+/**
+ * Address of the page that carries the [navid_proforma] form (cached), or ''.
+ *
+ * @return string
+ */
+function navid_proforma_url() {
+	$url = get_transient( 'navid_pf_url' );
+	if ( false === $url ) {
+		$url   = '';
+		$pages = get_posts( array(
+			'post_type'   => 'page',
+			'post_status' => 'publish',
+			's'           => '[navid_proforma',
+			'numberposts' => 5,
+		) );
+		foreach ( $pages as $page ) {
+			if ( has_shortcode( $page->post_content, 'navid_proforma' ) ) {
+				$url = get_permalink( $page );
+				break;
+			}
+		}
+		set_transient( 'navid_pf_url', $url, 6 * HOUR_IN_SECONDS );
+	}
+	return (string) $url;
+}
+add_action( 'save_post_page', function () {
+	delete_transient( 'navid_pf_url' );
+} );
+
+/**
+ * Cart page: a way to ask for a proforma instead of paying online.
+ */
+function navid_cart_proforma_link() {
+	$url = navid_proforma_url();
+	if ( $url ) {
+		echo '<p class="navid-cart-pf"><a class="navid-btn" href="' . esc_url( $url ) . '">' . esc_html__( 'درخواست پیش‌فاکتور', 'navid' ) . '</a></p>';
+	}
+}
+add_action( 'woocommerce_after_cart_table', 'navid_cart_proforma_link' );
+
+/**
+ * Attribute terms used by the products of the current archive (cached for an hour).
+ *
+ * @param string $taxonomy pa_* taxonomy.
+ * @return WP_Term[]
+ */
+function navid_archive_attribute_terms( $taxonomy ) {
+	$scope = ( function_exists( 'is_product_category' ) && is_product_category() ) ? (int) get_queried_object_id() : 0;
+	$key   = 'navid_attr_' . md5( $taxonomy . '|' . $scope . '|' . ( function_exists( 'npt_table_cache_version' ) ? npt_table_cache_version() : 1 ) );
+	$ids   = get_transient( $key );
+	if ( false === $ids ) {
+		$args = array(
+			'status' => 'publish',
+			'limit'  => 500,
+			'return' => 'ids',
+		);
+		if ( $scope ) {
+			$term = get_term( $scope, 'product_cat' );
+			if ( $term && ! is_wp_error( $term ) ) {
+				$args['category'] = array( $term->slug );
+			}
+		}
+		$products = wc_get_products( $args );
+		$terms    = $products ? wp_get_object_terms( $products, $taxonomy, array( 'fields' => 'ids' ) ) : array();
+		$ids      = is_wp_error( $terms ) ? array() : array_values( array_unique( array_map( 'intval', $terms ) ) );
+		set_transient( $key, $ids, HOUR_IN_SECONDS );
+	}
+	if ( ! $ids ) {
+		return array();
+	}
+	$terms = get_terms( array( 'taxonomy' => $taxonomy, 'include' => $ids, 'hide_empty' => true, 'number' => 24 ) );
+	return is_wp_error( $terms ) ? array() : $terms;
+}

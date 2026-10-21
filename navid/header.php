@@ -53,7 +53,8 @@ $tel          = preg_replace( '/[^0-9+]/', '', (string) $navid_opt['phone'] );
 				<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
 			</button>
 			<label class="screen-reader-text" for="navid-s"><?php esc_html_e( 'جستجو', 'navid' ); ?></label>
-			<input id="navid-s" type="search" name="s" placeholder="<?php echo esc_attr( $search_hint ); ?>">
+			<input id="navid-s" type="search" name="s" placeholder="<?php echo esc_attr( $search_hint ); ?>" autocomplete="off">
+			<div class="navid-live" hidden></div>
 		</form>
 
 		<a class="navid-mcart" href="<?php echo esc_url( $cart_url ); ?>" aria-label="<?php esc_attr_e( 'سبد خرید', 'navid' ); ?>">

@@ -2,7 +2,7 @@
 Theme Name: Navid
 Theme URI: https://simcablenavid.ir
 Description: قالب اختصاصی نوید. شامل جدول قیمت و پنل مدیریت در یک بسته.
-Version: 1.0.9
+Version: 1.1.0
 Update URI: https://simcablenavid.ir/navid
 Requires PHP: 7.4
 Text Domain: navid
@@ -2433,4 +2433,158 @@ object {
 	.navid-wrap h1 {
 		font-size: 22px;
 	}
+}
+
+/* ---- 1.1.0: live search, attribute filters, variation chips, proforma button ---- */
+.navid-search {
+	position: relative;
+	overflow: visible;
+}
+
+.navid-live {
+	position: absolute;
+	top: calc(100% + 6px);
+	inset-inline: 0;
+	z-index: 140;
+	background: var(--navid-card);
+	border: 1px solid var(--navid-line);
+	border-radius: 14px;
+	box-shadow: 0 14px 34px rgba(20, 32, 43, .16);
+	overflow: hidden;
+}
+
+.navid-live[hidden] {
+	display: none;
+}
+
+.navid-live-item {
+	display: grid;
+	grid-template-columns: 48px 1fr auto;
+	align-items: center;
+	gap: 12px;
+	padding: 8px 12px;
+	color: var(--navid-ink);
+	text-decoration: none;
+	border-bottom: 1px solid var(--navid-line);
+}
+
+.navid-live-item:hover {
+	background: var(--navid-bg);
+}
+
+.navid-live-item img {
+	width: 48px;
+	height: 48px;
+	object-fit: contain;
+	border-radius: 8px;
+}
+
+.navid-live-name {
+	font-size: 13px;
+	line-height: 1.7;
+}
+
+.navid-live-price {
+	color: var(--navid-primary);
+	font-size: 12px;
+	font-weight: 700;
+	white-space: nowrap;
+}
+
+.navid-live-empty,
+.navid-live-all {
+	display: block;
+	padding: 12px;
+	text-align: center;
+	font-size: 13px;
+	color: var(--navid-muted);
+	text-decoration: none;
+}
+
+.navid-live-all {
+	color: var(--navid-primary);
+	font-weight: 700;
+}
+
+.navid-filter-terms {
+	display: grid;
+	gap: 6px;
+	margin-top: 8px;
+	max-height: 200px;
+	overflow: auto;
+	font-size: 13px;
+}
+
+.navid-filter-terms label {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.navid-var-hidden {
+	display: none !important;
+}
+
+.navid-var-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: 4px 0;
+}
+
+.navid-var-chip {
+	min-width: 56px;
+	padding: 8px 14px;
+	border: 1px solid var(--navid-line);
+	border-radius: 10px;
+	background: var(--navid-card);
+	color: var(--navid-ink);
+	font: inherit;
+	font-size: 13px;
+	cursor: pointer;
+}
+
+.navid-var-chip:hover {
+	border-color: var(--navid-primary);
+}
+
+.navid-var-chip.is-on {
+	border: 2px solid #1d6fd8;
+	color: #1d6fd8;
+	font-weight: 700;
+}
+
+.navid-buy-pf {
+	display: block;
+	margin-top: 10px;
+	padding: 12px;
+	border: 1px solid var(--navid-primary);
+	border-radius: 12px;
+	color: var(--navid-primary);
+	text-align: center;
+	font-weight: 700;
+	text-decoration: none;
+}
+
+.navid-buy-pf:hover {
+	background: var(--navid-primary-soft);
+}
+
+.navid-cart-pf {
+	margin: 12px 0;
+}
+
+@media (max-width: 768px) {
+	.navid-live {
+		position: fixed;
+		inset-inline: 12px;
+		top: 130px;
+		max-height: 60vh;
+		overflow: auto;
+	}
+}
+
+.navid-search button {
+	border-start-start-radius: inherit;
+	border-end-start-radius: inherit;
 }

@@ -204,6 +204,7 @@ function npt_pdf_rate_limit_ok( $bucket = 'pdf' ) {
 		'pf_search' => 60,
 		'pf_save'   => 5,
 		'filter'    => 60,
+		'live'      => 120,
 	);
 	$limit = isset( $limits[ $bucket ] ) ? $limits[ $bucket ] : 20;
 

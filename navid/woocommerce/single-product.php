@@ -71,6 +71,10 @@ while ( have_posts() ) :
 				<?php if ( $navid_visible ) : ?>
 					<div class="navid-buybox-price"><?php woocommerce_template_single_price(); ?></div>
 					<div class="navid-buybox-cart"><?php woocommerce_template_single_add_to_cart(); ?></div>
+					<?php $navid_pf = navid_proforma_url(); ?>
+					<?php if ( $navid_pf ) : ?>
+						<a class="navid-buy-pf" href="<?php echo esc_url( add_query_arg( 'npt_add', $product->get_id(), $navid_pf ) ); ?>"><?php esc_html_e( 'افزودن به پیش‌فاکتور', 'navid' ); ?></a>
+					<?php endif; ?>
 				<?php else : ?>
 					<div class="navid-buybox-price"><span class="navid-call-price"><?php esc_html_e( 'تماس بگیرید', 'navid' ); ?></span></div>
 					<p class="navid-buybox-note"><?php esc_html_e( 'قیمت این کالا تلفنی اعلام می‌شود.', 'navid' ); ?></p>

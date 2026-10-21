@@ -675,6 +675,20 @@ class NPT_Proforma {
 	}
 
 	private static function render_builder( $base, $public = false ) {
+		// «افزودن به پیش‌فاکتور» on a product page opens the form with that product already in it.
+		$preload = null;
+		if ( isset( $_GET['npt_add'] ) && function_exists( 'wc_get_product' ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$pp = wc_get_product( absint( $_GET['npt_add'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( $pp && 'publish' === $pp->get_status() && '' !== $pp->get_price() && is_numeric( $pp->get_price() ) && ! npt_price_hidden( $pp ) ) {
+				$preload = array(
+					'id'    => $pp->get_id(),
+					'name'  => $pp->get_name(),
+					'qty'   => 1,
+					'price' => (float) $pp->get_price(),
+					'meter' => (bool) npt_meter_is_meter_product( $pp->get_id() ),
+				);
+			}
+		}
 		// Prefill from the customers archive: ?pf_tab=new&customer=ID
 		$prefill = array( 'name' => '', 'phone' => '', 'company' => '', 'email' => '', 'address' => '' );
 		if ( ! $public && isset( $_GET['customer'] ) ) { // phpcs:ignore
@@ -1010,6 +1024,10 @@ class NPT_Proforma {
 				}
 			});
 
+			<?php if ( $preload ) : ?>
+			rows.push(<?php echo wp_json_encode( $preload ); ?>);
+			draw();
+			<?php endif; ?>
 			var discountEl = document.getElementById('nptpf-discount');
 			if (discountEl) { discountEl.addEventListener('input', recalc); }
 			var pctEl = document.getElementById('nptpf-pct');
