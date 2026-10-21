@@ -2,7 +2,7 @@
 Theme Name: Navid
 Theme URI: https://simcablenavid.ir
 Description: قالب اختصاصی نوید. شامل جدول قیمت و پنل مدیریت در یک بسته.
-Version: 1.4.2
+Version: 1.4.3
 Update URI: https://simcablenavid.ir/navid
 Requires PHP: 7.4
 Text Domain: navid
@@ -26,8 +26,10 @@ License: GPL v2 or later
 }
 
 :root {
-	--navid-primary: #1faa6b;
-	--navid-primary-soft: #e9f8f0;
+	--navid-primary: #1d4f9f;
+	--navid-primary-soft: #e8eef8;
+	--navid-accent: #e56a00;
+	--navid-footer: #0f2342;
 	--navid-ink: #1f2430;
 	--navid-muted: #6b7280;
 	--navid-bg: #f4f6f8;
@@ -181,7 +183,7 @@ img {
 	padding: 0 5px;
 	margin-inline-start: 4px;
 	border-radius: 999px;
-	background: #e63946;
+	background: var(--navid-accent);
 	color: #fff;
 	font-size: 11px;
 	font-style: normal;
@@ -279,16 +281,65 @@ img {
 	}
 
 	.navid-nav {
-		display: none;
-		margin: 8px 12px 0;
+		position: fixed;
+		inset-block: 0;
+		inset-inline-start: 0;
+		z-index: 400;
+		display: block;
+		width: min(86vw, 340px);
+		margin: 0;
+		padding-top: 56px;
+		overflow-y: auto;
+		overscroll-behavior: contain;
 		background: var(--navid-card);
-		border-radius: 18px;
-		border: 0;
-		box-shadow: 0 2px 12px rgba(40, 20, 80, .08);
+		border-radius: 18px 0 0 18px;
+		box-shadow: -8px 0 32px rgba(16, 26, 36, .22);
+		transform: translateX(100%);
+		visibility: hidden;
+		transition: transform .32s cubic-bezier(.22, .8, .3, 1), visibility 0s linear .32s;
 	}
 
 	.navid-nav.is-open {
-		display: block;
+		transform: none;
+		visibility: visible;
+		transition: transform .32s cubic-bezier(.22, .8, .3, 1), visibility 0s;
+	}
+
+	.navid-nav-close {
+		position: absolute;
+		top: 10px;
+		inset-inline-end: 12px;
+		display: grid;
+		place-items: center;
+		width: 40px;
+		height: 40px;
+		border: 0;
+		border-radius: 12px;
+		background: var(--navid-bg);
+		color: var(--navid-ink);
+		font-size: 22px;
+		line-height: 1;
+		cursor: pointer;
+	}
+
+	.navid-nav-backdrop {
+		position: fixed;
+		inset: 0;
+		z-index: 399;
+		background: rgba(16, 26, 36, .5);
+		opacity: 0;
+		visibility: hidden;
+		transition: opacity .32s ease, visibility 0s linear .32s;
+	}
+
+	.navid-nav-backdrop.is-on {
+		opacity: 1;
+		visibility: visible;
+		transition: opacity .32s ease, visibility 0s;
+	}
+
+	body.navid-nav-open {
+		overflow: hidden;
 	}
 
 	.navid-menu {
@@ -1527,7 +1578,7 @@ img {
 	inset-inline-start: 6px;
 	padding: 2px 10px;
 	border-radius: 999px;
-	background: #e63946;
+	background: var(--navid-accent);
 	color: #fff;
 	font-size: 11px;
 	font-weight: 700;
@@ -1812,7 +1863,7 @@ img {
 
 .navid-product-cats,
 .navid-product-cats a {
-	color: #1d6fd8;
+	color: var(--navid-primary);
 	font-size: 13px;
 	text-decoration: none;
 }
@@ -1946,7 +1997,7 @@ img {
 	border: 0;
 	border-radius: 12px;
 	padding: 14px;
-	background: #ef4056;
+	background: var(--navid-accent);
 	color: #fff;
 	font: inherit;
 	font-weight: 800;
@@ -2232,7 +2283,7 @@ object {
 .woocommerce a.button.alt,
 .woocommerce button.button.alt,
 .woocommerce input.button.alt {
-	background: #ef4056;
+	background: var(--navid-accent);
 }
 
 .woocommerce-message,
@@ -2373,8 +2424,8 @@ object {
 }
 
 .navid-var-chip.is-on {
-	border: 2px solid #1d6fd8;
-	color: #1d6fd8;
+	border: 2px solid var(--navid-primary);
+	color: var(--navid-primary);
 	font-weight: 700;
 }
 
@@ -2947,7 +2998,7 @@ body.mqb-has-bar .navid-toast {
 		min-height: 44px;
 		border: 0;
 		border-radius: 12px;
-		background: #ef4056;
+		background: var(--navid-accent);
 		color: #fff;
 		font: inherit;
 		font-weight: 800;
@@ -3071,7 +3122,7 @@ body.mqb-has-bar .navid-toast {
 	padding: 0;
 	border: 0;
 	background: none;
-	color: #1d6fd8;
+	color: var(--navid-primary);
 	font: inherit;
 	font-size: 13px;
 	text-decoration: none;
@@ -3181,7 +3232,7 @@ body.mqb-has-bar .navid-toast {
 }
 
 .navid-acc-edit {
-	color: #1d6fd8;
+	color: var(--navid-primary);
 	text-decoration: none;
 	font-size: 18px;
 }
@@ -3237,12 +3288,12 @@ body.mqb-has-bar .navid-toast {
 .navid-dash-head h2 {
 	margin: 0;
 	padding-bottom: 8px;
-	border-bottom: 2px solid #ef4056;
+	border-bottom: 2px solid var(--navid-accent);
 	font-size: 17px;
 }
 
 .navid-dash-head a {
-	color: #1d6fd8;
+	color: var(--navid-primary);
 	font-size: 13px;
 	text-decoration: none;
 }
@@ -3707,10 +3758,10 @@ ul.products::after {
 	width: 100%;
 	min-height: 40px;
 	padding: 8px 10px;
-	border: 1px solid #ef4056;
+	border: 1px solid var(--navid-accent);
 	border-radius: 10px;
 	background: #fff;
-	color: #ef4056;
+	color: var(--navid-accent);
 	font: inherit;
 	font-size: 13px;
 	font-weight: 700;
@@ -3720,7 +3771,7 @@ ul.products::after {
 }
 
 .navid-card-cart .button:hover {
-	background: #ef4056;
+	background: var(--navid-accent);
 	color: #fff;
 }
 
@@ -3768,7 +3819,7 @@ ul.products::after {
 
 /* ---- 1.4.0: footer ---- */
 .navid-footer {
-	--ft-bg: #101a24;
+	--ft-bg: var(--navid-footer);
 	--ft-ink: #c9d3dd;
 	--ft-line: rgba(255, 255, 255, .08);
 	position: relative;
@@ -4329,5 +4380,43 @@ ul.products::after {
 	.navid-entry-body .nptpf .nptpf-done-acts button {
 		flex: 1 1 100%;
 		text-align: center;
+	}
+}
+
+/* ---- 1.4.3: cart icon on add-to-cart buttons, menu motion ---- */
+:root {
+	--navid-cart-ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 6h15l-1.5 9h-12zM6 6 5 3H2'/%3E%3Ccircle cx='9' cy='20' r='1.5'/%3E%3Ccircle cx='18' cy='20' r='1.5'/%3E%3C/svg%3E");
+}
+
+.navid-card-cart .button::before,
+.navid-buybox .single_add_to_cart_button::before,
+.navid-stickybar button::before {
+	content: "";
+	display: inline-block;
+	flex: none;
+	width: 18px;
+	height: 18px;
+	margin-inline-end: 8px;
+	vertical-align: -4px;
+	background: currentColor;
+	-webkit-mask: var(--navid-cart-ico) center / contain no-repeat;
+	mask: var(--navid-cart-ico) center / contain no-repeat;
+}
+
+.navid-card-cart .button.loading::before {
+	display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.navid-nav,
+	.navid-nav-backdrop {
+		transition: none;
+	}
+}
+
+@media (min-width: 769px) {
+	.navid-nav-close,
+	.navid-nav-backdrop {
+		display: none;
 	}
 }

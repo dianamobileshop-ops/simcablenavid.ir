@@ -109,10 +109,14 @@ function navid_save_settings() {
 	check_admin_referer( 'navid_save_settings' );
 
 	$raw   = isset( $_POST['navid'] ) ? wp_unslash( $_POST['navid'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-	$color = isset( $raw['primary_color'] ) ? sanitize_hex_color( $raw['primary_color'] ) : '';
+	$color  = isset( $raw['primary_color'] ) ? sanitize_hex_color( $raw['primary_color'] ) : '';
+	$accent = isset( $raw['accent_color'] ) ? sanitize_hex_color( $raw['accent_color'] ) : '';
+	$footer = isset( $raw['footer_bg'] ) ? sanitize_hex_color( $raw['footer_bg'] ) : '';
 
 	$clean = array(
-		'primary_color' => $color ? $color : '#1faa6b',
+		'primary_color' => $color ? $color : '#1d4f9f',
+		'accent_color'  => $accent ? $accent : '#e56a00',
+		'footer_bg'     => $footer ? $footer : '#0f2342',
 		'sticky_header' => empty( $raw['sticky_header'] ) ? '0' : '1',
 		'toolbar_title' => isset( $raw['toolbar_title'] ) ? sanitize_text_field( $raw['toolbar_title'] ) : '',
 		'toolbar_sub'   => isset( $raw['toolbar_sub'] ) ? sanitize_text_field( $raw['toolbar_sub'] ) : '',
@@ -178,7 +182,7 @@ function navid_save_settings() {
  */
 function navid_settings_groups() {
 	return array(
-		't-look'    => array( 'primary_color' ),
+		't-look'    => array( 'primary_color', 'accent_color', 'footer_bg' ),
 		't-header'  => array( 'sticky_header', 'special_label', 'special_url' ),
 		't-contact' => array( 'phone', 'address', 'email', 'hours' ),
 		't-footer'  => array( 'about', 'ft_features_show', 'ft_features', 'enamad', 'copyright', 'social_telegram', 'social_instagram', 'social_whatsapp', 'social_eitaa', 'social_bale', 'social_aparat', 'social_linkedin' ),
@@ -208,7 +212,7 @@ function navid_admin_tree() {
 			'label' => 'ظاهر سایت',
 			'icon'  => 'dashicons-art',
 			'items' => array(
-				't-look'    => array( 'رنگ اصلی', $tab( 't-look' ) ),
+				't-look'    => array( 'رنگ‌ها', $tab( 't-look' ) ),
 				't-header'  => array( 'هدر', $tab( 't-header' ) ),
 				't-footer'  => array( 'فوتر، شبکه‌های اجتماعی و اینماد', $tab( 't-footer' ) ),
 				't-date'    => array( 'تاریخ شمسی و اعداد فارسی', $tab( 't-date' ) ),
@@ -401,10 +405,22 @@ function navid_settings_section( $key, $opt ) {
 		case 't-look':
 			?>
 			<section class="navid-admin-card">
-				<h2>ظاهر</h2>
+				<h2>رنگ‌ها</h2>
+			<p class="description">رنگ‌های پیش‌فرض از لوگوی نوید (آبی سرمه‌ای و نارنجی) گرفته شده‌اند.</p>
 			<div class="navid-row">
-				<label for="navid-primary">رنگ اصلی</label>
-				<input id="navid-primary" type="color" name="navid[primary_color]" value="<?php echo esc_attr( $opt['primary_color'] ); ?>">
+				<label for="navid-primary">رنگ اصلی (دکمه‌ها، لینک‌ها، تب‌های فعال)</label>
+				<input id="navid-primary" type="color" name="navid[primary_color]" value="<?php echo esc_attr( $opt['primary_color'] ); ?>" data-default="#1d4f9f">
+			</div>
+			<div class="navid-row">
+				<label for="navid-accent">رنگ دکمهٔ افزودن به سبد و نشان تعداد سبد</label>
+				<input id="navid-accent" type="color" name="navid[accent_color]" value="<?php echo esc_attr( $opt['accent_color'] ); ?>" data-default="#e56a00">
+			</div>
+			<div class="navid-row">
+				<label for="navid-footer-bg">رنگ پس‌زمینهٔ فوتر</label>
+				<input id="navid-footer-bg" type="color" name="navid[footer_bg]" value="<?php echo esc_attr( $opt['footer_bg'] ); ?>" data-default="#0f2342">
+			</div>
+			<div class="navid-row">
+				<button type="button" class="button" onclick="this.closest('section').querySelectorAll('input[data-default]').forEach(function(i){i.value=i.dataset.default;});">بازگشت به رنگ‌های برند</button>
 			</div>
 			</section>
 			<?php

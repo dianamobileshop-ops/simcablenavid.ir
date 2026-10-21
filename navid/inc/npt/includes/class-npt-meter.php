@@ -264,6 +264,14 @@ function npt_meter_loop_button( $button_html, $product, $args = array() ) {
 		$classes = implode( ' ', $classes );
 	}
 	$attributes = isset( $args['attributes'] ) ? $args['attributes'] : '';
+	// WooCommerce passes the attributes as an array (name => value); the link needs a string.
+	if ( is_array( $attributes ) ) {
+		$pairs = array();
+		foreach ( $attributes as $name => $value ) {
+			$pairs[] = esc_attr( $name ) . '="' . esc_attr( is_array( $value ) ? implode( ' ', $value ) : $value ) . '"';
+		}
+		$attributes = implode( ' ', $pairs );
+	}
 
 	return sprintf(
 		'<a href="%s" data-quantity="1" class="%s" %s>%s</a>',

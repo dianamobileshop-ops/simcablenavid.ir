@@ -8,10 +8,33 @@
 		var toggle = document.querySelector('[data-navid-menu-toggle]');
 		var nav = document.getElementById('navid-nav');
 		if (toggle && nav) {
+			// Phones: the menu is a drawer that slides in from the right.
+			var backdrop = document.createElement('div');
+			backdrop.className = 'navid-nav-backdrop';
+			document.body.appendChild(backdrop);
+			var closeBtn = document.createElement('button');
+			closeBtn.type = 'button';
+			closeBtn.className = 'navid-nav-close';
+			closeBtn.setAttribute('aria-label', 'بستن منو');
+			closeBtn.textContent = '×';
+			nav.insertBefore(closeBtn, nav.firstChild);
+
+			var setOpen = function (open) {
+				toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+				nav.classList.toggle('is-open', open);
+				backdrop.classList.toggle('is-on', open);
+				document.body.classList.toggle('navid-nav-open', open);
+			};
 			toggle.addEventListener('click', function () {
-				var open = toggle.getAttribute('aria-expanded') === 'true';
-				toggle.setAttribute('aria-expanded', open ? 'false' : 'true');
-				nav.classList.toggle('is-open', !open);
+				setOpen(toggle.getAttribute('aria-expanded') !== 'true');
+			});
+			closeBtn.addEventListener('click', function () { setOpen(false); });
+			backdrop.addEventListener('click', function () { setOpen(false); });
+			document.addEventListener('keydown', function (e) {
+				if (e.key === 'Escape') { setOpen(false); }
+			});
+			window.matchMedia('(min-width: 769px)').addEventListener('change', function (e) {
+				if (e.matches) { setOpen(false); }
 			});
 		}
 

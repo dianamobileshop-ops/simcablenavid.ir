@@ -22,7 +22,7 @@ $tel          = preg_replace( '/[^0-9+]/', '', (string) $navid_opt['phone'] );
 	<meta charset="<?php bloginfo( 'charset' ); ?>">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<?php wp_head(); ?>
-	<style>:root{--navid-primary:<?php echo esc_html( $navid_opt['primary_color'] ); ?>}
+	<style>:root{--navid-primary:<?php echo esc_html( $navid_opt['primary_color'] ); ?>;--navid-primary-soft:color-mix(in srgb,<?php echo esc_html( $navid_opt['primary_color'] ); ?> 10%,#fff);--navid-accent:<?php echo esc_html( $navid_opt['accent_color'] ); ?>;--navid-footer:<?php echo esc_html( $navid_opt['footer_bg'] ); ?>}
 	</style>
 </head>
 <body <?php body_class(); ?>>

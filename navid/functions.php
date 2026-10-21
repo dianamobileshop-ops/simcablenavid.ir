@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'NAVID_VERSION', '1.4.2' );
+define( 'NAVID_VERSION', '1.4.3' );
 
 /**
  * Whether WooCommerce is running. Every shop feature checks this, so the theme works
@@ -131,7 +131,9 @@ add_action( 'wp_enqueue_scripts', 'navid_assets' );
  */
 function navid_options() {
 	$defaults = array(
-		'primary_color' => '#1faa6b',
+		'primary_color' => '#1d4f9f',
+		'accent_color'  => '#e56a00',
+		'footer_bg'     => '#0f2342',
 		'show_topbar'   => '1',
 		'sticky_header' => '1',
 		'toolbar_title' => 'دریافت لیست قیمت رسمی سیم و کابل نوید',
