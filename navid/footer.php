@@ -109,11 +109,21 @@ $navid_price_url = function_exists( 'npt_online_view_url' ) ? npt_online_view_ur
 		<span><?php esc_html_e( 'سبد خرید', 'navid' ); ?></span>
 		<?php echo navid_cart_count_html( $cart_count ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 	</a>
-	<a href="<?php echo esc_url( $account_url ); ?>">
+	<a href="<?php echo esc_url( $account_url ); ?>"<?php echo is_user_logged_in() ? '' : ' data-navid-login'; ?>>
 		<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
 		<span><?php esc_html_e( 'حساب کاربری', 'navid' ); ?></span>
 	</a>
 </nav>
+<?php endif; ?>
+
+<?php if ( function_exists( 'is_account_page' ) && ! is_user_logged_in() && ! is_account_page() && ! is_checkout() ) : ?>
+<div class="navid-modal" id="navid-login-modal" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'ورود | ثبت‌نام', 'navid' ); ?>" hidden>
+	<div class="navid-modal-backdrop"></div>
+	<div class="navid-modal-dialog">
+		<button type="button" class="navid-modal-close" aria-label="<?php esc_attr_e( 'بستن', 'navid' ); ?>">×</button>
+		<?php get_template_part( 'template-parts/login-card', null, array( 'id' => 'modal', 'redirect' => home_url( add_query_arg( array() ) ) ) ); ?>
+	</div>
+</div>
 <?php endif; ?>
 
 <?php wp_footer(); ?>

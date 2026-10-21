@@ -2,7 +2,7 @@
 Theme Name: Navid
 Theme URI: https://simcablenavid.ir
 Description: قالب اختصاصی نوید. شامل جدول قیمت و پنل مدیریت در یک بسته.
-Version: 1.2.0
+Version: 1.3.0
 Update URI: https://simcablenavid.ir/navid
 Requires PHP: 7.4
 Text Domain: navid
@@ -3687,5 +3687,213 @@ object {
 
 	.navid-shop-about {
 		padding: 14px;
+	}
+}
+
+/* ---- 1.3.0: login pop-up, card tabs ---- */
+.navid-modal {
+	position: fixed;
+	inset: 0;
+	z-index: 100000;
+	display: grid;
+	place-items: center;
+	padding: 16px;
+	opacity: 0;
+	transition: opacity .2s ease;
+}
+
+.navid-modal[hidden] {
+	display: none;
+}
+
+.navid-modal.is-open {
+	opacity: 1;
+}
+
+.navid-modal-backdrop {
+	position: absolute;
+	inset: 0;
+	background: rgba(14, 20, 31, .55);
+	backdrop-filter: blur(3px);
+}
+
+.navid-modal-dialog {
+	position: relative;
+	width: min(440px, 100%);
+	max-height: calc(100vh - 32px);
+	overflow: auto;
+	border-radius: 20px;
+	transform: translateY(14px) scale(.98);
+	transition: transform .25s ease;
+}
+
+.navid-modal.is-open .navid-modal-dialog {
+	transform: none;
+}
+
+.navid-modal-dialog .navid-auth-card {
+	width: 100%;
+	margin: 0;
+	box-shadow: 0 24px 70px rgba(8, 18, 30, .35);
+}
+
+.navid-modal-close {
+	position: absolute;
+	top: 10px;
+	inset-inline-start: 10px;
+	z-index: 2;
+	display: grid;
+	place-items: center;
+	width: 36px;
+	height: 36px;
+	border: 0;
+	border-radius: 50%;
+	background: var(--navid-bg);
+	color: var(--navid-ink);
+	font-size: 24px;
+	line-height: 1;
+	cursor: pointer;
+}
+
+body.navid-modal-open {
+	overflow: hidden;
+}
+
+.navid-auth-tablink {
+	flex: 1;
+	padding: 10px 8px;
+	border-radius: 10px;
+	color: var(--navid-muted);
+	font-weight: 700;
+	text-align: center;
+	text-decoration: none;
+}
+
+.navid-reg-cap {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.navid-auth-tabs button {
+	font-size: 13px;
+}
+
+/* Product grids everywhere (shop, category, related, up-sells) */
+:where(ul.products[class*="columns-"]),
+:where(.navid-single-product ul.products) {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 12px;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+ul.products::before,
+ul.products::after {
+	content: none !important;
+	display: none !important;
+}
+
+.woocommerce ul.products li.product.navid-card,
+.woocommerce-page ul.products li.product.navid-card,
+.woocommerce ul.products[class*="columns-"] li.product.navid-card,
+.navid-single-product ul.products li.product.navid-card {
+	width: auto !important;
+	float: none !important;
+	margin: 0 !important;
+	clear: none !important;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 12px;
+	background: var(--navid-card);
+	border: 1px solid var(--navid-line);
+	border-radius: 14px;
+}
+
+.navid-shop-main ul.products li.product.navid-card {
+	border-radius: 0;
+	border: 0;
+	border-inline-start: 1px solid var(--navid-line);
+	border-bottom: 1px solid var(--navid-line);
+	background: transparent;
+}
+
+.navid-single-product section.related > h2,
+.navid-single-product section.upsells > h2 {
+	margin: 0 0 12px;
+	font-size: 18px;
+}
+
+.navid-card-cart {
+	margin-top: 4px;
+}
+
+.navid-card-cart .button,
+.navid-card-cart a.button {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	min-height: 40px;
+	padding: 8px 10px;
+	border: 1px solid #ef4056;
+	border-radius: 10px;
+	background: #fff;
+	color: #ef4056;
+	font: inherit;
+	font-size: 13px;
+	font-weight: 700;
+	text-decoration: none;
+	cursor: pointer;
+	transition: background .2s ease, color .2s ease;
+}
+
+.navid-card-cart .button:hover {
+	background: #ef4056;
+	color: #fff;
+}
+
+.navid-card-cart .button.loading {
+	opacity: .6;
+	pointer-events: none;
+}
+
+.navid-card-cart .button.added {
+	background: var(--navid-primary);
+	border-color: var(--navid-primary);
+	color: #fff;
+}
+
+.navid-card-cart .button.loading::after,
+.navid-card-cart .button.added::after {
+	font-family: inherit;
+	content: "";
+	margin: 0;
+}
+
+.navid-card-cart .added_to_cart {
+	display: none;
+}
+
+@media (max-width: 1100px) {
+	.navid-single-product ul.products,
+	.navid-single-product section.related ul.products,
+	.navid-single-product section.upsells ul.products {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 600px) {
+	.navid-single-product ul.products {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 8px;
+	}
+
+	.navid-card-cart .button {
+		min-height: 36px;
+		font-size: 12px;
 	}
 }

@@ -285,4 +285,16 @@
 	}
 
 	document.addEventListener('DOMContentLoaded', initCart);
+
+	// ---- Add to cart from the product grid (WooCommerce does the AJAX; the theme adds the animation).
+	document.addEventListener('DOMContentLoaded', function () {
+		if (!window.jQuery) { return; }
+		window.jQuery(document.body).on('added_to_cart', function (e, fragments, hash, button) {
+			var btn = button && button[0] ? button[0] : null;
+			var card = btn ? btn.closest('.navid-card') : null;
+			var img = card ? card.querySelector('.navid-card-img img') : null;
+			fly(img);
+			toast(T.added || 'OK', false);
+		});
+	});
 })();

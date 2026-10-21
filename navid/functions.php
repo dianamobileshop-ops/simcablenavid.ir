@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'NAVID_VERSION', '1.2.0' );
+define( 'NAVID_VERSION', '1.3.0' );
 
 /**
  * Basic theme support.
@@ -59,7 +59,7 @@ function navid_assets() {
 			'nonce'   => wp_create_nonce( 'navid_cart_pf' ),
 		) );
 	}
-	if ( function_exists( 'is_account_page' ) && is_account_page() && ! is_user_logged_in() ) {
+	if ( function_exists( 'wc_get_page_permalink' ) && ! is_user_logged_in() ) {
 		wp_enqueue_script( 'navid-auth', get_template_directory_uri() . '/assets/js/auth.js', array(), NAVID_VERSION, true );
 		$redirect = isset( $_GET['redirect_to'] ) ? wp_validate_redirect( esc_url_raw( wp_unslash( $_GET['redirect_to'] ) ), '' ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		wp_localize_script( 'navid-auth', 'NAVIDAUTH', array(

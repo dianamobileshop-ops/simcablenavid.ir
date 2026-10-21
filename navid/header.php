@@ -63,7 +63,7 @@ $tel          = preg_replace( '/[^0-9+]/', '', (string) $navid_opt['phone'] );
 		</a>
 
 		<div class="navid-desk-actions">
-			<a class="navid-account" href="<?php echo esc_url( $account_url ); ?>">
+			<a class="navid-account" href="<?php echo esc_url( $account_url ); ?>"<?php echo is_user_logged_in() ? '' : ' data-navid-login'; ?>>
 				<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
 				<?php echo esc_html( is_user_logged_in() ? __( 'حساب کاربری', 'navid' ) : __( 'ورود / ثبت نام', 'navid' ) ); ?>
 			</a>

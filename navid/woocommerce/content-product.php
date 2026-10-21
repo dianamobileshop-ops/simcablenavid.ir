@@ -43,4 +43,8 @@ $rating  = (float) $product->get_average_rating();
 			<a class="navid-call-price" href="<?php echo esc_url( get_permalink() ); ?>"><?php esc_html_e( 'تماس بگیرید', 'navid' ); ?></a>
 		<?php endif; ?>
 	</div>
+
+	<?php if ( $visible ) : ?>
+		<div class="navid-card-cart"><?php woocommerce_template_loop_add_to_cart(); ?></div>
+	<?php endif; ?>
 </li>
