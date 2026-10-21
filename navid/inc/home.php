@@ -51,6 +51,18 @@ function navid_home_categories() {
 	if ( ! taxonomy_exists( 'product_cat' ) ) {
 		return array();
 	}
+	$opt      = navid_options();
+	$selected = array_filter( array_map( 'absint', (array) $opt['home_cats'] ) );
+	if ( $selected ) {
+		// The categories picked in the panel, in the order they are listed there.
+		$terms = get_terms( array(
+			'taxonomy'   => 'product_cat',
+			'include'    => $selected,
+			'orderby'    => 'include',
+			'hide_empty' => false,
+		) );
+		return is_wp_error( $terms ) ? array() : $terms;
+	}
 	$terms = get_terms( array(
 		'taxonomy'   => 'product_cat',
 		'parent'     => 0,

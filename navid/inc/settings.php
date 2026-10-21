@@ -110,6 +110,10 @@ function navid_save_settings() {
 		'toolbar_sub'   => isset( $raw['toolbar_sub'] ) ? sanitize_text_field( $raw['toolbar_sub'] ) : '',
 		'price_url'     => isset( $raw['price_url'] ) ? esc_url_raw( $raw['price_url'] ) : '',
 		'slides'        => isset( $raw['slides'] ) ? sanitize_textarea_field( $raw['slides'] ) : '',
+		'home_cats'     => isset( $raw['home_cats'] ) ? array_values( array_filter( array_map( 'absint', (array) $raw['home_cats'] ) ) ) : array(),
+		'cats_effect'   => ( isset( $raw['cats_effect'] ) && in_array( $raw['cats_effect'], array( 'none', 'lift', 'zoom', 'ring', 'tilt', 'shine' ), true ) ) ? $raw['cats_effect'] : 'lift',
+		'cats_shape'    => ( isset( $raw['cats_shape'] ) && in_array( $raw['cats_shape'], array( 'circle', 'rounded', 'square' ), true ) ) ? $raw['cats_shape'] : 'circle',
+		'cats_cols'     => isset( $raw['cats_cols'] ) ? min( 8, max( 3, absint( $raw['cats_cols'] ) ) ) : 6,
 		'special_label' => isset( $raw['special_label'] ) ? sanitize_text_field( $raw['special_label'] ) : '',
 		'special_url'   => isset( $raw['special_url'] ) ? esc_url_raw( $raw['special_url'] ) : '',
 		'email'         => isset( $raw['email'] ) ? sanitize_email( $raw['email'] ) : '',
@@ -148,6 +152,7 @@ function navid_admin_tree() {
 				'a-look'   => array( 'ظاهر و رنگ', $base . '#navid-look' ),
 				'a-header' => array( 'هدر و فوتر', $base . '#navid-header' ),
 				'a-bar'    => array( 'نوار جدول قیمت', $base . '#navid-price' ),
+				'a-cats'   => array( 'دسته‌بندی‌های صفحه اصلی', $base . '#navid-cats' ),
 				'a-slider' => array( 'بنرهای صفحه اصلی', $base . '#navid-slider' ),
 			),
 		),
@@ -423,6 +428,53 @@ function navid_render_settings() {
 			<div class="navid-row">
 				<label for="navid-price-url">آدرس صفحه جدول قیمت</label>
 				<input id="navid-price-url" type="text" name="navid[price_url]" value="<?php echo esc_attr( $opt['price_url'] ); ?>" placeholder="https://" dir="ltr">
+			</div>
+		</section>
+
+		<section id="navid-cats" class="navid-admin-card">
+			<h2>دسته‌بندی‌های صفحه اصلی</h2>
+			<div class="navid-row">
+				<label for="navid-cats-effect">افکت تصویر دسته‌ها</label>
+				<select id="navid-cats-effect" name="navid[cats_effect]">
+					<?php
+					foreach ( array( 'none' => 'بدون افکت', 'lift' => 'بالا آمدن با سایه', 'zoom' => 'بزرگ‌نمایی تصویر', 'ring' => 'حلقهٔ رنگی', 'tilt' => 'چرخش ملایم', 'shine' => 'درخشش' ) as $navid_k => $navid_l ) {
+						printf( '<option value="%s"%s>%s</option>', esc_attr( $navid_k ), selected( $opt['cats_effect'], $navid_k, false ), esc_html( $navid_l ) );
+					}
+					?>
+				</select>
+			</div>
+			<div class="navid-row">
+				<label for="navid-cats-shape">شکل تصویر</label>
+				<select id="navid-cats-shape" name="navid[cats_shape]">
+					<?php
+					foreach ( array( 'circle' => 'دایره', 'rounded' => 'گوشه‌گرد', 'square' => 'مربع' ) as $navid_k => $navid_l ) {
+						printf( '<option value="%s"%s>%s</option>', esc_attr( $navid_k ), selected( $opt['cats_shape'], $navid_k, false ), esc_html( $navid_l ) );
+					}
+					?>
+				</select>
+			</div>
+			<div class="navid-row">
+				<label for="navid-cats-cols">تعداد ستون در دسکتاپ</label>
+				<input id="navid-cats-cols" type="number" min="3" max="8" name="navid[cats_cols]" value="<?php echo esc_attr( (int) $opt['cats_cols'] ); ?>" style="width:80px">
+			</div>
+			<div class="navid-row">
+				<label>دسته‌هایی که نمایش داده شوند</label>
+				<div>
+					<p class="description">هیچ‌کدام انتخاب نشود = همهٔ دسته‌های اصلی. ترتیب نمایش همان ترتیب فهرست زیر است.</p>
+					<?php
+					$navid_all = taxonomy_exists( 'product_cat' ) ? get_terms( array( 'taxonomy' => 'product_cat', 'hide_empty' => false, 'orderby' => 'name' ) ) : array();
+					if ( ! is_wp_error( $navid_all ) ) :
+						foreach ( $navid_all as $navid_term ) :
+							?>
+							<label style="display:inline-flex;align-items:center;gap:6px;margin:0 0 8px 16px">
+								<input type="checkbox" name="navid[home_cats][]" value="<?php echo (int) $navid_term->term_id; ?>" <?php checked( in_array( (int) $navid_term->term_id, array_map( 'intval', (array) $opt['home_cats'] ), true ) ); ?>>
+								<?php echo esc_html( ( $navid_term->parent ? '— ' : '' ) . $navid_term->name ); ?>
+							</label>
+							<?php
+						endforeach;
+					endif;
+					?>
+				</div>
 			</div>
 		</section>
 

@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'NAVID_VERSION', '1.0.8' );
+define( 'NAVID_VERSION', '1.0.9' );
 
 /**
  * Basic theme support.
@@ -60,6 +60,10 @@ function navid_options() {
 		'price_url'     => '',
 		'slides'        => '',
 		// Same contact details the price list header/footer already uses.
+		'home_cats'     => array(),
+		'cats_effect'   => 'lift',
+		'cats_shape'    => 'circle',
+		'cats_cols'     => 6,
 		'email'         => '',
 		'special_label' => '',
 		'special_url'   => '',
@@ -120,3 +124,33 @@ function navid_logo_html() {
 	}
 	return esc_html( get_bloginfo( 'name' ) );
 }
+
+/**
+ * Whether the theme draws its own bottom tab bar on phones. The price table code has a
+ * configurable bottom bar too; when that one is on, the theme stays out of its way.
+ *
+ * @return bool
+ */
+function navid_tabbar_enabled() {
+	if ( class_exists( 'NPT_Bar' ) ) {
+		$settings = NPT_Bar::settings();
+		if ( ! empty( $settings['enabled'] ) ) {
+			return false;
+		}
+	}
+	return true;
+}
+
+/**
+ * Body classes: the layout leaves room for whichever bottom bar is shown.
+ *
+ * @param array $classes Classes.
+ * @return array
+ */
+function navid_body_class( $classes ) {
+	if ( navid_tabbar_enabled() ) {
+		$classes[] = 'navid-has-tabbar';
+	}
+	return $classes;
+}
+add_filter( 'body_class', 'navid_body_class' );

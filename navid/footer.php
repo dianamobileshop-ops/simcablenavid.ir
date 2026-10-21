@@ -90,6 +90,7 @@ $navid_price_url = function_exists( 'npt_online_view_url' ) ? npt_online_view_ur
 	</div>
 </footer>
 
+<?php if ( navid_tabbar_enabled() ) : ?>
 <nav class="navid-tabbar" aria-label="<?php esc_attr_e( 'دسترسی سریع', 'navid' ); ?>">
 	<a href="<?php echo esc_url( home_url( '/' ) ); ?>">
 		<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"/></svg>
@@ -113,6 +114,7 @@ $navid_price_url = function_exists( 'npt_online_view_url' ) ? npt_online_view_ur
 		<span><?php esc_html_e( 'حساب کاربری', 'navid' ); ?></span>
 	</a>
 </nav>
+<?php endif; ?>
 
 <?php wp_footer(); ?>
 </body>

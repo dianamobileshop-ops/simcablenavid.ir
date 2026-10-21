@@ -2,7 +2,7 @@
 Theme Name: Navid
 Theme URI: https://simcablenavid.ir
 Description: قالب اختصاصی نوید. شامل جدول قیمت و پنل مدیریت در یک بسته.
-Version: 1.0.8
+Version: 1.0.9
 Update URI: https://simcablenavid.ir/navid
 Requires PHP: 7.4
 Text Domain: navid
@@ -1054,8 +1054,16 @@ img {
 		display: none;
 	}
 
-	body {
+	body.navid-has-tabbar {
 		padding-bottom: 72px;
+	}
+
+	body.mqb-has-bar {
+		padding-bottom: 92px;
+	}
+
+	.navid-has-tabbar .mqb-floating-trigger {
+		bottom: 88px !important;
 	}
 }
 
@@ -2225,5 +2233,204 @@ img {
 	.navid-single-product section.related ul.products,
 	.navid-single-product section.upsells ul.products {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+/* ---- 1.0.9: home category grid (shape, columns, hover effects) + responsive baseline ---- */
+.navid-cat-grid {
+	grid-template-columns: repeat(var(--navid-cols, 6), minmax(0, 1fr));
+	gap: 18px 14px;
+}
+
+.navid-cat {
+	min-width: 0;
+}
+
+.navid-cat-img {
+	position: relative;
+	transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+}
+
+.navid-cat-img img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform .4s ease;
+}
+
+.navid-cat-name {
+	line-height: 1.7;
+}
+
+.navid-cat-count {
+	color: var(--navid-muted);
+	font-size: 11px;
+	font-weight: 400;
+	margin-top: -4px;
+}
+
+.navid-shape-circle .navid-cat-img {
+	border-radius: 50%;
+}
+
+.navid-shape-rounded .navid-cat-img {
+	border-radius: 24px;
+}
+
+.navid-shape-square .navid-cat-img {
+	border-radius: 8px;
+}
+
+.navid-fx-lift .navid-cat:hover .navid-cat-img,
+.navid-fx-lift .navid-cat:focus-visible .navid-cat-img {
+	transform: translateY(-8px);
+	box-shadow: 0 14px 26px rgba(20, 32, 43, .18);
+}
+
+.navid-fx-zoom .navid-cat:hover .navid-cat-img img,
+.navid-fx-zoom .navid-cat:focus-visible .navid-cat-img img {
+	transform: scale(1.14);
+}
+
+.navid-fx-ring .navid-cat:hover .navid-cat-img,
+.navid-fx-ring .navid-cat:focus-visible .navid-cat-img {
+	border-color: var(--navid-primary);
+	box-shadow: 0 0 0 5px var(--navid-primary-soft), 0 0 0 7px var(--navid-primary);
+}
+
+.navid-fx-tilt .navid-cat:hover .navid-cat-img,
+.navid-fx-tilt .navid-cat:focus-visible .navid-cat-img {
+	transform: rotate(-4deg) scale(1.06);
+	box-shadow: 0 10px 22px rgba(20, 32, 43, .16);
+}
+
+.navid-fx-shine .navid-cat-img:after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, .75) 50%, transparent 65%);
+	transform: translateX(-120%);
+}
+
+.navid-fx-shine .navid-cat:hover .navid-cat-img:after,
+.navid-fx-shine .navid-cat:focus-visible .navid-cat-img:after {
+	transform: translateX(120%);
+	transition: transform .8s ease;
+}
+
+.navid-cat:hover .navid-cat-name,
+.navid-cat:focus-visible .navid-cat-name {
+	color: var(--navid-primary);
+}
+
+@media (max-width: 1000px) {
+	.navid-cat-grid {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 640px) {
+	.navid-cat-grid {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 14px 8px;
+	}
+
+	.navid-cat-name {
+		font-size: 12px;
+	}
+
+	.navid-cat-count {
+		display: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.navid-cat-img,
+	.navid-cat-img img,
+	.navid-fx-shine .navid-cat-img:after {
+		transition: none !important;
+	}
+}
+
+/* Responsive baseline for every page (WooCommerce cart, checkout, account, posts) */
+html {
+	-webkit-text-size-adjust: 100%;
+}
+
+body {
+	overflow-x: clip;
+}
+
+iframe,
+video,
+embed,
+object {
+	max-width: 100%;
+}
+
+.navid-content table,
+.navid-entry-body table {
+	display: block;
+	overflow-x: auto;
+	max-width: 100%;
+}
+
+.woocommerce table.shop_table,
+.woocommerce-page table.shop_table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.woocommerce input.input-text,
+.woocommerce select,
+.woocommerce textarea,
+.woocommerce-page input.input-text {
+	max-width: 100%;
+	border: 1px solid var(--navid-line);
+	border-radius: 10px;
+	padding: 10px 12px;
+	font: inherit;
+}
+
+.woocommerce a.button,
+.woocommerce button.button,
+.woocommerce input.button,
+.woocommerce #respond input#submit {
+	border: 0;
+	border-radius: 12px;
+	background: var(--navid-primary);
+	color: #fff;
+	font: inherit;
+	font-weight: 700;
+	padding: 12px 18px;
+}
+
+.woocommerce a.button.alt,
+.woocommerce button.button.alt,
+.woocommerce input.button.alt {
+	background: #ef4056;
+}
+
+.woocommerce-message,
+.woocommerce-info,
+.woocommerce-error {
+	border-radius: 12px;
+}
+
+@media (max-width: 768px) {
+	.navid-main {
+		padding-block: 14px 32px;
+	}
+
+	.navid-wrap {
+		width: calc(100% - 24px);
+	}
+
+	.woocommerce-cart table.cart img {
+		width: 56px;
+	}
+
+	.navid-wrap h1 {
+		font-size: 22px;
 	}
 }
