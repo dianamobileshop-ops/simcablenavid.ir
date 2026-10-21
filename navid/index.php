@@ -16,21 +16,37 @@ if ( function_exists( 'is_woocommerce' ) && ( is_shop() || is_product_taxonomy()
 
 get_header();
 ?>
-<div class="navid-wrap">
-	<?php if ( is_archive() ) : ?>
-		<header class="navid-content">
+<div class="navid-wrap navid-blog-page">
+	<header class="navid-blog-hero">
+		<?php if ( is_archive() ) : ?>
 			<?php the_archive_title( '<h1>', '</h1>' ); ?>
-			<?php the_archive_description( '<div>', '</div>' ); ?>
-		</header>
-	<?php endif; ?>
+			<?php the_archive_description( '<p>', '</p>' ); ?>
+		<?php else : ?>
+			<h1><?php echo esc_html( is_home() && get_option( 'page_for_posts' ) ? get_the_title( get_option( 'page_for_posts' ) ) : 'وبلاگ' ); ?></h1>
+		<?php endif; ?>
+		<?php
+		$navid_blog_cats = get_categories( array( 'hide_empty' => true, 'number' => 12 ) );
+		$navid_blog_home = get_option( 'page_for_posts' ) ? get_permalink( get_option( 'page_for_posts' ) ) : home_url( '/' );
+		if ( $navid_blog_cats ) :
+			?>
+			<div class="navid-chips">
+				<a href="<?php echo esc_url( $navid_blog_home ); ?>" class="<?php echo is_category() ? '' : 'is-on'; ?>"><?php esc_html_e( 'همه', 'navid' ); ?></a>
+				<?php foreach ( $navid_blog_cats as $navid_blog_cat ) : ?>
+					<a href="<?php echo esc_url( get_category_link( $navid_blog_cat ) ); ?>" class="<?php echo is_category( $navid_blog_cat->term_id ) ? 'is-on' : ''; ?>"><?php echo esc_html( $navid_blog_cat->name ); ?></a>
+				<?php endforeach; ?>
+			</div>
+		<?php endif; ?>
+	</header>
 
 	<?php if ( have_posts() ) : ?>
-		<?php
-		while ( have_posts() ) :
-			the_post();
-			get_template_part( 'template-parts/entry', 'summary' );
-		endwhile;
-		?>
+		<div class="navid-blog-grid navid-blog-grid--page">
+			<?php
+			while ( have_posts() ) :
+				the_post();
+				get_template_part( 'template-parts/entry', 'summary' );
+			endwhile;
+			?>
+		</div>
 		<nav class="navid-pagination" aria-label="<?php esc_attr_e( 'صفحه‌بندی', 'navid' ); ?>">
 			<?php
 			echo wp_kses_post( paginate_links( array(

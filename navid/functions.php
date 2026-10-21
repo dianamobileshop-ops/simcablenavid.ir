@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'NAVID_VERSION', '1.0.6' );
+define( 'NAVID_VERSION', '1.0.7' );
 
 /**
  * Basic theme support.

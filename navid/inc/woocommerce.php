@@ -122,3 +122,90 @@ function navid_variation_data( $data, $parent, $variation ) {
 	return $data;
 }
 add_filter( 'woocommerce_available_variation', 'navid_variation_data', 10, 3 );
+
+/* ---------------------------------------------------------------------
+ * Shop / category page helpers
+ * ------------------------------------------------------------------- */
+
+/**
+ * Address of the archive being viewed without any filter in it.
+ *
+ * @return string
+ */
+function navid_shop_base_url() {
+	if ( function_exists( 'is_product_taxonomy' ) && is_product_taxonomy() ) {
+		$link = get_term_link( get_queried_object() );
+		if ( ! is_wp_error( $link ) ) {
+			return $link;
+		}
+	}
+	return function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'shop' ) : home_url( '/' );
+}
+
+/**
+ * Sub-categories of the current category (top-level ones on the shop page).
+ *
+ * @return WP_Term[]
+ */
+function navid_shop_subcategories() {
+	$parent = ( function_exists( 'is_product_category' ) && is_product_category() ) ? (int) get_queried_object_id() : 0;
+	$terms  = get_terms( array(
+		'taxonomy'   => 'product_cat',
+		'parent'     => $parent,
+		'hide_empty' => true,
+		'exclude'    => array( (int) get_option( 'default_product_cat' ) ),
+	) );
+	return is_wp_error( $terms ) ? array() : $terms;
+}
+
+/**
+ * Sort choices shown as a row of links above the grid.
+ *
+ * @return array orderby value => label
+ */
+function navid_sort_options() {
+	return array(
+		'menu_order' => 'پیش‌فرض',
+		'popularity' => 'پربازدیدترین',
+		'rating'     => 'بالاترین امتیاز',
+		'date'       => 'جدیدترین',
+		'price'      => 'ارزان‌ترین',
+		'price-desc' => 'گران‌ترین',
+	);
+}
+
+/**
+ * «Only in stock» filter of the sidebar (price range is handled by WooCommerce itself).
+ *
+ * @param WP_Query $query Product query.
+ */
+function navid_product_query_filters( $query ) {
+	if ( ! empty( $_GET['instock'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$meta   = (array) $query->get( 'meta_query' );
+		$meta[] = array(
+			'key'   => '_stock_status',
+			'value' => 'instock',
+		);
+		$query->set( 'meta_query', $meta );
+	}
+}
+add_action( 'woocommerce_product_query', 'navid_product_query_filters' );
+
+/**
+ * Breadcrumb markup that the theme can style.
+ *
+ * @param array $args Defaults.
+ * @return array
+ */
+function navid_breadcrumb_args( $args ) {
+	$args['delimiter']   = '<span class="navid-crumb-sep">/</span>';
+	$args['wrap_before'] = '<nav class="navid-breadcrumb" aria-label="breadcrumb">';
+	$args['wrap_after']  = '</nav>';
+	$args['home']        = 'خانه';
+	return $args;
+}
+add_filter( 'woocommerce_breadcrumb_defaults', 'navid_breadcrumb_args' );
+
+// The theme draws its own sorting links and result count.
+remove_action( 'woocommerce_before_shop_loop', 'woocommerce_result_count', 20 );
+remove_action( 'woocommerce_before_shop_loop', 'woocommerce_catalog_ordering', 30 );

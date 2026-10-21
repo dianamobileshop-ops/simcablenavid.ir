@@ -13,21 +13,28 @@ if ( empty( $product ) || ! $product->is_visible() ) {
 	return;
 }
 $visible = navid_price_is_visible( $product );
+$rating  = (float) $product->get_average_rating();
 ?>
 <li <?php wc_product_class( 'navid-card', $product ); ?>>
 	<a class="navid-card-img" href="<?php echo esc_url( get_permalink() ); ?>">
 		<?php echo $product->get_image( 'woocommerce_thumbnail' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+		<?php if ( $product->is_on_sale() && $visible ) : ?>
+			<span class="navid-card-sale"><?php esc_html_e( 'حراج', 'navid' ); ?></span>
+		<?php endif; ?>
 	</a>
 
 	<h2 class="navid-card-title">
 		<a href="<?php echo esc_url( get_permalink() ); ?>"><?php the_title(); ?></a>
 	</h2>
 
-	<p class="navid-card-stock">
-		<?php echo $product->is_in_stock() ? esc_html__( 'موجود در انبار', 'navid' ) : esc_html__( 'ناموجود', 'navid' ); ?>
-	</p>
-
-	<p class="navid-card-seller"><?php echo esc_html( get_bloginfo( 'name' ) ); ?></p>
+	<div class="navid-card-meta">
+		<span class="navid-card-stock<?php echo $product->is_in_stock() ? '' : ' is-out'; ?>">
+			<?php echo $product->is_in_stock() ? esc_html__( 'موجود در انبار', 'navid' ) : esc_html__( 'ناموجود', 'navid' ); ?>
+		</span>
+		<?php if ( $rating > 0 ) : ?>
+			<span class="navid-card-rating">★ <?php echo esc_html( number_format_i18n( $rating, 1 ) ); ?></span>
+		<?php endif; ?>
+	</div>
 
 	<div class="navid-card-price">
 		<?php if ( $visible ) : ?>
