@@ -9,6 +9,16 @@ defined( 'ABSPATH' ) || exit;
 
 get_header();
 ?>
+<?php if ( function_exists( 'is_account_page' ) && is_account_page() ) : ?>
+<div class="navid-wrap navid-account">
+	<?php
+	while ( have_posts() ) :
+		the_post();
+		the_content();
+	endwhile;
+	?>
+</div>
+<?php else : ?>
 <div class="navid-wrap">
 	<?php
 	while ( have_posts() ) :
@@ -26,5 +36,6 @@ get_header();
 	endwhile;
 	?>
 </div>
+<?php endif; ?>
 <?php
 get_footer();

@@ -240,15 +240,35 @@ add_action( 'save_post_page', function () {
 } );
 
 /**
- * Cart page: a way to ask for a proforma instead of paying online.
+ * Cart page: the proforma comes first. One click turns the cart into a proforma
+ * (name and mobile number only); the order can still be placed afterwards.
  */
-function navid_cart_proforma_link() {
-	$url = navid_proforma_url();
-	if ( $url ) {
-		echo '<p class="navid-cart-pf"><a class="navid-btn" href="' . esc_url( $url ) . '">' . esc_html__( 'درخواست پیش‌فاکتور', 'navid' ) . '</a></p>';
+function navid_cart_proforma_card() {
+	if ( ! class_exists( 'NPT_Proforma' ) || ! WC()->cart || WC()->cart->is_empty() ) {
+		return;
 	}
+	$user  = wp_get_current_user();
+	$name  = $user->exists() ? trim( $user->first_name . ' ' . $user->last_name ) : '';
+	$phone = ( $user->exists() && class_exists( 'NPT_Panel' ) ) ? NPT_Panel::user_mobile( $user ) : '';
+	?>
+	<div class="navid-pfcard" data-navid-pf>
+		<h3><?php esc_html_e( 'پیش‌فاکتور این سبد', 'navid' ); ?></h3>
+		<p><?php esc_html_e( 'اول پیش‌فاکتور بگیرید و بررسی کنید؛ هر وقت خواستید همین سبد را ثبت سفارش کنید.', 'navid' ); ?></p>
+		<form class="navid-pf-form" novalidate>
+			<input type="text" name="c_name" value="<?php echo esc_attr( $name ); ?>" placeholder="<?php esc_attr_e( 'نام و نام خانوادگی', 'navid' ); ?>" autocomplete="name" required>
+			<input type="tel" name="c_phone" value="<?php echo esc_attr( $phone ); ?>" placeholder="<?php esc_attr_e( 'شمارهٔ موبایل (۰۹…)', 'navid' ); ?>" inputmode="tel" dir="ltr" autocomplete="tel" required>
+			<button type="submit" class="navid-pf-btn"><?php esc_html_e( 'دریافت پیش‌فاکتور', 'navid' ); ?></button>
+		</form>
+		<p class="navid-pf-status" role="status"></p>
+		<div class="navid-pf-done" hidden>
+			<strong class="navid-pf-num"></strong>
+			<a class="navid-btn navid-btn--primary navid-pf-view" href="#" target="_blank" rel="noopener"><?php esc_html_e( 'مشاهده و چاپ پیش‌فاکتور', 'navid' ); ?></a>
+			<a class="navid-btn navid-pf-checkout" href="#"><?php esc_html_e( 'ادامه و ثبت سفارش', 'navid' ); ?></a>
+		</div>
+	</div>
+	<?php
 }
-add_action( 'woocommerce_after_cart_table', 'navid_cart_proforma_link' );
+add_action( 'woocommerce_before_cart_totals', 'navid_cart_proforma_card' );
 
 /**
  * Attribute terms used by the products of the current archive (cached for an hour).

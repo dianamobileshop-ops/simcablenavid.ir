@@ -2,7 +2,7 @@
 Theme Name: Navid
 Theme URI: https://simcablenavid.ir
 Description: قالب اختصاصی نوید. شامل جدول قیمت و پنل مدیریت در یک بسته.
-Version: 1.1.1
+Version: 1.2.0
 Update URI: https://simcablenavid.ir/navid
 Requires PHP: 7.4
 Text Domain: navid
@@ -3084,5 +3084,608 @@ object {
 		font: inherit;
 		font-weight: 800;
 		cursor: pointer;
+	}
+}
+
+/* ---- 1.2.0: login page, customer account, cart proforma, mobile shop ---- */
+.navid-auth {
+	display: grid;
+	place-items: center;
+	padding: 24px 0 40px;
+}
+
+.navid-auth-card {
+	width: min(440px, 100%);
+	padding: 28px 24px;
+	background: var(--navid-card);
+	border: 1px solid var(--navid-line);
+	border-radius: 20px;
+	box-shadow: 0 10px 40px rgba(20, 32, 43, .07);
+}
+
+.navid-auth-logo {
+	display: flex;
+	justify-content: center;
+	margin-bottom: 6px;
+}
+
+.navid-auth-title {
+	margin: 6px 0 18px;
+	text-align: center;
+	font-size: 22px;
+}
+
+.navid-auth-tabs {
+	display: flex;
+	gap: 6px;
+	padding: 4px;
+	margin-bottom: 18px;
+	background: var(--navid-bg);
+	border-radius: 14px;
+}
+
+.navid-auth-tabs button {
+	flex: 1;
+	padding: 10px 8px;
+	border: 0;
+	border-radius: 10px;
+	background: transparent;
+	color: var(--navid-muted);
+	font: inherit;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.navid-auth-tabs button.is-on {
+	background: var(--navid-card);
+	color: var(--navid-primary);
+	box-shadow: 0 2px 8px rgba(20, 32, 43, .08);
+}
+
+.navid-auth-panel[hidden],
+.navid-auth form[hidden] {
+	display: none;
+}
+
+.navid-auth label {
+	display: block;
+	margin: 12px 0 6px;
+	font-weight: 600;
+	font-size: 14px;
+}
+
+.navid-auth input[type="text"],
+.navid-auth input[type="tel"],
+.navid-auth input[type="email"],
+.navid-auth input[type="password"] {
+	width: 100%;
+	min-height: 48px;
+	padding: 8px 14px;
+	border: 1px solid var(--navid-line);
+	border-radius: 12px;
+	font: inherit;
+	font-size: 16px;
+}
+
+.navid-auth input:focus {
+	outline: 2px solid var(--navid-primary-soft);
+	border-color: var(--navid-primary);
+}
+
+.navid-auth .navid-auth-remember {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-weight: 400;
+}
+
+.navid-auth-btn {
+	display: block;
+	width: 100%;
+	min-height: 48px;
+	margin-top: 16px;
+	border: 0;
+	border-radius: 12px;
+	background: var(--navid-primary);
+	color: #fff;
+	font: inherit;
+	font-weight: 800;
+	cursor: pointer;
+}
+
+.navid-auth-btn:hover {
+	filter: brightness(.95);
+}
+
+.navid-auth-link {
+	display: inline-block;
+	margin: 10px 12px 0 0;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: #1d6fd8;
+	font: inherit;
+	font-size: 13px;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.navid-auth-link:disabled {
+	color: var(--navid-muted);
+	cursor: default;
+}
+
+.navid-auth-status {
+	min-height: 22px;
+	margin: 12px 0 0;
+	font-size: 13px;
+}
+
+.navid-auth-status.is-ok {
+	color: var(--navid-primary);
+}
+
+.navid-auth-status.is-bad {
+	color: #d63638;
+}
+
+.navid-auth-foot {
+	margin: 16px 0 0;
+	text-align: center;
+	color: var(--navid-muted);
+	font-size: 13px;
+}
+
+.navid-auth-foot a {
+	color: var(--navid-primary);
+	font-weight: 700;
+}
+
+.navid-auth-register h2 {
+	margin: 24px 0 0;
+	padding-top: 18px;
+	border-top: 1px solid var(--navid-line);
+	font-size: 17px;
+}
+
+/* Customer account */
+.woocommerce-account .navid-account .woocommerce {
+	display: block;
+}
+
+.woocommerce-account.logged-in .navid-account .woocommerce {
+	display: grid;
+	grid-template-columns: 300px minmax(0, 1fr);
+	gap: 20px;
+	align-items: start;
+}
+
+.woocommerce-account .woocommerce-MyAccount-navigation,
+.woocommerce-account .woocommerce-MyAccount-content {
+	float: none;
+	width: auto;
+}
+
+.woocommerce-account .woocommerce::before,
+.woocommerce-account .woocommerce::after {
+	display: none;
+}
+
+.navid-acc-nav {
+	position: sticky;
+	top: 130px;
+	background: var(--navid-card);
+	border: 1px solid var(--navid-line);
+	border-radius: 18px;
+	padding: 14px;
+}
+
+.navid-acc-profile {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 4px 4px 14px;
+	border-bottom: 1px solid var(--navid-line);
+	margin-bottom: 6px;
+}
+
+.navid-acc-profile > div {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+}
+
+.navid-acc-profile small {
+	color: var(--navid-muted);
+}
+
+.navid-acc-avatar {
+	display: grid;
+	place-items: center;
+	width: 46px;
+	height: 46px;
+	border-radius: 50%;
+	background: var(--navid-primary-soft);
+	color: var(--navid-primary);
+	font-size: 20px;
+	font-weight: 800;
+}
+
+.navid-acc-edit {
+	color: #1d6fd8;
+	text-decoration: none;
+	font-size: 18px;
+}
+
+.navid-acc-nav ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.navid-acc-nav li a {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 13px 8px;
+	border-bottom: 1px solid var(--navid-line);
+	color: var(--navid-ink);
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.navid-acc-nav li:last-child a {
+	border-bottom: 0;
+}
+
+.navid-acc-nav li.is-active a {
+	color: var(--navid-primary);
+	box-shadow: inset -3px 0 0 var(--navid-primary);
+	background: var(--navid-primary-soft);
+	border-radius: 10px;
+}
+
+.woocommerce-account .woocommerce-MyAccount-content {
+	min-width: 0;
+}
+
+.navid-dash-card {
+	margin-bottom: 16px;
+	padding: 16px 18px;
+	background: var(--navid-card);
+	border: 1px solid var(--navid-line);
+	border-radius: 18px;
+}
+
+.navid-dash-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	margin-bottom: 12px;
+}
+
+.navid-dash-head h2 {
+	margin: 0;
+	padding-bottom: 8px;
+	border-bottom: 2px solid #ef4056;
+	font-size: 17px;
+}
+
+.navid-dash-head a {
+	color: #1d6fd8;
+	font-size: 13px;
+	text-decoration: none;
+}
+
+.navid-dash-stats {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 10px;
+}
+
+.navid-dash-stat {
+	padding: 14px;
+	border-radius: 14px;
+	background: var(--navid-bg);
+	text-align: center;
+	border-bottom: 3px solid var(--c);
+}
+
+.navid-dash-stat b {
+	display: block;
+	font-size: 24px;
+	color: var(--c);
+}
+
+.navid-dash-stat span {
+	color: var(--navid-muted);
+	font-size: 13px;
+}
+
+.navid-dash-orders {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.navid-dash-orders a {
+	display: grid;
+	grid-template-columns: auto 1fr auto auto;
+	gap: 12px;
+	align-items: center;
+	padding: 12px 4px;
+	border-bottom: 1px solid var(--navid-line);
+	color: var(--navid-ink);
+	text-decoration: none;
+	font-size: 13px;
+}
+
+.navid-dash-orders li:last-child a {
+	border-bottom: 0;
+}
+
+.navid-dash-orders em {
+	font-style: normal;
+	font-weight: 800;
+}
+
+.navid-dash-status {
+	padding: 2px 10px;
+	border-radius: 999px;
+	background: var(--navid-bg);
+	font-size: 12px;
+}
+
+.navid-dash-empty {
+	margin: 0;
+	color: var(--navid-muted);
+}
+
+.navid-tiles--front {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+	gap: 10px;
+	margin: 0;
+}
+
+.woocommerce-account .woocommerce-orders-table,
+.woocommerce-account table.shop_table {
+	border-radius: 12px;
+	overflow: hidden;
+}
+
+/* Cart: proforma first */
+.navid-pfcard {
+	margin-bottom: 16px;
+	padding: 16px;
+	background: var(--navid-primary-soft);
+	border: 1px solid var(--navid-primary);
+	border-radius: 16px;
+}
+
+.navid-pfcard h3 {
+	margin: 0 0 4px;
+	font-size: 17px;
+}
+
+.navid-pfcard p {
+	margin: 0 0 10px;
+	color: var(--navid-muted);
+	font-size: 13px;
+}
+
+.navid-pf-form {
+	display: grid;
+	gap: 8px;
+}
+
+.navid-pf-form input {
+	width: 100%;
+	min-height: 44px;
+	padding: 8px 12px;
+	border: 1px solid var(--navid-line);
+	border-radius: 10px;
+	font: inherit;
+	font-size: 16px;
+	background: #fff;
+}
+
+.navid-pf-btn {
+	min-height: 46px;
+	border: 0;
+	border-radius: 12px;
+	background: var(--navid-primary);
+	color: #fff;
+	font: inherit;
+	font-weight: 800;
+	cursor: pointer;
+}
+
+.navid-pf-btn:disabled {
+	opacity: .6;
+}
+
+.navid-pf-status.is-bad {
+	color: #d63638;
+}
+
+.navid-pf-done {
+	display: grid;
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.navid-pf-done[hidden] {
+	display: none;
+}
+
+.navid-pf-done .navid-btn {
+	text-align: center;
+}
+
+@media (max-width: 900px) {
+	.woocommerce-account.logged-in .navid-account .woocommerce {
+		grid-template-columns: 1fr;
+	}
+
+	.navid-acc-nav {
+		position: static;
+	}
+
+	.navid-acc-nav ul {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0 10px;
+	}
+
+	.navid-dash-orders a {
+		grid-template-columns: auto 1fr;
+	}
+}
+
+@media (max-width: 480px) {
+	.navid-auth-card {
+		padding: 22px 16px;
+		border-radius: 16px;
+	}
+
+	.navid-dash-stats {
+		gap: 6px;
+	}
+
+	.navid-dash-stat b {
+		font-size: 20px;
+	}
+}
+
+/* Mobile: shop and category pages */
+.woocommerce-pagination ul.page-numbers {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 6px;
+	margin: 20px 0;
+	padding: 0;
+	border: 0;
+	list-style: none;
+}
+
+.woocommerce-pagination ul.page-numbers li {
+	border: 0;
+	float: none;
+}
+
+.woocommerce-pagination .page-numbers a,
+.woocommerce-pagination .page-numbers span {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 38px;
+	height: 38px;
+	padding: 0 10px;
+	border: 1px solid var(--navid-line);
+	border-radius: 10px;
+	background: var(--navid-card);
+	color: var(--navid-ink);
+	text-decoration: none;
+}
+
+.woocommerce-pagination .page-numbers .current {
+	background: var(--navid-primary);
+	border-color: var(--navid-primary);
+	color: #fff;
+}
+
+.woocommerce-result-count {
+	float: none;
+	margin: 0;
+}
+
+@media (max-width: 900px) {
+	.navid-shop-layout {
+		display: block;
+	}
+
+	.navid-shop-side {
+		margin-bottom: 12px;
+		padding: 0 14px;
+	}
+
+	.navid-filters-title {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 12px 0;
+		font-size: 16px;
+	}
+
+	.navid-filters-title:after {
+		content: "▾";
+	}
+
+	.navid-filters[open] .navid-filters-title {
+		border-bottom: 1px solid var(--navid-line);
+		margin-bottom: 6px;
+	}
+
+	.navid-filters[open] {
+		padding-bottom: 12px;
+	}
+}
+
+@media (max-width: 600px) {
+	.navid-breadcrumb {
+		flex-wrap: nowrap;
+		overflow-x: auto;
+		white-space: nowrap;
+		scrollbar-width: none;
+	}
+
+	.navid-shop-title {
+		font-size: 20px;
+	}
+
+	.navid-subcats {
+		margin-inline: -12px;
+		padding-inline: 12px;
+	}
+
+	.navid-shop-bar {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 6px;
+	}
+
+	.navid-sort {
+		padding-bottom: 4px;
+	}
+
+	.navid-shop-main ul.products .navid-card {
+		padding: 10px;
+		gap: 6px;
+	}
+
+	.navid-card-title {
+		font-size: 12px;
+		line-height: 1.8;
+	}
+
+	.navid-card-price {
+		font-size: 13px;
+		word-break: break-word;
+	}
+
+	.navid-card-price .price small,
+	.navid-card-price .price .woocommerce-price-suffix {
+		display: block;
+		font-size: 11px;
+		font-weight: 400;
+		color: var(--navid-muted);
+	}
+
+	.navid-shop-about {
+		padding: 14px;
 	}
 }

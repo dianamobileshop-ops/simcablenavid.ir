@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'NAVID_VERSION', '1.1.1' );
+define( 'NAVID_VERSION', '1.2.0' );
 
 /**
  * Basic theme support.
@@ -50,6 +50,23 @@ function navid_assets() {
 			'adding'    => 'در حال افزودن…',
 			'addLabel'  => 'افزودن به سبد خرید',
 			'error'     => 'افزودن به سبد انجام نشد. دوباره تلاش کنید.',
+		) );
+	}
+	if ( function_exists( 'is_cart' ) && is_cart() ) {
+		wp_enqueue_script( 'navid-cart', get_template_directory_uri() . '/assets/js/cart.js', array(), NAVID_VERSION, true );
+		wp_localize_script( 'navid-cart', 'NAVIDCART', array(
+			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+			'nonce'   => wp_create_nonce( 'navid_cart_pf' ),
+		) );
+	}
+	if ( function_exists( 'is_account_page' ) && is_account_page() && ! is_user_logged_in() ) {
+		wp_enqueue_script( 'navid-auth', get_template_directory_uri() . '/assets/js/auth.js', array(), NAVID_VERSION, true );
+		$redirect = isset( $_GET['redirect_to'] ) ? wp_validate_redirect( esc_url_raw( wp_unslash( $_GET['redirect_to'] ) ), '' ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		wp_localize_script( 'navid-auth', 'NAVIDAUTH', array(
+			'ajaxUrl'  => admin_url( 'admin-ajax.php' ),
+			'nonce'    => class_exists( 'NPT_OTP' ) ? wp_create_nonce( NPT_OTP::NONCE ) : '',
+			'redirect' => $redirect ? $redirect : wc_get_page_permalink( 'myaccount' ),
+			'cooldown' => 60,
 		) );
 	}
 	if ( is_front_page() ) {

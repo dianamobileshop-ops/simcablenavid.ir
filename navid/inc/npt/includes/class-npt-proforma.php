@@ -50,6 +50,9 @@ class NPT_Proforma {
 		add_action( 'wp_ajax_npt_proforma_save_pub', array( __CLASS__, 'ajax_save_public' ) );
 		add_action( 'wp_ajax_nopriv_npt_proforma_save_pub', array( __CLASS__, 'ajax_save_public' ) );
 
+		add_action( 'wp_ajax_npt_cart_proforma', array( __CLASS__, 'ajax_cart_save' ) );
+		add_action( 'wp_ajax_nopriv_npt_cart_proforma', array( __CLASS__, 'ajax_cart_save' ) );
+
 		add_shortcode( 'navid_proforma', array( __CLASS__, 'shortcode' ) );
 
 		// Short public link for a proforma: /pf/{code}/ → the print view.
@@ -442,6 +445,88 @@ class NPT_Proforma {
 				'name'   => $name,
 				'phone'  => $phone,
 				'total'  => $saved['total'],
+				'source'   => 'site',
+				'verified' => NPT_OTP::is_verified( $phone ),
+			) );
+		} );
+	}
+
+	/**
+	 * A proforma made from the WooCommerce cart, right on the cart page. Every line
+	 * is re-priced from the live product (the visitor only supplies name and number),
+	 * exactly like the public form.
+	 */
+	public static function ajax_cart_save() {
+		if ( ! check_ajax_referer( 'navid_cart_pf', 'nonce', false ) ) {
+			wp_send_json_error( array( 'message' => 'نشست شما منقضی شده است. صفحه را تازه کنید.' ), 403 );
+		}
+		if ( ! npt_pdf_rate_limit_ok( 'pf_save' ) ) {
+			wp_send_json_error( array( 'message' => 'تعداد درخواست‌ها بیش از حد مجاز است. کمی بعد دوباره تلاش کنید.' ), 429 );
+		}
+		if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
+			wp_send_json_error( array( 'message' => 'سبد خرید در دسترس نیست.' ), 503 );
+		}
+		self::maybe_install();
+
+		$name  = isset( $_POST['c_name'] ) ? sanitize_text_field( wp_unslash( $_POST['c_name'] ) ) : '';
+		$phone = self::normalize_phone( isset( $_POST['c_phone'] ) ? wp_unslash( $_POST['c_phone'] ) : '' );
+		if ( '' === trim( $name ) ) {
+			wp_send_json_error( array( 'message' => 'نام و نام خانوادگی را وارد کنید.' ) );
+		}
+		if ( '' === $phone ) {
+			wp_send_json_error( array( 'message' => 'شماره موبایل معتبر وارد کنید (مثال: 09121234567).' ) );
+		}
+
+		$clean = array();
+		foreach ( WC()->cart->get_cart() as $line ) {
+			$product = isset( $line['data'] ) ? $line['data'] : null;
+			if ( ! $product || ! $product->exists() ) {
+				continue;
+			}
+			$price = $product->get_price();
+			$qty   = (float) $line['quantity'];
+			if ( '' === $price || ! is_numeric( $price ) || $qty <= 0 || npt_price_hidden( $product ) ) {
+				continue;
+			}
+			$base    = $product->get_parent_id() ? $product->get_parent_id() : $product->get_id();
+			$clean[] = array(
+				'name'  => $product->get_name(),
+				'qty'   => $qty,
+				'price' => (float) $price,
+				'meter' => (bool) npt_meter_is_meter_product( $base ),
+			);
+		}
+		if ( empty( $clean ) ) {
+			wp_send_json_error( array( 'message' => 'در سبد کالایی با قیمت مشخص نیست؛ برای کالاهای «تماس بگیرید» با ما تماس بگیرید.' ) );
+		}
+
+		$total = 0.0;
+		foreach ( $clean as $item ) {
+			$total += $item['qty'] * $item['price'];
+		}
+		if ( self::site_recent_duplicate( $phone, $total ) ) {
+			wp_send_json_error( array( 'message' => 'برای همین سبد چند دقیقه پیش پیش‌فاکتور ثبت شده است.' ), 409 );
+		}
+		if ( self::site_count_last_day( $phone ) >= self::SITE_DAILY_LIMIT ) {
+			wp_send_json_error( array( 'message' => 'تعداد پیش‌فاکتورهای امروز این شماره به حد مجاز رسیده است. با فروشگاه تماس بگیرید.' ), 429 );
+		}
+
+		$saved = self::persist_proforma(
+			array( 'name' => $name, 'phone' => $phone, 'company' => '', 'email' => '', 'address' => '' ),
+			$clean, 0.0, 7, 'پیش‌فاکتور از سبد خرید سایت', 'site'
+		);
+		if ( ! $saved ) {
+			NPT_Log::add( 'پیش‌فاکتور', 'ذخیره‌سازی پیش‌فاکتور سبد ناموفق بود.' );
+			wp_send_json_error( array( 'message' => 'ذخیره‌سازی ناموفق بود. دوباره تلاش کنید.' ) );
+		}
+
+		$data = self::save_response( $saved );
+		$data['checkout'] = function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : '';
+		npt_finish_json_then( array( 'success' => true, 'data' => $data ), function () use ( $saved, $name, $phone ) {
+			do_action( 'npt_proforma_created', $saved, array(
+				'name'     => $name,
+				'phone'    => $phone,
+				'total'    => $saved['total'],
 				'source'   => 'site',
 				'verified' => NPT_OTP::is_verified( $phone ),
 			) );

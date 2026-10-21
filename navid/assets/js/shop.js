@@ -18,6 +18,11 @@
 		if (!form) {
 			return;
 		}
+		// On phones the filters start closed so the products come first.
+		var box = document.querySelector('details.navid-filters');
+		if (box && window.matchMedia('(max-width: 900px)').matches && !/[?&](min_price|max_price|instock|filter_)/.test(window.location.search)) {
+			box.removeAttribute('open');
+		}
 		form.addEventListener('submit', function () {
 			Array.prototype.forEach.call(form.querySelectorAll('[data-navid-attr]'), function (box) {
 				var name = box.getAttribute('data-navid-attr');
