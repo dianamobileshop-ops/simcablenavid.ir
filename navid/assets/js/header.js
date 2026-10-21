@@ -153,3 +153,17 @@
 		});
 	});
 })();
+
+/* Footer: sections fold on phones and stay open on desktop. */
+(function () {
+	var mq = window.matchMedia('(max-width: 768px)');
+	function sync() {
+		Array.prototype.forEach.call(document.querySelectorAll('.navid-fold'), function (d) {
+			d.open = !mq.matches;
+		});
+	}
+	sync();
+	if (mq.addEventListener) {
+		mq.addEventListener('change', sync);
+	}
+})();

@@ -2,7 +2,7 @@
 Theme Name: Navid
 Theme URI: https://simcablenavid.ir
 Description: قالب اختصاصی نوید. شامل جدول قیمت و پنل مدیریت در یک بسته.
-Version: 1.4.0
+Version: 1.4.1
 Update URI: https://simcablenavid.ir/navid
 Requires PHP: 7.4
 Text Domain: navid
@@ -235,11 +235,6 @@ img {
 	padding-block: 24px 48px;
 }
 
-/* Mobile bottom tab bar */
-.navid-tabbar {
-	display: none;
-}
-
 @media (max-width: 768px) {
 	.navid-header {
 		background: transparent;
@@ -313,40 +308,6 @@ img {
 	.navid-menu a {
 		display: block;
 		padding: 12px 16px;
-	}
-
-	.navid-tabbar {
-		position: fixed;
-		inset-inline: 0;
-		bottom: 0;
-		z-index: 200;
-		display: grid;
-		grid-template-columns: repeat(5, 1fr);
-		background: var(--navid-card);
-		border-top: 1px solid var(--navid-line);
-		padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
-	}
-
-	.navid-tabbar a {
-		position: relative;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 2px;
-		color: var(--navid-muted);
-		text-decoration: none;
-		font-size: 11px;
-	}
-
-	.navid-tabbar a:first-child {
-		color: var(--navid-primary);
-	}
-
-	.navid-tabbar .navid-badge {
-		position: absolute;
-		top: -4px;
-		inset-inline-start: 50%;
-		margin-inline-start: 8px;
 	}
 
 	/* Room for the fixed bottom bar, inside the dark footer (no light strip under it). */
@@ -1002,10 +963,6 @@ img {
 		display: none;
 	}
 
-
-	.navid-has-tabbar .mqb-floating-trigger {
-		bottom: 88px !important;
-	}
 }
 
 /* Text banners of the default slider */
@@ -2930,7 +2887,7 @@ object {
 	white-space: nowrap;
 }
 
-.navid-has-tabbar .navid-toast {
+body.mqb-has-bar .navid-toast {
 	bottom: 84px;
 }
 
@@ -2973,10 +2930,6 @@ object {
 
 	.navid-stickybar.is-in {
 		transform: none;
-	}
-
-	.navid-has-tabbar .navid-stickybar {
-		bottom: 62px;
 	}
 
 	body.mqb-has-bar .navid-stickybar {
@@ -4227,4 +4180,154 @@ ul.products::after {
 .navid-buy-wa:hover {
 	background: #25d366;
 	color: #fff;
+}
+
+/* ---- 1.4.1: footer sections with icons, folding on phones; proforma page fix ---- */
+.navid-fold > summary {
+	list-style: none;
+}
+
+.navid-fold > summary::-webkit-details-marker {
+	display: none;
+}
+
+.navid-ft-title {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.navid-ft-title > span {
+	flex: 1;
+}
+
+.navid-ft-title > svg:first-child {
+	flex: none;
+	color: var(--navid-primary);
+}
+
+.navid-fchev {
+	display: none;
+	flex: none;
+	transition: transform .2s ease;
+}
+
+@media (min-width: 769px) {
+	.navid-fold > summary {
+		pointer-events: none;
+		cursor: default;
+	}
+}
+
+@media (max-width: 768px) {
+	.navid-ft-grid,
+	.navid-ft-grid.has-badges {
+		display: block;
+		padding-block: 4px 12px;
+	}
+
+	.navid-ft-about {
+		padding-bottom: 16px;
+	}
+
+	.navid-ft-col + .navid-ft-col {
+		border-top: 1px solid var(--ft-line);
+	}
+
+	.navid-fold > summary {
+		min-height: 52px;
+		margin: 0;
+		padding-block: 14px;
+		cursor: pointer;
+	}
+
+	.navid-ft-title::after {
+		display: none;
+	}
+
+	.navid-fchev {
+		display: block;
+	}
+
+	.navid-fold[open] > summary .navid-fchev {
+		transform: rotate(180deg);
+	}
+
+	.navid-fold[open] > :not(summary) {
+		margin-bottom: 14px;
+	}
+
+	.navid-ft-bottom .navid-wrap {
+		padding-inline: 16px;
+	}
+}
+
+/* [navid_proforma] inside a page: undo the generic page-table styling */
+.navid-entry-body .nptpf table.nptpf-items {
+	display: table;
+	overflow: visible;
+	margin: 10px 0 0;
+}
+
+.navid-entry-body .nptpf h2 {
+	margin: 0 0 10px;
+	font-size: 16px;
+}
+
+.navid-entry-body .nptpf th,
+.navid-entry-body .nptpf td {
+	padding: 6px 8px;
+}
+
+.navid-entry-body .nptpf input,
+.navid-entry-body .nptpf textarea {
+	max-width: 100%;
+}
+
+.navid-entry-body .nptpf details summary {
+	margin-bottom: 8px;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.navid-entry-body .nptpf .nptpf-btn {
+	max-width: 100%;
+}
+
+@media (max-width: 600px) {
+	.navid-entry-body .nptpf table.nptpf-items,
+	.navid-entry-body .nptpf table.nptpf-items tbody {
+		display: block;
+		width: 100%;
+	}
+
+	.navid-entry-body .nptpf .nptpf-items tr:not(.nptpf-empty-row) {
+		display: grid;
+	}
+
+	.navid-entry-body .nptpf .nptpf-items .nptpf-empty-row,
+	.navid-entry-body .nptpf .nptpf-items .nptpf-empty-row td {
+		display: block;
+		border: 0;
+	}
+
+	.navid-entry-body .nptpf .nptpf-box {
+		padding: 14px 12px;
+	}
+
+	.navid-entry-body .nptpf .nptpf-totals .row {
+		max-width: none;
+		gap: 10px;
+	}
+
+	.navid-entry-body .nptpf .nptpf-btn,
+	.navid-entry-body .nptpf #nptpf-save {
+		width: 100%;
+	}
+
+	.navid-entry-body .nptpf .nptpf-done-acts a,
+	.navid-entry-body .nptpf .nptpf-done-acts button {
+		flex: 1 1 100%;
+		text-align: center;
+	}
 }

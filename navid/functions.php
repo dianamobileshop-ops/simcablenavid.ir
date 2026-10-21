@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'NAVID_VERSION', '1.4.0' );
+define( 'NAVID_VERSION', '1.4.1' );
 
 /**
  * Whether WooCommerce is running. Every shop feature checks this, so the theme works
@@ -230,25 +230,6 @@ function navid_logo_html() {
 }
 
 /**
- * Whether the theme draws its own bottom tab bar on phones. The price table code has a
- * configurable bottom bar too; when that one is on, the theme stays out of its way.
- *
- * @return bool
- */
-function navid_tabbar_enabled() {
-	if ( class_exists( 'NPT_Bar' ) ) {
-		// «enabled» is always on in the price table code; what matters is whether its
-		// bottom menu is actually drawn. With the menu off the theme bar comes back, so
-		// phones are never left without a bottom bar.
-		$settings = NPT_Bar::settings();
-		if ( ! NPT_Bar::is_off() && ! empty( $settings['menu_enabled'] ) ) {
-			return false;
-		}
-	}
-	return true;
-}
-
-/**
  * Fresh security tokens for forms on a cached page (a page cache can serve HTML whose
  * tokens expired hours ago). The scripts ask for new ones once and retry.
  */
@@ -285,17 +266,3 @@ function navid_preload_font() {
 	);
 }
 add_action( 'wp_head', 'navid_preload_font', 2 );
-
-/**
- * Body classes: the layout leaves room for whichever bottom bar is shown.
- *
- * @param array $classes Classes.
- * @return array
- */
-function navid_body_class( $classes ) {
-	if ( navid_tabbar_enabled() ) {
-		$classes[] = 'navid-has-tabbar';
-	}
-	return $classes;
-}
-add_filter( 'body_class', 'navid_body_class' );
