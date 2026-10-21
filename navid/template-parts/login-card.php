@@ -27,6 +27,8 @@ $navid_first    = $navid_sms ? 'sms' : 'password';
 		<button type="button" role="tab" class="<?php echo 'password' === $navid_first ? 'is-on' : ''; ?>" data-navid-tab="password"><?php esc_html_e( 'رمز عبور', 'navid' ); ?></button>
 		<?php if ( $navid_sms ) : ?>
 			<button type="button" role="tab" data-navid-tab="register"><?php esc_html_e( 'ثبت‌نام', 'navid' ); ?></button>
+		<?php elseif ( $navid_wc_reg && is_account_page() ) : ?>
+			<button type="button" role="tab" data-navid-tab="register"><?php esc_html_e( 'ثبت‌نام', 'navid' ); ?></button>
 		<?php elseif ( $navid_wc_reg ) : ?>
 			<a class="navid-auth-tablink" href="<?php echo esc_url( $navid_account ); ?>#navid-register"><?php esc_html_e( 'ثبت‌نام', 'navid' ); ?></a>
 		<?php endif; ?>
@@ -93,8 +95,7 @@ $navid_first    = $navid_sms ? 'sms' : 'password';
 	<?php endif; ?>
 
 	<?php if ( $navid_wc_reg && ! $navid_sms && is_account_page() ) : ?>
-		<section class="navid-auth-panel navid-auth-register" id="navid-register">
-			<h3><?php esc_html_e( 'ثبت‌نام', 'navid' ); ?></h3>
+		<section class="navid-auth-panel navid-auth-register" id="navid-register" data-navid-panel="register" hidden>
 			<form method="post" class="woocommerce-form woocommerce-form-register register" <?php do_action( 'woocommerce_register_form_tag' ); ?>>
 				<?php do_action( 'woocommerce_register_form_start' ); ?>
 				<?php if ( 'no' === get_option( 'woocommerce_registration_generate_username' ) ) : ?>

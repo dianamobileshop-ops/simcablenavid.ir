@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 get_header();
 ?>
 <?php if ( function_exists( 'is_account_page' ) && is_account_page() ) : ?>
-<div class="navid-wrap navid-account">
+<div class="navid-wrap navid-account-page">
 	<?php
 	while ( have_posts() ) :
 		the_post();
