@@ -74,6 +74,13 @@ function navid_settings_styles( $hook ) {
 		.navid-stat.is-ok b{color:var(--n-primary)}
 		.navid-admin-card{background:#fff;border:1px solid var(--n-line);border-radius:16px;padding:18px;margin-bottom:16px}
 		.navid-admin-card h2{margin:0 0 12px;font-size:16px}
+		.navid-acc>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;list-style:none;font-size:16px;font-weight:800;padding:2px 0}
+		.navid-acc>summary::-webkit-details-marker{display:none}
+		.navid-acc>summary:after{content:"\f347";font-family:dashicons;color:var(--n-muted);transition:transform .15s}
+		.navid-acc[open]>summary:after{transform:rotate(180deg)}
+		.navid-acc[open]>summary{margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--n-line)}
+		.navid-acc--inner{background:#fff;border:1px solid var(--n-line);border-radius:14px;padding:14px 16px;margin:0 0 12px}
+		.navid-acc--inner>summary{font-size:15px}
 		.navid-row{display:grid;grid-template-columns:220px 1fr;gap:12px;align-items:center;padding:10px 0;border-top:1px solid #f0f2f5}
 		.navid-row:first-of-type{border-top:0}
 		.navid-row input[type=text],.navid-row textarea{width:100%;max-width:520px}
@@ -110,6 +117,11 @@ function navid_save_settings() {
 		'toolbar_sub'   => isset( $raw['toolbar_sub'] ) ? sanitize_text_field( $raw['toolbar_sub'] ) : '',
 		'price_url'     => isset( $raw['price_url'] ) ? esc_url_raw( $raw['price_url'] ) : '',
 		'slides'        => isset( $raw['slides'] ) ? sanitize_textarea_field( $raw['slides'] ) : '',
+		'slider_mode'   => ( isset( $raw['slider_mode'] ) && in_array( $raw['slider_mode'], array( 'slide', 'fade', 'cards', 'mosaic' ), true ) ) ? $raw['slider_mode'] : 'slide',
+		'slider_speed'  => isset( $raw['slider_speed'] ) ? min( 15000, max( 2000, absint( $raw['slider_speed'] ) ) ) : 5000,
+		'slider_ratio'  => ( isset( $raw['slider_ratio'] ) && in_array( $raw['slider_ratio'], array( '3/1', '2/1', '16/9', '4/3' ), true ) ) ? $raw['slider_ratio'] : '3/1',
+		'slider_arrows' => empty( $raw['slider_arrows'] ) ? '0' : '1',
+		'slider_autoplay' => empty( $raw['slider_autoplay'] ) ? '0' : '1',
 		'home_cats'     => isset( $raw['home_cats'] ) ? array_values( array_filter( array_map( 'absint', (array) $raw['home_cats'] ) ) ) : array(),
 		'cats_effect'   => ( isset( $raw['cats_effect'] ) && in_array( $raw['cats_effect'], array( 'none', 'lift', 'zoom', 'ring', 'tilt', 'shine' ), true ) ) ? $raw['cats_effect'] : 'lift',
 		'cats_shape'    => ( isset( $raw['cats_shape'] ) && in_array( $raw['cats_shape'], array( 'circle', 'rounded', 'square' ), true ) ) ? $raw['cats_shape'] : 'circle',
@@ -269,6 +281,36 @@ function navid_admin_shell_close() {
 	?>
 	<script>
 	(function () {
+		// Open the accordion that an anchor link points to.
+		function openHash() {
+			var id = location.hash.replace('#', '');
+			var el = id && document.getElementById(id);
+			if (el && el.tagName === 'DETAILS') { el.open = true; el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+		}
+		window.addEventListener('hashchange', openHash);
+		openHash();
+
+		// Price table screens: every heading becomes a collapsible section.
+		Array.prototype.forEach.call(document.querySelectorAll('.navid-embedded .npt-panel'), function (panel) {
+			var kids = Array.prototype.slice.call(panel.children);
+			var current = null, first = true;
+			kids.forEach(function (el) {
+				if (el.tagName === 'H2') {
+					current = document.createElement('details');
+					current.className = 'navid-acc navid-acc--inner';
+					current.open = first;
+					first = false;
+					var sum = document.createElement('summary');
+					sum.textContent = el.textContent;
+					current.appendChild(sum);
+					panel.insertBefore(current, el);
+					panel.removeChild(el);
+				} else if (current) {
+					current.appendChild(el);
+				}
+			});
+		});
+
 		var box = document.getElementById('navid-qsearch');
 		if (!box) { return; }
 		var links = document.querySelectorAll('[data-navid-find], .navid-tile');
@@ -346,41 +388,45 @@ function navid_render_settings() {
 		<div class="notice notice-success is-dismissible"><p>تنظیمات ذخیره شد.</p></div>
 	<?php endif; ?>
 
-	<h2 class="navid-sec-title">وضعیت</h2>
+	<details class="navid-admin-card navid-acc"><summary>وضعیت سایت</summary>
 	<div class="navid-stats">
 		<?php foreach ( $stats as $stat ) : ?>
 			<div class="navid-stat <?php echo $stat[2] ? 'is-ok' : 'is-bad'; ?>"><b><?php echo esc_html( $stat[1] ); ?></b><span><?php echo esc_html( $stat[0] ); ?></span></div>
 		<?php endforeach; ?>
 	</div>
 
-	<h2 class="navid-sec-title">دسترسی‌های سریع</h2>
+	</details>
+
+	<details class="navid-admin-card navid-acc"><summary>دسترسی‌های سریع</summary>
 	<div class="navid-tiles">
 		<?php foreach ( $tiles as $tile ) : ?>
 			<a class="navid-tile" href="<?php echo esc_url( $tile[1] ); ?>"><span class="dashicons <?php echo esc_attr( $tile[2] ); ?>"></span><?php echo esc_html( $tile[0] ); ?></a>
 		<?php endforeach; ?>
 	</div>
 
-	<h2 class="navid-sec-title">ابزارها</h2>
+	</details>
+
+	<details class="navid-admin-card navid-acc"><summary>ابزارها</summary>
 	<div class="navid-tiles">
 		<?php foreach ( $tools as $tile ) : ?>
 			<a class="navid-tile" href="<?php echo esc_url( $tile[1] ); ?>"><span class="dashicons <?php echo esc_attr( $tile[2] ); ?>"></span><?php echo esc_html( $tile[0] ); ?></a>
 		<?php endforeach; ?>
 	</div>
 
+	</details>
+
 	<form id="navid-settings-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 		<input type="hidden" name="action" value="navid_save_settings">
 		<?php wp_nonce_field( 'navid_save_settings' ); ?>
 
-		<section id="navid-look" class="navid-admin-card">
-			<h2>ظاهر</h2>
+		<details id="navid-look" class="navid-admin-card navid-acc"><summary>ظاهر</summary>
 			<div class="navid-row">
 				<label for="navid-primary">رنگ اصلی</label>
 				<input id="navid-primary" type="color" name="navid[primary_color]" value="<?php echo esc_attr( $opt['primary_color'] ); ?>">
 			</div>
-		</section>
+		</details>
 
-		<section id="navid-header" class="navid-admin-card">
-			<h2>هدر و فوتر</h2>
+		<details id="navid-header" class="navid-admin-card navid-acc"><summary>هدر و فوتر</summary>
 			<div class="navid-row">
 				<label for="navid-topbar">نمایش نوار بالا</label>
 				<input id="navid-topbar" type="checkbox" name="navid[show_topbar]" value="1" <?php checked( '1', $opt['show_topbar'] ); ?>>
@@ -413,10 +459,9 @@ function navid_render_settings() {
 				<label for="navid-address">آدرس</label>
 				<input id="navid-address" type="text" name="navid[address]" value="<?php echo esc_attr( $opt['address'] ); ?>">
 			</div>
-		</section>
+		</details>
 
-		<section id="navid-price" class="navid-admin-card">
-			<h2>نوار جدول قیمت</h2>
+		<details id="navid-price" class="navid-admin-card navid-acc"><summary>نوار جدول قیمت</summary>
 			<div class="navid-row">
 				<label for="navid-toolbar-title">عنوان نوار جدول</label>
 				<input id="navid-toolbar-title" type="text" name="navid[toolbar_title]" value="<?php echo esc_attr( $opt['toolbar_title'] ); ?>">
@@ -429,10 +474,9 @@ function navid_render_settings() {
 				<label for="navid-price-url">آدرس صفحه جدول قیمت</label>
 				<input id="navid-price-url" type="text" name="navid[price_url]" value="<?php echo esc_attr( $opt['price_url'] ); ?>" placeholder="https://" dir="ltr">
 			</div>
-		</section>
+		</details>
 
-		<section id="navid-cats" class="navid-admin-card">
-			<h2>دسته‌بندی‌های صفحه اصلی</h2>
+		<details id="navid-cats" class="navid-admin-card navid-acc"><summary>دسته‌بندی‌های صفحه اصلی</summary>
 			<div class="navid-row">
 				<label for="navid-cats-effect">افکت تصویر دسته‌ها</label>
 				<select id="navid-cats-effect" name="navid[cats_effect]">
@@ -476,14 +520,44 @@ function navid_render_settings() {
 					?>
 				</div>
 			</div>
-		</section>
+		</details>
 
-		<section id="navid-slider" class="navid-admin-card">
-			<h2>بنرهای اسلایدر صفحه اصلی</h2>
+		<details id="navid-slider" class="navid-admin-card navid-acc"><summary>بنرهای اسلایدر صفحه اصلی</summary>
 			<div class="navid-row">
-				<label for="navid-slides">هر بنر در یک خط: آدرس عکس | لینک | متن جایگزین</label>
+				<label for="navid-slider-mode">حالت اسلایدر</label>
+				<select id="navid-slider-mode" name="navid[slider_mode]">
+					<?php
+					foreach ( array( 'slide' => 'تمام‌عرض (کشویی)', 'fade' => 'محو شدن', 'cards' => 'کارتی (دیده شدن بنرهای کناری)', 'mosaic' => 'موزاییکی (یک بنر بزرگ + دو بنر کوچک)' ) as $navid_k => $navid_l ) {
+						printf( '<option value="%s"%s>%s</option>', esc_attr( $navid_k ), selected( $opt['slider_mode'], $navid_k, false ), esc_html( $navid_l ) );
+					}
+					?>
+				</select>
+			</div>
+			<div class="navid-row">
+				<label for="navid-slider-ratio">نسبت ابعاد بنر</label>
+				<select id="navid-slider-ratio" name="navid[slider_ratio]">
+					<?php
+					foreach ( array( '3/1' => '۳ به ۱ (باریک)', '2/1' => '۲ به ۱', '16/9' => '۱۶ به ۹', '4/3' => '۴ به ۳' ) as $navid_k => $navid_l ) {
+						printf( '<option value="%s"%s>%s</option>', esc_attr( $navid_k ), selected( $opt['slider_ratio'], $navid_k, false ), esc_html( $navid_l ) );
+					}
+					?>
+				</select>
+			</div>
+			<div class="navid-row">
+				<label for="navid-slider-speed">مدت نمایش هر بنر (میلی‌ثانیه)</label>
+				<input id="navid-slider-speed" type="number" min="2000" max="15000" step="500" name="navid[slider_speed]" value="<?php echo esc_attr( (int) $opt['slider_speed'] ); ?>" style="width:110px">
+			</div>
+			<div class="navid-row">
+				<label>گزینه‌ها</label>
 				<div>
-					<textarea id="navid-slides" name="navid[slides]" rows="5" dir="ltr" placeholder="https://.../banner.jpg | https://.../link | متن جایگزین"><?php echo esc_textarea( $opt['slides'] ); ?></textarea>
+					<label><input type="checkbox" name="navid[slider_autoplay]" value="1" <?php checked( '1', (string) $opt['slider_autoplay'] ); ?>> حرکت خودکار</label>
+					<label style="margin-inline-start:16px"><input type="checkbox" name="navid[slider_arrows]" value="1" <?php checked( '1', (string) $opt['slider_arrows'] ); ?>> نمایش فلش‌ها</label>
+				</div>
+			</div>
+			<div class="navid-row">
+				<label for="navid-slides">هر بنر در یک خط: آدرس عکس | لینک | متن جایگزین | آدرس عکس موبایل (اختیاری)</label>
+				<div>
+					<textarea id="navid-slides" name="navid[slides]" rows="5" dir="ltr" placeholder="آدرس عکس | لینک | متن جایگزین | عکس موبایل (اختیاری)"><?php echo esc_textarea( $opt['slides'] ); ?></textarea>
 					<p><button type="button" class="button" id="navid-add-slide">افزودن تصویر از کتابخانه رسانه</button>
 					<span class="description">اگر خالی بماند، سه بنر پیش‌فرض نمایش داده می‌شود. اندازهٔ پیشنهادی تصویر ۱۲۰۰×۴۰۰.</span></p>
 				</div>
@@ -505,7 +579,7 @@ function navid_render_settings() {
 				});
 				</script>
 			</div>
-		</section>
+		</details>
 	</form>
 	<?php
 	navid_admin_shell_close();

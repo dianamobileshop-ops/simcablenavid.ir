@@ -1,33 +1,62 @@
 /**
- * Banner slider: auto-advance, dots, swipe. No libraries.
+ * Banner slider: slide (scroll-snap), cards and fade modes, arrows, dots, progress bar,
+ * autoplay that pauses on hover/focus, keyboard arrows. No libraries.
  */
 (function () {
 	'use strict';
 
-	var DELAY = 5000;
-
 	function init(root) {
+		var track = root.querySelector('.navid-slider-track');
 		var slides = root.querySelectorAll('.navid-slide');
 		var dots = root.querySelectorAll('.navid-dot');
-		if (slides.length < 2) {
+		var prev = root.querySelector('.navid-arrow--prev');
+		var next = root.querySelector('.navid-arrow--next');
+		var bar = root.querySelector('.navid-progress span');
+		var mode = root.getAttribute('data-mode') || 'slide';
+		var speed = parseInt(root.getAttribute('data-speed'), 10) || 5000;
+		var autoplay = root.getAttribute('data-autoplay') === '1' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		var n = slides.length;
+		if (n < 2) {
 			return;
 		}
 		var index = 0;
 		var timer = null;
+		var paused = false;
 
-		function show(next) {
-			index = (next + slides.length) % slides.length;
-			Array.prototype.forEach.call(slides, function (el, i) {
-				el.classList.toggle('is-on', i === index);
+		function mark(i) {
+			index = i;
+			Array.prototype.forEach.call(slides, function (el, k) {
+				el.classList.toggle('is-on', k === i);
 			});
-			Array.prototype.forEach.call(dots, function (el, i) {
-				el.classList.toggle('is-on', i === index);
+			Array.prototype.forEach.call(dots, function (el, k) {
+				el.classList.toggle('is-on', k === i);
 			});
+		}
+
+		function restartBar() {
+			if (!bar) {
+				return;
+			}
+			bar.style.animation = 'none';
+			void bar.offsetWidth;
+			bar.style.animation = autoplay && !paused ? 'navid-progress ' + speed + 'ms linear forwards' : 'none';
+		}
+
+		function go(i) {
+			i = (i + n) % n;
+			mark(i);
+			if (mode !== 'fade') {
+				slides[i].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+			}
+			restartBar();
 		}
 
 		function start() {
 			stop();
-			timer = window.setInterval(function () { show(index + 1); }, DELAY);
+			if (autoplay && !paused) {
+				timer = window.setInterval(function () { go(index + 1); }, speed);
+				restartBar();
+			}
 		}
 
 		function stop() {
@@ -38,32 +67,50 @@
 		}
 
 		Array.prototype.forEach.call(dots, function (dot, i) {
-			dot.addEventListener('click', function () {
-				show(i);
-				start();
+			dot.addEventListener('click', function () { go(i); start(); });
+		});
+		// RTL: the arrow on the right goes back, the one on the left goes forward.
+		if (prev) { prev.addEventListener('click', function () { go(index - 1); start(); }); }
+		if (next) { next.addEventListener('click', function () { go(index + 1); start(); }); }
+
+		// Swiping scrolls the track itself; the dots follow whichever slide is in view.
+		if (mode !== 'fade' && 'IntersectionObserver' in window) {
+			var io = new IntersectionObserver(function (entries) {
+				entries.forEach(function (entry) {
+					if (entry.isIntersecting) {
+						var k = Array.prototype.indexOf.call(slides, entry.target);
+						if (k !== index) {
+							mark(k);
+							restartBar();
+						}
+					}
+				});
+			}, { root: track, threshold: 0.6 });
+			Array.prototype.forEach.call(slides, function (s) { io.observe(s); });
+		} else if (mode === 'fade') {
+			var startX = null;
+			root.addEventListener('touchstart', function (e) { startX = e.touches[0].clientX; }, { passive: true });
+			root.addEventListener('touchend', function (e) {
+				if (startX === null) { return; }
+				var dx = e.changedTouches[0].clientX - startX;
+				startX = null;
+				if (Math.abs(dx) > 40) { go(dx > 0 ? index + 1 : index - 1); start(); }
 			});
+		}
+
+		root.addEventListener('mouseenter', function () { paused = true; stop(); restartBar(); });
+		root.addEventListener('mouseleave', function () { paused = false; start(); });
+		root.addEventListener('focusin', function () { paused = true; stop(); });
+		root.addEventListener('focusout', function () { paused = false; start(); });
+		root.setAttribute('tabindex', '0');
+		root.addEventListener('keydown', function (e) {
+			if (e.key === 'ArrowLeft') { go(index + 1); start(); }
+			if (e.key === 'ArrowRight') { go(index - 1); start(); }
+		});
+		document.addEventListener('visibilitychange', function () {
+			if (document.hidden) { stop(); } else { start(); }
 		});
 
-		var startX = null;
-		root.addEventListener('touchstart', function (e) {
-			startX = e.touches[0].clientX;
-			stop();
-		}, { passive: true });
-		root.addEventListener('touchend', function (e) {
-			if (startX === null) {
-				return;
-			}
-			var dx = e.changedTouches[0].clientX - startX;
-			startX = null;
-			if (Math.abs(dx) > 40) {
-				// Right-to-left layout: swiping left goes to the previous slide.
-				show(dx > 0 ? index + 1 : index - 1);
-			}
-			start();
-		});
-
-		root.addEventListener('mouseenter', stop);
-		root.addEventListener('mouseleave', start);
 		start();
 	}
 

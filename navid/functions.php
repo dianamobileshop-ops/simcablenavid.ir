@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'NAVID_VERSION', '1.1.0' );
+define( 'NAVID_VERSION', '1.1.1' );
 
 /**
  * Basic theme support.
@@ -42,6 +42,15 @@ function navid_assets() {
 	wp_localize_script( 'navid-header', 'NAVID', array( 'ajaxUrl' => admin_url( 'admin-ajax.php' ) ) );
 	if ( function_exists( 'is_woocommerce' ) && ( is_woocommerce() || is_cart() || is_checkout() ) ) {
 		wp_enqueue_script( 'navid-shop', get_template_directory_uri() . '/assets/js/shop.js', array(), NAVID_VERSION, true );
+		wp_localize_script( 'navid-shop', 'NAVIDSHOP', array(
+			'fragments' => class_exists( 'WC_AJAX' ) ? WC_AJAX::get_endpoint( 'get_refreshed_fragments' ) : '',
+			'cartUrl'   => function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : '',
+			'added'     => 'به سبد خرید اضافه شد',
+			'view'      => 'مشاهده سبد',
+			'adding'    => 'در حال افزودن…',
+			'addLabel'  => 'افزودن به سبد خرید',
+			'error'     => 'افزودن به سبد انجام نشد. دوباره تلاش کنید.',
+		) );
 	}
 	if ( is_front_page() ) {
 		wp_enqueue_script( 'navid-slider', get_template_directory_uri() . '/assets/js/slider.js', array(), NAVID_VERSION, true );
@@ -64,6 +73,11 @@ function navid_options() {
 		'price_url'     => '',
 		'slides'        => '',
 		// Same contact details the price list header/footer already uses.
+		'slider_mode'   => 'slide',
+		'slider_speed'  => 5000,
+		'slider_ratio'  => '3/1',
+		'slider_arrows' => '1',
+		'slider_autoplay' => '1',
 		'home_cats'     => array(),
 		'cats_effect'   => 'lift',
 		'cats_shape'    => 'circle',

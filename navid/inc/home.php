@@ -25,6 +25,7 @@ function navid_slides() {
 			'image' => esc_url_raw( $parts[0] ),
 			'link'  => isset( $parts[1] ) ? esc_url_raw( $parts[1] ) : '',
 			'alt'   => isset( $parts[2] ) ? sanitize_text_field( $parts[2] ) : '',
+			'mobile' => isset( $parts[3] ) ? esc_url_raw( $parts[3] ) : '',
 		);
 	}
 	if ( $slides ) {
@@ -70,4 +71,35 @@ function navid_home_categories() {
 		'exclude'    => array( get_option( 'default_product_cat' ) ),
 	) );
 	return is_wp_error( $terms ) ? array() : $terms;
+}
+
+/**
+ * Markup of one banner (image with optional phone image, or a text card).
+ *
+ * @param array $slide Slide.
+ * @param int   $i     Position.
+ * @return string
+ */
+function navid_slide_html( $slide, $i ) {
+	if ( isset( $slide['title'] ) ) {
+		ob_start();
+		?>
+		<div class="navid-slide-card navid-tone-<?php echo (int) $slide['tone']; ?>">
+			<h2><?php echo esc_html( $slide['title'] ); ?></h2>
+			<p><?php echo esc_html( $slide['text'] ); ?></p>
+			<a class="navid-btn" href="<?php echo esc_url( $slide['link'] ); ?>"><?php echo esc_html( $slide['cta'] ); ?></a>
+		</div>
+		<?php
+		return ob_get_clean();
+	}
+	$img = sprintf(
+		'<img src="%s" alt="%s" width="1200" height="400" %s decoding="async">',
+		esc_url( $slide['image'] ),
+		esc_attr( $slide['alt'] ),
+		0 === $i ? 'fetchpriority="high"' : 'loading="lazy"'
+	);
+	if ( ! empty( $slide['mobile'] ) ) {
+		$img = '<picture><source media="(max-width: 640px)" srcset="' . esc_url( $slide['mobile'] ) . '">' . $img . '</picture>';
+	}
+	return $slide['link'] ? '<a href="' . esc_url( $slide['link'] ) . '">' . $img . '</a>' : $img;
 }
