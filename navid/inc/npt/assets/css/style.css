@@ -587,3 +587,46 @@
 		display: block;
 	}
 }
+
+/* 2.0.17: [navid_price_bar] stands alone; the buttons share one row */
+.npt-toolbar {
+	top: var(--npt-sticky-top, 0px);
+}
+
+.npt-tb-btns {
+	grid-template-columns: none;
+	grid-auto-flow: column;
+	grid-auto-columns: 1fr;
+}
+
+.npt-tb-btns .npt-pf-btn {
+	background: #e56a00;
+	background: var(--navid-accent, #e56a00);
+	color: #fff;
+}
+
+@media (max-width: 600px) {
+	.npt-toolbar {
+		flex-direction: column;
+		padding: 10px 10px 8px;
+		margin: 6px 0 8px;
+	}
+
+	.npt-tb-title {
+		font-size: 13.5px;
+	}
+
+	.npt-tb-sub {
+		display: none;
+	}
+
+	.npt-tb-btns a {
+		padding: 10px 4px;
+		font-size: 12.5px;
+	}
+
+	.npt-tb-btns .npt-pdf-btn svg,
+	.npt-tb-btns .npt-view-btn svg {
+		display: none;
+	}
+}

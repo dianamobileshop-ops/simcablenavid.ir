@@ -222,8 +222,40 @@
 		});
 	}
 
+	// ---- Signed-in customer without a number: confirm it with a code
+	function initBind(box) {
+		var phoneForm = box.querySelector('.navid-bind-phone');
+		var codeForm = box.querySelector('.navid-bind-code');
+		var status = box.querySelector('.navid-auth-status');
+		var say = function (text, ok) {
+			status.textContent = text || '';
+			status.classList.toggle('is-ok', !!ok);
+			status.classList.toggle('is-bad', !ok && !!text);
+		};
+		var fail = function () { say('خطا در ارتباط با سرور. دوباره تلاش کنید.'); };
+		phoneForm.addEventListener('submit', function (e) {
+			e.preventDefault();
+			post('npt_bind_send', { phone: phoneForm.phone.value }).then(function (res) {
+				say(res.data && res.data.message, res.success);
+				if (res.success) {
+					phoneForm.hidden = true;
+					codeForm.hidden = false;
+					codeForm.code.focus();
+				}
+			}).catch(fail);
+		});
+		codeForm.addEventListener('submit', function (e) {
+			e.preventDefault();
+			post('npt_bind_done', { phone: phoneForm.phone.value, code: codeForm.code.value }).then(function (res) {
+				say(res.data && res.data.message, res.success);
+				if (res.success) { window.setTimeout(function () { window.location.reload(); }, 900); }
+			}).catch(fail);
+		});
+	}
+
 	document.addEventListener('DOMContentLoaded', function () {
 		Array.prototype.forEach.call(document.querySelectorAll('[data-navid-card]'), initCard);
+		Array.prototype.forEach.call(document.querySelectorAll('[data-navid-bind]'), initBind);
 		initModal();
 	});
 })();

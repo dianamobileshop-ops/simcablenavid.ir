@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'NAVID_VERSION', '1.4.3' );
+define( 'NAVID_VERSION', '1.4.4' );
 
 /**
  * Whether WooCommerce is running. Every shop feature checks this, so the theme works
@@ -91,6 +91,14 @@ function navid_assets() {
 			'nonce'   => wp_create_nonce( 'navid_cart_pf' ),
 		) );
 	}
+	if ( navid_wc() && is_user_logged_in() && is_account_page() && class_exists( 'NPT_OTP' ) ) {
+		navid_script( 'navid-auth', 'auth.js' );
+		wp_localize_script( 'navid-auth', 'NAVIDAUTH', array(
+			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+			'nonce'   => wp_create_nonce( NPT_OTP::NONCE ),
+			'cooldown' => 60,
+		) );
+	}
 	if ( navid_wc() && ! is_user_logged_in() ) {
 		navid_script( 'navid-auth', 'auth.js' );
 		$redirect = isset( $_GET['redirect_to'] ) ? wp_validate_redirect( esc_url_raw( wp_unslash( $_GET['redirect_to'] ) ), '' ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -139,6 +147,13 @@ function navid_options() {
 		'toolbar_title' => 'دریافت لیست قیمت رسمی سیم و کابل نوید',
 		'toolbar_sub'   => '',
 		'price_url'     => '',
+		'login_sms'      => '1',
+		'login_password' => '1',
+		'login_register' => '1',
+		'login_note'     => '',
+		'bar_show_pdf'  => '1',
+		'bar_show_view' => '1',
+		'bar_show_proforma' => '1',
 		'slides'        => '',
 		// Same contact details the price list header/footer already uses.
 		'slider_mode'   => 'slide',

@@ -121,6 +121,13 @@ function navid_save_settings() {
 		'toolbar_title' => isset( $raw['toolbar_title'] ) ? sanitize_text_field( $raw['toolbar_title'] ) : '',
 		'toolbar_sub'   => isset( $raw['toolbar_sub'] ) ? sanitize_text_field( $raw['toolbar_sub'] ) : '',
 		'price_url'     => isset( $raw['price_url'] ) ? esc_url_raw( $raw['price_url'] ) : '',
+		'login_sms'      => empty( $raw['login_sms'] ) ? '0' : '1',
+		'login_password' => empty( $raw['login_password'] ) ? '0' : '1',
+		'login_register' => empty( $raw['login_register'] ) ? '0' : '1',
+		'login_note'     => isset( $raw['login_note'] ) ? sanitize_text_field( $raw['login_note'] ) : '',
+		'bar_show_pdf'  => empty( $raw['bar_show_pdf'] ) ? '0' : '1',
+		'bar_show_view' => empty( $raw['bar_show_view'] ) ? '0' : '1',
+		'bar_show_proforma' => empty( $raw['bar_show_proforma'] ) ? '0' : '1',
 		'slides'        => isset( $raw['slides'] ) ? sanitize_textarea_field( $raw['slides'] ) : '',
 		'slider_mode'   => ( isset( $raw['slider_mode'] ) && in_array( $raw['slider_mode'], array( 'slide', 'fade', 'cards', 'mosaic' ), true ) ) ? $raw['slider_mode'] : 'slide',
 		'slider_speed'  => isset( $raw['slider_speed'] ) ? min( 15000, max( 2000, absint( $raw['slider_speed'] ) ) ) : 5000,
@@ -186,7 +193,8 @@ function navid_settings_groups() {
 		't-header'  => array( 'sticky_header', 'special_label', 'special_url' ),
 		't-contact' => array( 'phone', 'address', 'email', 'hours' ),
 		't-footer'  => array( 'about', 'ft_features_show', 'ft_features', 'enamad', 'copyright', 'social_telegram', 'social_instagram', 'social_whatsapp', 'social_eitaa', 'social_bale', 'social_aparat', 'social_linkedin' ),
-		't-bar'     => array( 'toolbar_title', 'toolbar_sub', 'price_url' ),
+		't-login'   => array( 'login_sms', 'login_password', 'login_register', 'login_note' ),
+		't-bar'     => array( 'toolbar_title', 'toolbar_sub', 'price_url', 'bar_show_pdf', 'bar_show_view', 'bar_show_proforma' ),
 		't-cats'    => array( 'home_cats', 'cats_effect', 'cats_shape', 'cats_cols' ),
 		't-slider'  => array( 'slides', 'slider_mode', 'slider_speed', 'slider_ratio', 'slider_arrows', 'slider_autoplay' ),
 		't-date'    => array( 'jalali', 'fa_digits' ),
@@ -244,6 +252,7 @@ function navid_admin_tree() {
 			'label' => 'پیامک و ورود',
 			'icon'  => 'dashicons-email-alt',
 			'items' => array(
+				't-login'   => array( 'ورود مشتریان', $tab( 't-login' ) ),
 				'sms'       => array( 'اتصال سامانهٔ پیامک', $tab( 'sms' ) ),
 				'otp'       => array( 'کدهای الگو', $tab( 'otp' ) ),
 				'templates' => array( 'متن پیامک‌ها', $tab( 'templates' ) ),
@@ -547,6 +556,39 @@ function navid_settings_section( $key, $opt ) {
 			</section>
 			<?php
 			break;
+		case 't-login':
+			$sms_ready = class_exists( 'NPT_OTP' ) && class_exists( 'NPT_SMS' ) && NPT_OTP::enabled() && NPT_SMS::otp_ready();
+			?>
+			<section class="navid-admin-card">
+				<h2>ورود و ثبت‌نام مشتریان</h2>
+			<p class="description">
+				وضعیت پیامک:
+				<?php if ( $sms_ready ) : ?>
+					<strong style="color:#127a3c">آماده است</strong>
+				<?php else : ?>
+					<strong style="color:#b3261e">آماده نیست</strong> — ورود و ثبت‌نام با شماره وقتی کار می‌کند که ورود پیامکی روشن و سامانهٔ پیامک و کد الگو تنظیم شده باشد (بخش «پیامک و ورود»). تا آن موقع فقط ورود با رمز عبور نمایش داده می‌شود.
+				<?php endif; ?>
+			</p>
+			<div class="navid-row">
+				<label for="navid-login-sms">ورود با شمارهٔ موبایل و کد پیامکی</label>
+				<input id="navid-login-sms" type="checkbox" name="navid[login_sms]" value="1" <?php checked( '1', $opt['login_sms'] ); ?>>
+			</div>
+			<div class="navid-row">
+				<label for="navid-login-pass">ورود با رمز عبور (برای مدیران و مشتریان قدیمی)</label>
+				<input id="navid-login-pass" type="checkbox" name="navid[login_password]" value="1" <?php checked( '1', $opt['login_password'] ); ?>>
+			</div>
+			<div class="navid-row">
+				<label for="navid-login-reg">ثبت‌نام مشتری جدید (نام و نام‌خانوادگی + شماره)</label>
+				<input id="navid-login-reg" type="checkbox" name="navid[login_register]" value="1" <?php checked( '1', $opt['login_register'] ); ?>>
+			</div>
+			<div class="navid-row">
+				<label for="navid-login-note">متن زیر کارت ورود (اختیاری)</label>
+				<input id="navid-login-note" type="text" name="navid[login_note]" value="<?php echo esc_attr( $opt['login_note'] ); ?>">
+			</div>
+			<p class="description">مشتریان قدیمی که شماره ندارند، بعد از ورود با رمز در صفحهٔ حساب کاربری از آن‌ها خواسته می‌شود شماره‌شان را با کد پیامکی تأیید کنند.</p>
+			</section>
+			<?php
+			break;
 		case 't-bar':
 			?>
 			<section class="navid-admin-card">
@@ -562,6 +604,19 @@ function navid_settings_section( $key, $opt ) {
 			<div class="navid-row">
 				<label for="navid-price-url">آدرس صفحه جدول قیمت</label>
 				<input id="navid-price-url" type="text" name="navid[price_url]" value="<?php echo esc_attr( $opt['price_url'] ); ?>" placeholder="https://" dir="ltr">
+			</div>
+			<p class="description">خالی بگذارید تا صفحه‌ای که شورت‌کد [navid_price_table] دارد خودکار پیدا شود. دکمهٔ «مشاهده آنلاین» به این صفحه می‌رود.</p>
+			<div class="navid-row">
+				<label for="navid-bar-pdf">نمایش دکمهٔ دانلود PDF</label>
+				<input id="navid-bar-pdf" type="checkbox" name="navid[bar_show_pdf]" value="1" <?php checked( '1', $opt['bar_show_pdf'] ); ?>>
+			</div>
+			<div class="navid-row">
+				<label for="navid-bar-view">نمایش دکمهٔ مشاهده آنلاین</label>
+				<input id="navid-bar-view" type="checkbox" name="navid[bar_show_view]" value="1" <?php checked( '1', $opt['bar_show_view'] ); ?>>
+			</div>
+			<div class="navid-row">
+				<label for="navid-bar-pf">نمایش دکمهٔ صدور پیش‌فاکتور (وقتی برگه‌ای با [navid_proforma] هست)</label>
+				<input id="navid-bar-pf" type="checkbox" name="navid[bar_show_proforma]" value="1" <?php checked( '1', $opt['bar_show_proforma'] ); ?>>
 			</div>
 			</section>
 			<?php

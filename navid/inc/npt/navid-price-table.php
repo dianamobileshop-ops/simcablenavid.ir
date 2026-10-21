@@ -1134,11 +1134,6 @@ function npt_render_shortcode( $atts ) {
 
 	$instance_id = 'npt-' . wp_generate_password( 6, false, false );
 
-	// Texts of the bar above the table come from the theme panel.
-	$navid_opts    = function_exists( 'navid_options' ) ? navid_options() : array();
-	$toolbar_title = ! empty( $navid_opts['toolbar_title'] ) ? $navid_opts['toolbar_title'] : 'دریافت لیست قیمت رسمی سیم و کابل نوید';
-	$toolbar_sub   = isset( $navid_opts['toolbar_sub'] ) ? $navid_opts['toolbar_sub'] : '';
-
 	$heading     = null !== $atts['heading'] ? sanitize_text_field( $atts['heading'] ) : get_option( 'npt_seo_heading', '' );
 	$heading_tag = npt_sanitize_heading_tag( get_option( 'npt_seo_heading_tag', 'h2' ) );
 	$intro       = get_option( 'npt_seo_intro', '' );
@@ -1171,14 +1166,6 @@ function npt_render_shortcode( $atts ) {
 		<?php if ( $intro ) : ?>
 			<p class="npt-seo-intro"><?php echo esc_html( $intro ); ?></p>
 		<?php endif; ?>
-		<div class="npt-toolbar">
-			<div class="npt-tb-title"><?php echo npt_pdf_icon(); // phpcs:ignore ?><span><?php echo esc_html( $toolbar_title ); ?></span></div>
-			<?php if ( '' !== $toolbar_sub ) : ?><div class="npt-tb-sub"><?php echo esc_html( $toolbar_sub ); ?></div><?php endif; ?>
-			<div class="npt-tb-btns">
-				<a href="<?php echo esc_url( npt_pdf_download_url( $atts['category'] ) ); ?>" class="npt-pdf-btn" rel="nofollow"><?php echo npt_pdf_icon(); // phpcs:ignore ?><span><?php esc_html_e( 'دانلود PDF', 'navid-price-table' ); ?></span></a>
-				<a href="<?php echo esc_url( npt_online_view_url( $atts['category'] ) ); ?>" class="npt-view-btn" rel="nofollow"><?php echo npt_eye_icon(); // phpcs:ignore ?><span><?php esc_html_e( 'مشاهده آنلاین', 'navid-price-table' ); ?></span></a>
-			</div>
-		</div>
 		<div class="npt-filter-row">
 			<label for="<?php echo esc_attr( $instance_id ); ?>-filter" class="npt-filter-label"><?php esc_html_e( 'فیلتر دسته‌بندی:', 'navid-price-table' ); ?></label>
 			<?php echo npt_category_dropdown( $atts['category'], $instance_id . '-filter' ); // phpcs:ignore ?>
@@ -1190,6 +1177,71 @@ function npt_render_shortcode( $atts ) {
 	<?php
 	echo npt_render_schema_json_ld( $atts['category'] ); // phpcs:ignore
 
+	return ob_get_clean();
+}
+
+/**
+ * Address of the page that shows the price table: the one set in the theme panel,
+ * else the first page carrying [navid_price_table]. '' when there is none.
+ */
+function npt_price_page_url() {
+	$opts = function_exists( 'navid_options' ) ? navid_options() : array();
+	if ( ! empty( $opts['price_url'] ) ) {
+		return $opts['price_url'];
+	}
+	$url = get_transient( 'npt_price_page_url' );
+	if ( false === $url ) {
+		$id  = npt_find_shortcode_page( 'navid_price_table' );
+		$url = $id ? (string) get_permalink( $id ) : '';
+		set_transient( 'npt_price_page_url', $url, 6 * HOUR_IN_SECONDS );
+	}
+	return (string) $url;
+}
+add_action( 'save_post_page', function () {
+	delete_transient( 'npt_price_page_url' );
+} );
+
+/**
+ * [navid_price_bar]: only the bar (title, PDF, online view, proforma). It is printed
+ * without a wrapper so it can stick under the site header for the whole page.
+ */
+add_shortcode( 'navid_price_bar', 'npt_render_price_bar' );
+
+function npt_render_price_bar( $atts ) {
+	if ( ! class_exists( 'WooCommerce' ) ) {
+		return '';
+	}
+	wp_enqueue_style( 'npt-style' );
+	$atts = shortcode_atts( array( 'category' => '' ), $atts, 'navid_price_bar' );
+
+	$opts  = function_exists( 'navid_options' ) ? navid_options() : array();
+	$title = ! empty( $opts['toolbar_title'] ) ? $opts['toolbar_title'] : 'دریافت لیست قیمت رسمی سیم و کابل نوید';
+	$sub   = isset( $opts['toolbar_sub'] ) ? $opts['toolbar_sub'] : '';
+	$show  = function ( $key ) use ( $opts ) {
+		return ! isset( $opts[ $key ] ) || '0' !== (string) $opts[ $key ];
+	};
+	$price_page = npt_price_page_url();
+	$view_url   = $price_page ? $price_page : npt_online_view_url( $atts['category'] );
+	$pf_url     = function_exists( 'navid_proforma_url' ) ? navid_proforma_url() : '';
+
+	ob_start();
+	?>
+	<div class="npt-toolbar">
+		<div class="npt-tb-title"><?php echo npt_pdf_icon(); // phpcs:ignore ?><span><?php echo esc_html( $title ); ?></span></div>
+		<?php if ( '' !== $sub ) : ?><div class="npt-tb-sub"><?php echo esc_html( $sub ); ?></div><?php endif; ?>
+		<div class="npt-tb-btns">
+			<?php if ( $show( 'bar_show_pdf' ) ) : ?>
+				<a href="<?php echo esc_url( npt_pdf_download_url( $atts['category'] ) ); ?>" class="npt-pdf-btn" rel="nofollow"><?php echo npt_pdf_icon(); // phpcs:ignore ?><span><?php esc_html_e( 'دانلود PDF', 'navid-price-table' ); ?></span></a>
+			<?php endif; ?>
+			<?php if ( $show( 'bar_show_view' ) ) : ?>
+				<a href="<?php echo esc_url( $view_url ); ?>" class="npt-view-btn"><?php echo npt_eye_icon(); // phpcs:ignore ?><span><?php esc_html_e( 'مشاهده آنلاین', 'navid-price-table' ); ?></span></a>
+			<?php endif; ?>
+			<?php if ( $pf_url && $show( 'bar_show_proforma' ) ) : ?>
+				<a href="<?php echo esc_url( $pf_url ); ?>" class="npt-pf-btn"><span><?php esc_html_e( 'صدور پیش‌فاکتور', 'navid-price-table' ); ?></span></a>
+			<?php endif; ?>
+		</div>
+	</div>
+	<?php
 	return ob_get_clean();
 }
 

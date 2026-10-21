@@ -190,3 +190,18 @@
 		mq.addEventListener('change', sync);
 	}
 })();
+
+/* Sticky blocks (the price bar) sit right under the sticky header. */
+(function () {
+	function sync() {
+		var header = document.querySelector('.navid-header');
+		var top = 0;
+		if (header && window.getComputedStyle(header).position === 'sticky') {
+			top = Math.round(header.getBoundingClientRect().height);
+		}
+		document.documentElement.style.setProperty('--npt-sticky-top', top + 'px');
+	}
+	window.addEventListener('load', sync);
+	window.addEventListener('resize', sync);
+	document.addEventListener('DOMContentLoaded', sync);
+})();

@@ -11,8 +11,11 @@ defined( 'ABSPATH' ) || exit;
 
 $navid_args     = wp_parse_args( isset( $args ) ? $args : array(), array( 'id' => 'a', 'redirect' => '' ) );
 $navid_p        = sanitize_key( $navid_args['id'] );
-$navid_sms      = class_exists( 'NPT_OTP' ) && class_exists( 'NPT_SMS' ) && NPT_OTP::enabled() && NPT_SMS::otp_ready();
-$navid_wc_reg   = 'yes' === get_option( 'woocommerce_enable_myaccount_registration' );
+$navid_ready    = class_exists( 'NPT_OTP' ) && class_exists( 'NPT_SMS' ) && NPT_OTP::enabled() && NPT_SMS::otp_ready();
+$navid_opt      = navid_options();
+$navid_sms      = $navid_ready && '0' !== (string) $navid_opt['login_sms'];
+$navid_pass     = '0' !== (string) $navid_opt['login_password'] || ! $navid_sms;
+$navid_reg      = $navid_ready && '0' !== (string) $navid_opt['login_register'];
 $navid_account  = wc_get_page_permalink( 'myaccount' );
 $navid_first    = $navid_sms ? 'sms' : 'password';
 ?>
@@ -20,19 +23,19 @@ $navid_first    = $navid_sms ? 'sms' : 'password';
 	<a class="navid-auth-logo" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php bloginfo( 'name' ); ?>"><?php echo navid_logo_html(); // phpcs:ignore WordPress.Security.EscapeOutput ?></a>
 	<h2 class="navid-auth-title"><?php esc_html_e( 'ورود | ثبت‌نام', 'navid' ); ?></h2>
 
+	<?php if ( ( $navid_sms ? 1 : 0 ) + ( $navid_pass ? 1 : 0 ) + ( $navid_reg ? 1 : 0 ) > 1 ) : ?>
 	<div class="navid-auth-tabs" role="tablist">
 		<?php if ( $navid_sms ) : ?>
-			<button type="button" role="tab" class="<?php echo 'sms' === $navid_first ? 'is-on' : ''; ?>" data-navid-tab="sms"><?php esc_html_e( 'ورود با پیامک', 'navid' ); ?></button>
+			<button type="button" role="tab" class="<?php echo 'sms' === $navid_first ? 'is-on' : ''; ?>" data-navid-tab="sms"><?php esc_html_e( 'ورود با شماره', 'navid' ); ?></button>
 		<?php endif; ?>
-		<button type="button" role="tab" class="<?php echo 'password' === $navid_first ? 'is-on' : ''; ?>" data-navid-tab="password"><?php esc_html_e( 'رمز عبور', 'navid' ); ?></button>
-		<?php if ( $navid_sms ) : ?>
+		<?php if ( $navid_pass ) : ?>
+			<button type="button" role="tab" class="<?php echo 'password' === $navid_first ? 'is-on' : ''; ?>" data-navid-tab="password"><?php esc_html_e( 'رمز عبور', 'navid' ); ?></button>
+		<?php endif; ?>
+		<?php if ( $navid_reg ) : ?>
 			<button type="button" role="tab" data-navid-tab="register"><?php esc_html_e( 'ثبت‌نام', 'navid' ); ?></button>
-		<?php elseif ( $navid_wc_reg && is_account_page() ) : ?>
-			<button type="button" role="tab" data-navid-tab="register"><?php esc_html_e( 'ثبت‌نام', 'navid' ); ?></button>
-		<?php elseif ( $navid_wc_reg ) : ?>
-			<a class="navid-auth-tablink" href="<?php echo esc_url( $navid_account ); ?>#navid-register"><?php esc_html_e( 'ثبت‌نام', 'navid' ); ?></a>
 		<?php endif; ?>
 	</div>
+	<?php endif; ?>
 
 	<?php if ( $navid_sms ) : ?>
 		<section class="navid-auth-panel" data-navid-panel="sms" <?php echo 'sms' === $navid_first ? '' : 'hidden'; ?>>
@@ -49,10 +52,11 @@ $navid_first    = $navid_sms ? 'sms' : 'password';
 				<button type="button" class="navid-auth-link navid-otp-change"><?php esc_html_e( 'تغییر شماره', 'navid' ); ?></button>
 			</form>
 			<p class="navid-auth-status" role="status"></p>
-			<p class="navid-auth-foot"><?php esc_html_e( 'با شمارهٔ ثبت‌شده وارد شوید. اگر حساب ندارید از تب «ثبت‌نام» استفاده کنید.', 'navid' ); ?></p>
+			<p class="navid-auth-foot"><?php echo esc_html( $navid_reg ? __( 'با شمارهٔ ثبت‌شده وارد شوید. اگر حساب ندارید از تب «ثبت‌نام» استفاده کنید.', 'navid' ) : __( 'با شمارهٔ ثبت‌شده وارد شوید.', 'navid' ) ); ?></p>
 		</section>
 	<?php endif; ?>
 
+	<?php if ( $navid_pass ) : ?>
 	<section class="navid-auth-panel" data-navid-panel="password" <?php echo 'password' === $navid_first ? '' : 'hidden'; ?>>
 		<form class="woocommerce-form woocommerce-form-login login" method="post" action="<?php echo esc_url( $navid_account ); ?>">
 			<?php do_action( 'woocommerce_login_form_start' ); ?>
@@ -71,8 +75,9 @@ $navid_first    = $navid_sms ? 'sms' : 'password';
 			<?php do_action( 'woocommerce_login_form_end' ); ?>
 		</form>
 	</section>
+	<?php endif; ?>
 
-	<?php if ( $navid_sms ) : ?>
+	<?php if ( $navid_reg ) : ?>
 		<section class="navid-auth-panel" data-navid-panel="register" hidden>
 			<form class="navid-reg-form" novalidate>
 				<label for="navid-<?php echo esc_attr( $navid_p ); ?>-rname"><?php esc_html_e( 'نام و نام خانوادگی', 'navid' ); ?></label>
@@ -94,25 +99,7 @@ $navid_first    = $navid_sms ? 'sms' : 'password';
 		</section>
 	<?php endif; ?>
 
-	<?php if ( $navid_wc_reg && ! $navid_sms && is_account_page() ) : ?>
-		<section class="navid-auth-panel navid-auth-register" id="navid-register" data-navid-panel="register" hidden>
-			<form method="post" class="woocommerce-form woocommerce-form-register register" <?php do_action( 'woocommerce_register_form_tag' ); ?>>
-				<?php do_action( 'woocommerce_register_form_start' ); ?>
-				<?php if ( 'no' === get_option( 'woocommerce_registration_generate_username' ) ) : ?>
-					<label for="reg_username"><?php esc_html_e( 'نام کاربری', 'navid' ); ?></label>
-					<input type="text" name="username" id="reg_username" dir="ltr">
-				<?php endif; ?>
-				<label for="reg_email"><?php esc_html_e( 'ایمیل', 'navid' ); ?></label>
-				<input type="email" name="email" id="reg_email" dir="ltr" required>
-				<?php if ( 'no' === get_option( 'woocommerce_registration_generate_password' ) ) : ?>
-					<label for="reg_password"><?php esc_html_e( 'رمز عبور', 'navid' ); ?></label>
-					<input type="password" name="password" id="reg_password" dir="ltr">
-				<?php endif; ?>
-				<?php do_action( 'woocommerce_register_form' ); ?>
-				<?php wp_nonce_field( 'woocommerce-register', 'woocommerce-register-nonce' ); ?>
-				<button type="submit" class="navid-auth-btn" name="register" value="<?php esc_attr_e( 'ثبت‌نام', 'navid' ); ?>"><?php esc_html_e( 'ثبت‌نام', 'navid' ); ?></button>
-				<?php do_action( 'woocommerce_register_form_end' ); ?>
-			</form>
-		</section>
+	<?php if ( '' !== trim( (string) $navid_opt['login_note'] ) ) : ?>
+		<p class="navid-auth-foot"><?php echo esc_html( $navid_opt['login_note'] ); ?></p>
 	<?php endif; ?>
 </div>

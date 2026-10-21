@@ -1007,8 +1007,9 @@ class NPT_Panel {
 	}
 
 	private static function bind_guard() {
-		if ( ! is_user_logged_in() || ! self::user_can_panel() ) {
-			wp_send_json_error( array( 'message' => 'این کار فقط برای حساب وارد‌شده‌ی دارای پنل ممکن است.' ), 403 );
+		// Any signed-in account may attach its own number: the code proves it is theirs.
+		if ( ! is_user_logged_in() ) {
+			wp_send_json_error( array( 'message' => 'ابتدا وارد حساب خود شوید.' ), 403 );
 		}
 	}
 

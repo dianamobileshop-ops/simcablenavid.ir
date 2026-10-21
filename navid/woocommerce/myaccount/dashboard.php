@@ -41,6 +41,21 @@ if ( function_exists( 'navid_proforma_url' ) && navid_proforma_url() ) {
 	$navid_links[] = array( 'پیش‌فاکتور جدید', navid_proforma_url() );
 }
 ?>
+<?php if ( class_exists( 'NPT_Panel' ) && class_exists( 'NPT_OTP' ) && NPT_OTP::enabled() && '' === NPT_Panel::user_mobile( wp_get_current_user() ) ) : ?>
+<section class="navid-dash-card navid-bind" data-navid-bind>
+	<header class="navid-dash-head"><h2><?php esc_html_e( 'تأیید شمارهٔ موبایل', 'navid' ); ?></h2></header>
+	<p><?php esc_html_e( 'برای ورود سریع با کد پیامکی، شمارهٔ موبایل خود را وارد و تأیید کنید.', 'navid' ); ?></p>
+	<form class="navid-bind-phone" novalidate>
+		<input type="tel" name="phone" inputmode="tel" dir="ltr" autocomplete="tel" placeholder="09121234567" required>
+		<button type="submit" class="navid-auth-btn"><?php esc_html_e( 'دریافت کد تأیید', 'navid' ); ?></button>
+	</form>
+	<form class="navid-bind-code" hidden novalidate>
+		<input type="text" name="code" inputmode="numeric" dir="ltr" autocomplete="one-time-code" maxlength="6" placeholder="••••••" required>
+		<button type="submit" class="navid-auth-btn"><?php esc_html_e( 'تأیید و ذخیره', 'navid' ); ?></button>
+	</form>
+	<p class="navid-auth-status" role="status"></p>
+</section>
+<?php endif; ?>
 <section class="navid-dash-card">
 	<header class="navid-dash-head">
 		<h2><?php esc_html_e( 'سفارش‌های من', 'navid' ); ?></h2>
