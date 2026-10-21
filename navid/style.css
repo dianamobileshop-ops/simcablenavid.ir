@@ -2,7 +2,7 @@
 Theme Name: Navid
 Theme URI: https://simcablenavid.ir
 Description: قالب اختصاصی نوید. شامل جدول قیمت و پنل مدیریت در یک بسته.
-Version: 1.0.7
+Version: 1.0.8
 Update URI: https://simcablenavid.ir/navid
 Requires PHP: 7.4
 Text Domain: navid
@@ -1929,5 +1929,301 @@ img {
 
 	.navid-article-head h1 {
 		font-size: 22px;
+	}
+}
+
+/* ---- 1.0.8: single product page, category text under the products ---- */
+.navid-shop-about {
+	margin-top: 22px;
+	padding: 20px;
+	background: var(--navid-card);
+	border: 1px solid var(--navid-line);
+	border-radius: 16px;
+}
+
+.navid-product {
+	display: grid;
+	grid-template-columns: minmax(0, 38%) minmax(0, 1fr) 330px;
+	gap: 24px;
+	align-items: start;
+	margin-bottom: 24px;
+}
+
+.navid-product-gallery {
+	background: var(--navid-card);
+	border: 1px solid var(--navid-line);
+	border-radius: 18px;
+	padding: 14px;
+	min-width: 0;
+}
+
+.navid-product-gallery .woocommerce-product-gallery {
+	margin: 0;
+	opacity: 1 !important;
+}
+
+.navid-product-gallery img {
+	border-radius: 12px;
+}
+
+.navid-product-gallery .flex-control-thumbs {
+	display: flex;
+	gap: 8px;
+	list-style: none;
+	margin: 10px 0 0;
+	padding: 0;
+}
+
+.navid-product-gallery .flex-control-thumbs li {
+	flex: 0 0 76px;
+}
+
+.navid-product-cats,
+.navid-product-cats a {
+	color: #1d6fd8;
+	font-size: 13px;
+	text-decoration: none;
+}
+
+.navid-product-title {
+	margin: 6px 0 10px;
+	font-size: 22px;
+	line-height: 2;
+	padding-bottom: 12px;
+	border-bottom: 1px solid var(--navid-line);
+}
+
+.navid-product-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 14px;
+}
+
+.navid-chip {
+	padding: 4px 12px;
+	border-radius: 999px;
+	background: var(--navid-bg);
+	color: var(--navid-muted);
+	font-size: 12px;
+}
+
+.navid-chip--rating {
+	color: #b7791f;
+	background: #fff6e5;
+	font-weight: 700;
+}
+
+.navid-chip--ok {
+	color: var(--navid-primary);
+	background: var(--navid-primary-soft);
+}
+
+.navid-chip--out {
+	color: #d63638;
+	background: #fdecec;
+}
+
+.navid-product-h2 {
+	margin: 18px 0 8px;
+	font-size: 17px;
+}
+
+.navid-product-info table.woocommerce-product-attributes {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.navid-product-info .woocommerce-product-attributes th,
+.navid-product-info .woocommerce-product-attributes td {
+	padding: 10px 12px;
+	border-bottom: 1px solid var(--navid-line);
+	text-align: start;
+	font-size: 14px;
+}
+
+.navid-product-info .woocommerce-product-attributes th {
+	width: 34%;
+	color: var(--navid-muted);
+	font-weight: 600;
+	background: var(--navid-bg);
+}
+
+.navid-product-info .woocommerce-product-attributes p {
+	margin: 0;
+}
+
+.navid-buybox {
+	position: sticky;
+	top: 130px;
+	background: var(--navid-card);
+	border: 1px solid var(--navid-line);
+	border-radius: 18px;
+	padding: 16px;
+}
+
+.navid-seller {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	padding-bottom: 12px;
+	border-bottom: 1px solid var(--navid-line);
+	margin-bottom: 12px;
+}
+
+.navid-seller-label {
+	color: var(--navid-muted);
+	font-size: 12px;
+}
+
+.navid-buybox-price {
+	font-size: 22px;
+	font-weight: 800;
+	margin-bottom: 12px;
+}
+
+.navid-buybox-price del {
+	display: block;
+	color: var(--navid-muted);
+	font-size: 14px;
+	font-weight: 400;
+}
+
+.navid-buybox-price ins {
+	text-decoration: none;
+}
+
+.navid-buybox form.cart {
+	display: grid;
+	gap: 10px;
+	margin: 0;
+}
+
+.navid-buybox .quantity input {
+	width: 100%;
+	border: 1px solid var(--navid-line);
+	border-radius: 10px;
+	padding: 10px;
+	font: inherit;
+}
+
+.navid-buybox .single_add_to_cart_button,
+.navid-buy-call {
+	display: block;
+	width: 100%;
+	border: 0;
+	border-radius: 12px;
+	padding: 14px;
+	background: #ef4056;
+	color: #fff;
+	font: inherit;
+	font-weight: 800;
+	text-align: center;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.navid-buybox .single_add_to_cart_button:hover,
+.navid-buy-call:hover {
+	filter: brightness(.95);
+}
+
+.navid-buybox table.variations {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.navid-buybox table.variations th,
+.navid-buybox table.variations td {
+	display: block;
+	padding: 4px 0;
+	text-align: start;
+}
+
+.navid-buybox table.variations select {
+	width: 100%;
+	border: 1px solid var(--navid-line);
+	border-radius: 10px;
+	padding: 10px;
+	font: inherit;
+}
+
+.navid-buybox .reset_variations {
+	font-size: 12px;
+}
+
+.navid-buybox-note {
+	color: var(--navid-muted);
+	font-size: 13px;
+}
+
+.navid-product-tabs {
+	background: var(--navid-card);
+	border: 1px solid var(--navid-line);
+	border-radius: 18px;
+	padding: 16px 20px;
+	margin-bottom: 24px;
+}
+
+.navid-product-tabs ul.tabs {
+	display: flex;
+	gap: 18px;
+	list-style: none;
+	margin: 0 0 14px;
+	padding: 0;
+	border-bottom: 1px solid var(--navid-line);
+}
+
+.navid-product-tabs ul.tabs li a {
+	display: block;
+	padding: 10px 2px;
+	color: var(--navid-muted);
+	font-weight: 700;
+	text-decoration: none;
+}
+
+.navid-product-tabs ul.tabs li.active a {
+	color: var(--navid-primary);
+	border-bottom: 2px solid var(--navid-primary);
+}
+
+.navid-single-product section.related,
+.navid-single-product section.upsells {
+	margin-bottom: 24px;
+}
+
+.navid-single-product section.related ul.products,
+.navid-single-product section.upsells ul.products {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 12px;
+	list-style: none;
+	padding: 0;
+}
+
+@media (max-width: 1100px) {
+	.navid-product {
+		grid-template-columns: minmax(0, 40%) minmax(0, 1fr);
+	}
+
+	.navid-buybox {
+		grid-column: 1 / -1;
+		position: static;
+	}
+}
+
+@media (max-width: 700px) {
+	.navid-product {
+		grid-template-columns: 1fr;
+		gap: 14px;
+	}
+
+	.navid-product-title {
+		font-size: 18px;
+	}
+
+	.navid-single-product section.related ul.products,
+	.navid-single-product section.upsells ul.products {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 }

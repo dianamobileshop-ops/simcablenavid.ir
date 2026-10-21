@@ -23,7 +23,6 @@ $navid_active  = '' !== $navid_min || '' !== $navid_max || $navid_stock;
 
 	<header class="navid-shop-head">
 		<h1 class="navid-shop-title"><?php woocommerce_page_title(); ?></h1>
-		<?php do_action( 'woocommerce_archive_description' ); ?>
 	</header>
 
 	<?php if ( $navid_subs ) : ?>
@@ -111,6 +110,24 @@ $navid_active  = '' !== $navid_min || '' !== $navid_max || $navid_stock;
 			<?php endif; ?>
 		</div>
 	</div>
+
+	<?php
+	// The text of the category (or of the shop page) sits under the products, on the first page only.
+	$navid_about = '';
+	if ( ! is_paged() && ! is_search() ) {
+		if ( is_product_taxonomy() ) {
+			$navid_about = wc_format_content( wp_kses_post( term_description() ) );
+		} elseif ( is_shop() ) {
+			$navid_shop_page = get_post( wc_get_page_id( 'shop' ) );
+			if ( $navid_shop_page && '' !== trim( $navid_shop_page->post_content ) ) {
+				$navid_about = apply_filters( 'the_content', $navid_shop_page->post_content );
+			}
+		}
+	}
+	if ( '' !== trim( (string) $navid_about ) ) :
+		?>
+		<section class="navid-shop-about navid-entry-body"><?php echo $navid_about; // phpcs:ignore WordPress.Security.EscapeOutput ?></section>
+	<?php endif; ?>
 </div>
 <?php
 get_footer();
