@@ -320,7 +320,8 @@ function navid_admin_tree() {
 			'icon'  => 'dashicons-admin-tools',
 			'items' => array(
 				'general' => array( 'تنظیمات عمومی', $tab( 'general' ) ),
-				'backup'  => array( 'پشتیبان و بروزرسانی', $tab( 'backup' ) ),
+				't-support' => array( 'پشتیبانی و بروزرسانی قالب', $tab( 't-support' ) ),
+				'backup'  => array( 'پشتیبان‌گیری و بازیابی', $tab( 'backup' ) ),
 				'errors'  => array( 'گزارش خطاها', $tab( 'errors' ) ),
 			),
 		),
@@ -859,6 +860,12 @@ function navid_render_settings() {
 	}
 
 	// Theme screens: one section per menu entry, saved by the top Save button.
+	if ( 't-support' === $tab ) {
+		navid_admin_shell_open( $tab, '', false );
+		navid_render_support_screen();
+		navid_admin_shell_close();
+		return;
+	}
 	if ( 't-pay' === $tab ) {
 		navid_admin_shell_open( $tab, '', false );
 		navid_render_payment_screen();
@@ -963,7 +970,7 @@ function navid_render_report() {
 			$contacts = (int) $wpdb->get_var( 'SELECT COUNT(*) FROM ' . $c_table ); // phpcs:ignore
 		}
 	}
-	$errors   = trim( (string) ( class_exists( 'NPT_Log' ) ? NPT_Log::text() : '' ) );
+	$errors   = class_exists( 'NPT_Log' ) && (array) get_option( NPT_Log::OPT, array() ) ? 'has' : '';
 	$activity = array_slice( (array) get_option( 'npt_activity', array() ), 0, 8 );
 
 	$stats = array(

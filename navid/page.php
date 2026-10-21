@@ -25,7 +25,7 @@ get_header();
 		the_post();
 		?>
 		<article <?php post_class( 'navid-content' ); ?>>
-			<h1><?php the_title(); ?></h1>
+			<h1 class="screen-reader-text"><?php the_title(); ?></h1>
 			<div class="navid-entry-body"><?php the_content(); ?></div>
 			<?php wp_link_pages(); ?>
 		</article>

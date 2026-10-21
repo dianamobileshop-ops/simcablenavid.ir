@@ -2302,6 +2302,10 @@ function npt_date_html( $mysql_datetime ) {
 
 /** Site visit counter: one daily counter and a running total, both autoload-off. */
 function npt_count_visit() {
+	// A full-page cache serves most visits without PHP; the cookie below also makes some caches skip the page.
+	if ( ! apply_filters( 'npt_count_visits', true ) ) {
+		return;
+	}
 	if ( is_admin() || wp_doing_ajax() || wp_doing_cron() || is_feed() || is_robots() || is_embed() ) {
 		return;
 	}

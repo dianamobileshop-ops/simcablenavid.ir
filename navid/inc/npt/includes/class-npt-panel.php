@@ -1031,6 +1031,9 @@ class NPT_Panel {
 	 * ------------------------------------------------------------------- */
 	public static function shortcode( $atts = array() ) {
 		self::maybe_install();
+		if ( ! defined( 'DONOTCACHEPAGE' ) ) {
+			define( 'DONOTCACHEPAGE', true );
+		}
 		nocache_headers();
 		ob_start();
 		if ( self::user_can_panel() ) {

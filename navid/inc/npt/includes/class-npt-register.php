@@ -211,6 +211,9 @@ class NPT_Register {
 				. '<a href="' . esc_url( function_exists( 'npt_panel_url' ) ? npt_panel_url() : home_url( '/' ) ) . '">رفتن به پنل</a></p></div>';
 		}
 
+		if ( ! defined( 'DONOTCACHEPAGE' ) ) {
+			define( 'DONOTCACHEPAGE', true );
+		}
 		nocache_headers();
 		$otp_ready = NPT_SMS::otp_ready();
 		ob_start();

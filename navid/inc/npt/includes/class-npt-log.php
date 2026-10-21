@@ -54,7 +54,9 @@ class NPT_Log {
 		foreach ( is_array( $list ) ? $list : array() as $row ) {
 			$lines[] = '[' . $row['t'] . '] ' . $row['area'] . ': ' . $row['msg'];
 		}
-		return implode( "\n", $lines );
+		$report = function_exists( 'navid_system_report' ) ? navid_system_report() : '';
+		$body   = $lines ? implode( "\n", $lines ) : ( function_exists( 'navid_system_report' ) ? '' : '' );
+		return '' !== $report ? $report . "\n\n— خطاها —\n" . ( $body ? $body : 'خطایی ثبت نشده است.' ) : $body;
 	}
 
 	public static function handle_clear() {
@@ -72,10 +74,10 @@ class NPT_Log {
 		$text = self::text();
 		?>
 		<h2>گزارش خطاها</h2>
-		<p class="description">اگر جایی خطایی دیدید (پیامک، ذخیره‌ی پیش‌فاکتور، پشتیبان، بروزرسانی)، این‌جا ثبت می‌شود. «کپی همه» را بزنید و متن را برای پشتیبانی بفرستید.</p>
+		<p class="description">هر خطای قالب (هشدار و خطای PHP در فایل‌های قالب، پیامک، پیش‌فاکتور، درگاه، پشتیبان و بروزرسانی) این‌جا ثبت می‌شود. «کپی همه» را بزنید و متن را برای پشتیبانی بفرستید.</p>
 		<textarea id="npt-log-text" readonly rows="12" style="width:100%;max-width:760px;direction:ltr;text-align:left;font-family:monospace;font-size:12px"><?php echo esc_textarea( $text ); ?></textarea>
 		<p>
-			<button type="button" class="button button-primary" id="npt-log-copy" <?php echo '' === $text ? 'disabled' : ''; ?>>کپی همه‌ی خطاها</button>
+			<button type="button" class="button button-primary" id="npt-log-copy" <?php echo '' === $text ? 'disabled' : ''; ?>>کپی گزارش برای پشتیبانی</button>
 			<span id="npt-log-state" role="status" style="margin-right:8px"></span>
 		</p>
 		<h3>فعالیت مدیران</h3>
@@ -87,7 +89,7 @@ class NPT_Log {
 			<?php endforeach; ?>
 			</tbody>
 		</table>
-		<?php if ( '' !== $text ) : ?>
+		<?php if ( (array) get_option( self::OPT, array() ) ) : ?>
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" onsubmit="return confirm('گزارش خطاها پاک شود؟');">
 				<?php wp_nonce_field( 'npt_log_clear' ); ?>
 				<input type="hidden" name="action" value="npt_log_clear">

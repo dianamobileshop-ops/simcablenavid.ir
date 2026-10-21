@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'NAVID_VERSION', '1.5.1' );
+define( 'NAVID_VERSION', '1.5.2' );
 
 /**
  * Whether WooCommerce is running. Every shop feature checks this, so the theme works
@@ -49,27 +49,45 @@ add_action( 'after_setup_theme', 'navid_setup' );
  * @param array  $deps   Dependencies.
  */
 function navid_script( $handle, $file, $deps = array() ) {
-	wp_enqueue_script( $handle, get_template_directory_uri() . '/assets/js/' . $file, $deps, NAVID_VERSION, array( 'in_footer' => true, 'strategy' => 'defer' ) );
+	wp_enqueue_script( $handle, get_template_directory_uri() . '/assets/js/' . $file, $deps, navid_asset_version( 'assets/js/' . $file ), array( 'in_footer' => true, 'strategy' => 'defer' ) );
 }
 
 /**
- * Address of the stylesheet: the minified build when it is up to date, else style.css.
+ * Version string for an asset URL: the theme version plus the file's own change time,
+ * so a browser or CDN never keeps an old copy after an update.
+ *
+ * @param string $relative Path inside the theme.
+ * @return string
+ */
+function navid_asset_version( $relative ) {
+	$path = get_template_directory() . '/' . $relative;
+	return NAVID_VERSION . ( file_exists( $path ) ? '.' . filemtime( $path ) : '' );
+}
+
+/**
+ * Address of the stylesheet: the minified build when it was made for this theme version
+ * (tools/build-css.php stamps it), else style.css.
  *
  * @return string
  */
 function navid_stylesheet_uri() {
 	$min = get_template_directory() . '/assets/css/navid.min.css';
-	if ( file_exists( $min ) && filemtime( $min ) >= filemtime( get_template_directory() . '/style.css' ) ) {
-		return get_template_directory_uri() . '/assets/css/navid.min.css';
+	$ok  = false;
+	if ( file_exists( $min ) ) {
+		$fh = fopen( $min, 'r' ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+		if ( $fh ) {
+			$ok = 0 === strpos( (string) fgets( $fh, 64 ), '/*navid:' . NAVID_VERSION . '*/' );
+			fclose( $fh ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+		}
 	}
-	return get_stylesheet_uri();
+	return $ok ? get_template_directory_uri() . '/assets/css/navid.min.css' : get_stylesheet_uri();
 }
 
 /**
  * Styles and scripts: each page loads only what it uses.
  */
 function navid_assets() {
-	wp_enqueue_style( 'navid', navid_stylesheet_uri(), array(), NAVID_VERSION );
+	wp_enqueue_style( 'navid', navid_stylesheet_uri(), array(), navid_asset_version( 'style.css' ) );
 	navid_script( 'navid-header', 'header.js' );
 	wp_localize_script( 'navid-header', 'NAVID', array( 'ajaxUrl' => admin_url( 'admin-ajax.php' ) ) );
 	if ( navid_wc() && ( is_woocommerce() || is_cart() || is_checkout() ) ) {
@@ -197,6 +215,8 @@ function navid_options() {
 }
 
 require_once get_template_directory() . '/inc/jalali.php';
+require_once get_template_directory() . '/inc/diagnostics.php';
+require_once get_template_directory() . '/inc/updater.php';
 require_once get_template_directory() . '/inc/footer.php';
 require_once get_template_directory() . '/inc/settings.php';
 require_once get_template_directory() . '/inc/woocommerce.php';

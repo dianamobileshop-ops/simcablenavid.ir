@@ -446,6 +446,7 @@ class NPT_Backup {
 			<button type="submit" class="button">بازیابی</button>
 		</form>
 
+		<?php if ( ! defined( 'NAVID_VERSION' ) ) : ?>
 		<hr>
 		<h2>بروزرسانی افزونه</h2>
 		<p>نسخه‌ی نصب‌شده: <strong dir="ltr"><?php echo esc_html( NPT_VERSION ); ?></strong></p>
@@ -457,6 +458,7 @@ class NPT_Backup {
 			<label style="margin-inline-start:8px"><input type="checkbox" name="npt_allow_downgrade" value="1"> اجازه‌ی نسخه‌ی پایین‌تر</label>
 			<button type="submit" class="button button-primary">بروزرسانی</button>
 		</form>
+		<?php endif; ?>
 		<?php
 	}
 }

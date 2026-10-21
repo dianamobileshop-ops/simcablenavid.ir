@@ -724,6 +724,11 @@ class NPT_Proforma {
 			return '<p>' . esc_html__( 'برای استفاده از فرم پیش‌فاکتور، افزونه ووکامرس باید فعال باشد.', 'navid-price-table' ) . '</p>';
 		}
 		self::maybe_install();
+		// The form carries a one-time token: a cached copy would hand out an expired one.
+		if ( ! defined( 'DONOTCACHEPAGE' ) ) {
+			define( 'DONOTCACHEPAGE', true );
+		}
+		nocache_headers();
 		ob_start();
 		self::render_builder( '', true );
 		return (string) ob_get_clean();

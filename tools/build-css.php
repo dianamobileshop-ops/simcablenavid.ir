@@ -15,5 +15,6 @@ $css  = preg_replace_callback( '/url\(\s*([\'"]?)(?!data:|https?:|\/)([^\'")]+)\
 	return 'url(' . $m[1] . '../../' . $m[2] . $m[1] . ')';
 }, $css );
 @mkdir( $root . '/assets/css', 0755, true );
-file_put_contents( $root . '/assets/css/navid.min.css', trim( $css ) . "\n" );
+preg_match( '/^Version:\s*(\S+)/m', file_get_contents( $root . '/style.css' ), $v );
+file_put_contents( $root . '/assets/css/navid.min.css', '/*navid:' . $v[1] . "*/\n" . trim( $css ) . "\n" );
 printf( "style.css %d bytes -> navid.min.css %d bytes\n", filesize( $root . '/style.css' ), filesize( $root . '/assets/css/navid.min.css' ) );
