@@ -103,3 +103,103 @@ function navid_slide_html( $slide, $i ) {
 	}
 	return $slide['link'] ? '<a href="' . esc_url( $slide['link'] ) . '">' . $img . '</a>' : $img;
 }
+
+/**
+ * Sections of the home page, in their default order.
+ *
+ * @return array key => label
+ */
+function navid_home_sections() {
+	return array(
+		'slider'    => 'اسلایدر بنر',
+		'content'   => 'محتوای برگهٔ خانه (متن و شورت‌کدهای ویرایشگر)',
+		'products1' => 'اسلایدر محصولات ۱',
+		'products2' => 'اسلایدر محصولات ۲',
+		'cats'      => 'دسته‌بندی محصولات',
+		'blog'      => 'آخرین مطالب وبلاگ',
+	);
+}
+
+/**
+ * The saved order and on/off state of the home sections.
+ *
+ * @return array[] each: key, label, on
+ */
+function navid_home_layout() {
+	$opt      = navid_options();
+	$all      = navid_home_sections();
+	$saved    = array_filter( array_map( 'trim', explode( ',', (string) $opt['home_order'] ) ) );
+	$order    = array();
+	foreach ( $saved as $key ) {
+		if ( isset( $all[ $key ] ) && ! in_array( $key, $order, true ) ) {
+			$order[] = $key;
+		}
+	}
+	foreach ( array_keys( $all ) as $key ) {
+		if ( ! in_array( $key, $order, true ) ) {
+			$order[] = $key;
+		}
+	}
+	$on  = is_array( $opt['home_on'] ) ? $opt['home_on'] : array();
+	$out = array();
+	foreach ( $order as $key ) {
+		$out[] = array( 'key' => $key, 'label' => $all[ $key ], 'on' => ! isset( $on[ $key ] ) || '0' !== (string) $on[ $key ] );
+	}
+	return $out;
+}
+
+/**
+ * A row of product cards that scrolls sideways (arrows on desktop, swipe on phones).
+ *
+ * @param string $title Heading.
+ * @param array  $ids   Product ids, shown in this order.
+ * @return string HTML, '' when there is nothing to show.
+ */
+function navid_products_slider_html( $title, $ids ) {
+	if ( ! navid_wc() ) {
+		return '';
+	}
+	$ids = array_values( array_filter( array_map( 'absint', (array) $ids ) ) );
+	if ( ! $ids ) {
+		return '';
+	}
+	global $product;
+	$previous = $product;
+	ob_start();
+	foreach ( $ids as $id ) {
+		$item = wc_get_product( $id );
+		if ( ! $item || 'publish' !== $item->get_status() ) {
+			continue;
+		}
+		$product = $item; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		$GLOBALS['post'] = get_post( $id ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		setup_postdata( $GLOBALS['post'] );
+		wc_get_template_part( 'content', 'product' );
+	}
+	$cards   = ob_get_clean();
+	wp_reset_postdata();
+	$product = $previous; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+	if ( '' === $cards ) {
+		return '';
+	}
+	$html  = '<section class="navid-pslider" data-navid-pslider>';
+	$html .= '<div class="navid-pslider-head">';
+	if ( '' !== trim( (string) $title ) ) {
+		$html .= '<h2 class="navid-section-title">' . esc_html( $title ) . '</h2>';
+	}
+	$html .= '<div class="navid-pslider-arrows"><button type="button" data-dir="-1" aria-label="' . esc_attr__( 'قبلی', 'navid' ) . '">›</button><button type="button" data-dir="1" aria-label="' . esc_attr__( 'بعدی', 'navid' ) . '">‹</button></div>';
+	$html .= '</div><ul class="products navid-pslider-track">' . $cards . '</ul></section>';
+	return $html;
+}
+
+/**
+ * [navid_products ids="12,15,20" title="محصولات منتخب"]
+ *
+ * @param array $atts Attributes.
+ * @return string
+ */
+function navid_products_shortcode( $atts ) {
+	$atts = shortcode_atts( array( 'ids' => '', 'title' => '' ), $atts, 'navid_products' );
+	return navid_products_slider_html( $atts['title'], explode( ',', (string) $atts['ids'] ) );
+}
+add_shortcode( 'navid_products', 'navid_products_shortcode' );

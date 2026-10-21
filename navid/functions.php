@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'NAVID_VERSION', '1.4.4' );
+define( 'NAVID_VERSION', '1.5.0' );
 
 /**
  * Whether WooCommerce is running. Every shop feature checks this, so the theme works
@@ -157,6 +157,13 @@ function navid_options() {
 		'slides'        => '',
 		// Same contact details the price list header/footer already uses.
 		'slider_mode'   => 'slide',
+		'slider_fit'    => 'full',
+		'home_order'    => 'slider,content,products1,products2,cats,blog',
+		'home_on'       => array(),
+		'ps1_title'     => 'محصولات منتخب',
+		'ps1_ids'       => array(),
+		'ps2_title'     => '',
+		'ps2_ids'       => array(),
 		'slider_speed'  => 5000,
 		'slider_ratio'  => '3/1',
 		'slider_arrows' => '1',

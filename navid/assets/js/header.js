@@ -205,3 +205,19 @@
 	window.addEventListener('resize', sync);
 	document.addEventListener('DOMContentLoaded', sync);
 })();
+
+/* Product sliders: the arrows scroll one card width. */
+(function () {
+	document.addEventListener('click', function (e) {
+		var btn = e.target.closest('[data-navid-pslider] [data-dir]');
+		if (!btn) { return; }
+		var box = btn.closest('[data-navid-pslider]');
+		var track = box.querySelector('.navid-pslider-track');
+		var card = track.querySelector('li');
+		var step = (card ? card.getBoundingClientRect().width : 240) + 12;
+		// RTL tracks scroll with negative offsets: "next" moves toward the left.
+		var rtl = window.getComputedStyle(track).direction === 'rtl';
+		var dir = parseInt(btn.getAttribute('data-dir'), 10);
+		track.scrollBy({ left: (rtl ? -dir : dir) * step, behavior: 'smooth' });
+	});
+})();

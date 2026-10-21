@@ -100,6 +100,35 @@ function navid_settings_styles( $hook ) {
 add_action( 'admin_enqueue_scripts', 'navid_settings_styles' );
 
 /**
+ * WooCommerce's product search box, for the product pickers of the home layout.
+ *
+ * @param string $hook Current admin page.
+ */
+function navid_settings_product_search( $hook ) {
+	if ( 'toplevel_page_navid-settings' !== $hook || ! class_exists( 'WooCommerce' ) ) {
+		return;
+	}
+	wp_enqueue_style( 'woocommerce_admin_styles' );
+	wp_enqueue_script( 'wc-enhanced-select' );
+}
+add_action( 'admin_enqueue_scripts', 'navid_settings_product_search', 30 );
+
+/**
+ * On/off state of each home section from the posted form.
+ *
+ * @param array $raw Posted settings.
+ * @return array key => '1'|'0'
+ */
+function navid_clean_home_on( $raw ) {
+	$posted = isset( $raw['home_on'] ) ? (array) $raw['home_on'] : array();
+	$out    = array();
+	foreach ( array_keys( navid_home_sections() ) as $key ) {
+		$out[ $key ] = empty( $posted[ $key ] ) ? '0' : '1';
+	}
+	return $out;
+}
+
+/**
  * Saves the form after checking the nonce and the capability.
  */
 function navid_save_settings() {
@@ -129,6 +158,13 @@ function navid_save_settings() {
 		'bar_show_view' => empty( $raw['bar_show_view'] ) ? '0' : '1',
 		'bar_show_proforma' => empty( $raw['bar_show_proforma'] ) ? '0' : '1',
 		'slides'        => isset( $raw['slides'] ) ? sanitize_textarea_field( $raw['slides'] ) : '',
+		'slider_fit'    => ( isset( $raw['slider_fit'] ) && 'cover' === $raw['slider_fit'] ) ? 'cover' : 'full',
+		'home_order'    => isset( $raw['home_order'] ) ? implode( ',', array_values( array_intersect( array_map( 'sanitize_key', (array) $raw['home_order'] ), array_keys( navid_home_sections() ) ) ) ) : '',
+		'home_on'       => navid_clean_home_on( $raw ),
+		'ps1_title'     => isset( $raw['ps1_title'] ) ? sanitize_text_field( $raw['ps1_title'] ) : '',
+		'ps1_ids'       => isset( $raw['ps1_ids'] ) ? array_values( array_filter( array_map( 'absint', (array) $raw['ps1_ids'] ) ) ) : array(),
+		'ps2_title'     => isset( $raw['ps2_title'] ) ? sanitize_text_field( $raw['ps2_title'] ) : '',
+		'ps2_ids'       => isset( $raw['ps2_ids'] ) ? array_values( array_filter( array_map( 'absint', (array) $raw['ps2_ids'] ) ) ) : array(),
 		'slider_mode'   => ( isset( $raw['slider_mode'] ) && in_array( $raw['slider_mode'], array( 'slide', 'fade', 'cards', 'mosaic' ), true ) ) ? $raw['slider_mode'] : 'slide',
 		'slider_speed'  => isset( $raw['slider_speed'] ) ? min( 15000, max( 2000, absint( $raw['slider_speed'] ) ) ) : 5000,
 		'slider_ratio'  => ( isset( $raw['slider_ratio'] ) && in_array( $raw['slider_ratio'], array( '3/1', '2/1', '16/9', '4/3' ), true ) ) ? $raw['slider_ratio'] : '3/1',
@@ -195,8 +231,9 @@ function navid_settings_groups() {
 		't-footer'  => array( 'about', 'ft_features_show', 'ft_features', 'enamad', 'copyright', 'social_telegram', 'social_instagram', 'social_whatsapp', 'social_eitaa', 'social_bale', 'social_aparat', 'social_linkedin' ),
 		't-login'   => array( 'login_sms', 'login_password', 'login_register', 'login_note' ),
 		't-bar'     => array( 'toolbar_title', 'toolbar_sub', 'price_url', 'bar_show_pdf', 'bar_show_view', 'bar_show_proforma' ),
+		't-home'    => array( 'home_order', 'home_on', 'ps1_title', 'ps1_ids', 'ps2_title', 'ps2_ids' ),
 		't-cats'    => array( 'home_cats', 'cats_effect', 'cats_shape', 'cats_cols' ),
-		't-slider'  => array( 'slides', 'slider_mode', 'slider_speed', 'slider_ratio', 'slider_arrows', 'slider_autoplay' ),
+		't-slider'  => array( 'slider_fit', 'slides', 'slider_mode', 'slider_speed', 'slider_ratio', 'slider_arrows', 'slider_autoplay' ),
 		't-date'    => array( 'jalali', 'fa_digits' ),
 	);
 }
@@ -230,6 +267,7 @@ function navid_admin_tree() {
 			'label' => 'صفحه اصلی',
 			'icon'  => 'dashicons-admin-home',
 			'items' => array(
+				't-home'   => array( 'چیدمان صفحه اصلی', $tab( 't-home' ) ),
 				't-slider' => array( 'اسلایدر', $tab( 't-slider' ) ),
 				't-cats'   => array( 'دسته‌بندی‌ها', $tab( 't-cats' ) ),
 				't-bar'    => array( 'جعبهٔ لیست قیمت', $tab( 't-bar' ) ),
@@ -671,6 +709,64 @@ function navid_settings_section( $key, $opt ) {
 			</section>
 			<?php
 			break;
+		case 't-home':
+			$layout = navid_home_layout();
+			?>
+			<section class="navid-admin-card">
+				<h2>چیدمان صفحه اصلی</h2>
+				<p class="description">با دکمه‌های ▲ ▼ ترتیب بخش‌ها را عوض کنید و با تیک، هر بخش را روشن یا خاموش کنید. شورت‌کد «نوار قیمت» و هر چیز دیگر را در ویرایشگر برگهٔ خانه بنویسید؛ بخش «محتوای برگهٔ خانه» آن را نمایش می‌دهد.</p>
+				<ul id="navid-home-order" style="list-style:none;margin:0;padding:0">
+					<?php foreach ( $layout as $navid_s ) : ?>
+						<li style="display:flex;align-items:center;gap:10px;padding:10px 12px;margin:6px 0;border:1px solid var(--n-line);border-radius:12px;background:#fff">
+							<input type="hidden" name="navid[home_order][]" value="<?php echo esc_attr( $navid_s['key'] ); ?>">
+							<label style="flex:1;display:flex;align-items:center;gap:8px;margin:0">
+								<input type="checkbox" name="navid[home_on][<?php echo esc_attr( $navid_s['key'] ); ?>]" value="1" <?php checked( $navid_s['on'] ); ?>>
+								<?php echo esc_html( $navid_s['label'] ); ?>
+							</label>
+							<button type="button" class="button" data-move="-1" aria-label="بالا">▲</button>
+							<button type="button" class="button" data-move="1" aria-label="پایین">▼</button>
+						</li>
+					<?php endforeach; ?>
+				</ul>
+				<script>
+				document.querySelectorAll('#navid-home-order [data-move]').forEach(function (b) {
+					b.addEventListener('click', function () {
+						var li = b.closest('li');
+						var dir = parseInt(b.getAttribute('data-move'), 10);
+						var other = dir < 0 ? li.previousElementSibling : li.nextElementSibling;
+						if (!other) { return; }
+						if (dir < 0) { li.parentNode.insertBefore(li, other); } else { li.parentNode.insertBefore(other, li); }
+					});
+				});
+				</script>
+			</section>
+			<?php
+			foreach ( array( 1, 2 ) as $navid_n ) :
+				$navid_ids = array_map( 'absint', (array) $opt[ 'ps' . $navid_n . '_ids' ] );
+				?>
+				<section class="navid-admin-card">
+					<h2>اسلایدر محصولات <?php echo (int) $navid_n; ?></h2>
+					<div class="navid-row">
+						<label for="navid-ps<?php echo (int) $navid_n; ?>-title">عنوان بخش</label>
+						<input id="navid-ps<?php echo (int) $navid_n; ?>-title" type="text" name="navid[ps<?php echo (int) $navid_n; ?>_title]" value="<?php echo esc_attr( $opt[ 'ps' . $navid_n . '_title' ] ); ?>">
+					</div>
+					<div class="navid-row">
+						<label for="navid-ps<?php echo (int) $navid_n; ?>-ids">محصولات (به ترتیب انتخاب نمایش داده می‌شوند)</label>
+						<select id="navid-ps<?php echo (int) $navid_n; ?>-ids" class="wc-product-search" multiple="multiple" style="width:100%" name="navid[ps<?php echo (int) $navid_n; ?>_ids][]" data-placeholder="نام محصول را جستجو کنید…" data-action="woocommerce_json_search_products" data-exclude_type="variation">
+							<?php
+							foreach ( $navid_ids as $navid_pid ) {
+								$navid_prod = function_exists( 'wc_get_product' ) ? wc_get_product( $navid_pid ) : null;
+								if ( $navid_prod ) {
+									printf( '<option value="%d" selected="selected">%s</option>', (int) $navid_pid, esc_html( wp_strip_all_tags( $navid_prod->get_formatted_name() ) ) );
+								}
+							}
+							?>
+						</select>
+					</div>
+				</section>
+				<?php
+			endforeach;
+			break;
 		case 't-slider':
 			?>
 			<section class="navid-admin-card">
@@ -686,7 +782,14 @@ function navid_settings_section( $key, $opt ) {
 				</select>
 			</div>
 			<div class="navid-row">
-				<label for="navid-slider-ratio">نسبت ابعاد بنر</label>
+				<label for="navid-slider-fit">نمایش عکس بنر</label>
+				<select id="navid-slider-fit" name="navid[slider_fit]">
+					<option value="full"<?php selected( $opt['slider_fit'], 'full' ); ?>>کامل (بدون بریدگی؛ ارتفاع به اندازهٔ عکس)</option>
+					<option value="cover"<?php selected( $opt['slider_fit'], 'cover' ); ?>>پر کردن قاب با نسبت ابعاد زیر (لبه‌ها بریده می‌شود)</option>
+				</select>
+			</div>
+			<div class="navid-row">
+				<label for="navid-slider-ratio">نسبت ابعاد بنر (فقط برای حالت «پر کردن قاب»)</label>
 				<select id="navid-slider-ratio" name="navid[slider_ratio]">
 					<?php
 					foreach ( array( '3/1' => '۳ به ۱ (باریک)', '2/1' => '۲ به ۱', '16/9' => '۱۶ به ۹', '4/3' => '۴ به ۳' ) as $navid_k => $navid_l ) {
