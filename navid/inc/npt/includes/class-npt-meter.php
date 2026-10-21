@@ -60,20 +60,19 @@ function npt_meter_price_labels( $price, $product ) {
 	if ( ! $product->is_type( 'simple' ) || empty( $price ) ) {
 		return $price;
 	}
-	// On the single-product page wrap the raw price so the meter JS can find it.
-	if ( function_exists( 'is_product' ) && is_product() && npt_meter_is_meter_product( $product->get_id() ) ) {
-		$price = '<span class="navid-original-unit-price">' . $price . '</span>';
+	// Only the product page says what the price is for; cards and lists show the unit tag instead.
+	$main = function_exists( 'is_product' ) && is_product() && (int) get_queried_object_id() === (int) $product->get_id();
+	if ( ! $main ) {
+		return $price;
 	}
-
-	$font_size = ( function_exists( 'is_product' ) && is_product() ) ? '14px' : '12px';
-	$color     = '#777';
-	$style     = 'font-size: ' . esc_attr( $font_size ) . '; color: ' . esc_attr( $color ) . '; font-weight: normal; white-space: nowrap;';
+	// Wrap the raw price so the meter JS can find it.
 	if ( npt_meter_is_meter_product( $product->get_id() ) ) {
-		$label = ' <span class="navid-price-label-suffix" style="' . $style . '">(قیمت هر متر)</span>';
+		$price = '<span class="navid-original-unit-price">' . $price . '</span>';
+		$text  = 'قیمت برای هر متر';
 	} else {
-		$label = ' <span class="navid-price-label-suffix" style="' . $style . '">(قیمت کلاف ۱۰۰ متری)</span>';
+		$text = 'قیمت برای کلاف ۱۰۰ متری';
 	}
-	return $price . $label;
+	return $price . ' <span class="navid-price-label-suffix">' . esc_html( $text ) . '</span>';
 }
 
 /* -------------------------------------------------------------------------
@@ -220,31 +219,6 @@ function npt_meter_cart_label( $translated_text, $text, $domain ) {
 		return 'تعداد / متراژ';
 	}
 	return $translated_text;
-}
-
-add_action( 'woocommerce_before_shop_loop_item_title', 'npt_meter_loop_badges', 10 );
-function npt_meter_loop_badges() {
-	global $product;
-	if ( ! $product || ! $product->is_type( 'simple' ) ) {
-		return;
-	}
-	if ( npt_meter_is_meter_product( $product->get_id() ) ) {
-		echo '<span class="navid-loop-badge badge-meter">فروش متری</span>';
-	} else {
-		echo '<span class="navid-loop-badge badge-coil">کلاف ۱۰۰ متری</span>';
-	}
-}
-
-add_action( 'wp_head', 'npt_meter_badges_css' );
-function npt_meter_badges_css() {
-	?>
-	<style>
-		.navid-loop-badge { position: absolute; top: 10px; right: 10px; z-index: 9; padding: 5px 10px; font-size: 12px; font-weight: bold; color: #fff; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-		.badge-meter { background-color: #28a745; }
-		.badge-coil { background-color: #007bff; }
-		.woocommerce ul.products li.product a { position: relative; display: block; }
-	</style>
-	<?php
 }
 
 add_filter( 'woocommerce_loop_add_to_cart_link', 'npt_meter_loop_button', 10, 3 );

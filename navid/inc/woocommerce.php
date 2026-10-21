@@ -366,3 +366,18 @@ function navid_archive_attribute_terms( $taxonomy ) {
 	$terms = get_terms( array( 'taxonomy' => $taxonomy, 'include' => $ids, 'hide_empty' => true, 'number' => 24 ) );
 	return is_wp_error( $terms ) ? array() : $terms;
 }
+
+/**
+ * Hanging price-tag that says how a product is sold: «متر» (by the meter) or «کلاف»
+ * (a 100 m coil). Only simple products carry one.
+ *
+ * @param WC_Product $product Product.
+ * @return string HTML.
+ */
+function navid_unit_tag_html( $product ) {
+	if ( ! $product || ! $product->is_type( 'simple' ) ) {
+		return '';
+	}
+	$meter = function_exists( 'npt_meter_is_meter_product' ) && npt_meter_is_meter_product( $product->get_id() );
+	return '<span class="navid-unit-tag ' . ( $meter ? 'is-meter' : 'is-coil' ) . '" aria-label="' . esc_attr( $meter ? 'فروش متری' : 'فروش به‌صورت کلاف ۱۰۰ متری' ) . '"><b>' . ( $meter ? 'متر' : 'کلاف' ) . '</b></span>';
+}

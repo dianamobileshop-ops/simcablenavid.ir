@@ -14,11 +14,13 @@ if ( empty( $product ) || ! $product->is_visible() ) {
 }
 $visible = navid_price_is_visible( $product );
 $rating  = (float) $product->get_average_rating();
+$simple  = ! empty( $GLOBALS['navid_card_simple'] );
 ?>
 <li <?php wc_product_class( 'navid-card', $product ); ?>>
 	<a class="navid-card-img" href="<?php echo esc_url( get_permalink() ); ?>">
 		<?php echo $product->get_image( 'woocommerce_thumbnail' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
-		<?php if ( $product->is_on_sale() && $visible ) : ?>
+		<?php echo navid_unit_tag_html( $product ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+		<?php if ( ! $simple && $product->is_on_sale() && $visible ) : ?>
 			<span class="navid-card-sale"><?php esc_html_e( 'حراج', 'navid' ); ?></span>
 		<?php endif; ?>
 	</a>
@@ -27,6 +29,7 @@ $rating  = (float) $product->get_average_rating();
 		<a href="<?php echo esc_url( get_permalink() ); ?>"><?php the_title(); ?></a>
 	</h2>
 
+	<?php if ( ! $simple ) : ?>
 	<div class="navid-card-meta">
 		<span class="navid-card-stock<?php echo $product->is_in_stock() ? '' : ' is-out'; ?>">
 			<?php echo $product->is_in_stock() ? esc_html__( 'موجود در انبار', 'navid' ) : esc_html__( 'ناموجود', 'navid' ); ?>
@@ -46,5 +49,6 @@ $rating  = (float) $product->get_average_rating();
 
 	<?php if ( $visible ) : ?>
 		<div class="navid-card-cart"><?php woocommerce_template_loop_add_to_cart(); ?></div>
+	<?php endif; ?>
 	<?php endif; ?>
 </li>

@@ -28,6 +28,7 @@ while ( have_posts() ) :
 
 		<div id="product-<?php the_ID(); ?>" <?php wc_product_class( 'navid-product', $product ); ?>>
 			<div class="navid-product-gallery">
+				<?php echo navid_unit_tag_html( $product ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 				<?php woocommerce_show_product_images(); ?>
 			</div>
 

@@ -2,7 +2,7 @@
 Theme Name: Navid
 Theme URI: https://simcablenavid.ir
 Description: قالب اختصاصی نوید. شامل جدول قیمت و پنل مدیریت در یک بسته.
-Version: 1.5.0
+Version: 1.5.1
 Update URI: https://simcablenavid.ir/navid
 Requires PHP: 7.4
 Text Domain: navid
@@ -4533,4 +4533,85 @@ ul.products::after {
 	.navid-pslider-arrows {
 		display: none;
 	}
+}
+
+/* ---- 1.5.1: hanging unit tag (متر / کلاف) on product images ---- */
+.navid-price-label-suffix {
+	color: var(--navid-muted);
+	font-size: 13px;
+	font-weight: 400;
+	white-space: nowrap;
+}
+
+.navid-product-gallery {
+	position: relative;
+}
+
+.navid-unit-tag {
+	--tag: var(--navid-primary);
+	position: absolute;
+	top: 6px;
+	left: 10px;
+	z-index: 5;
+	display: grid;
+	place-items: end center;
+	width: 54px;
+	height: 38px;
+	padding-bottom: 6px;
+	color: #fff;
+	background: var(--tag);
+	clip-path: polygon(22% 0, 78% 0, 100% 26%, 100% 100%, 0 100%, 0 26%);
+	box-shadow: 0 3px 8px rgba(16, 26, 36, .28);
+	transform-origin: 50% 0;
+	animation: navid-tag-swing 5s ease-in-out infinite;
+	pointer-events: none;
+}
+
+.navid-unit-tag.is-meter {
+	--tag: var(--navid-accent);
+}
+
+.navid-unit-tag::before {
+	content: "";
+	position: absolute;
+	top: 5px;
+	left: 50%;
+	width: 8px;
+	height: 8px;
+	margin-left: -4px;
+	border-radius: 50%;
+	background: #fff;
+	box-shadow: inset 0 1px 2px rgba(16, 26, 36, .45);
+}
+
+.navid-unit-tag b {
+	font-size: 15px;
+	font-weight: 800;
+	line-height: 1;
+}
+
+.navid-card:hover .navid-unit-tag,
+.navid-product-gallery:hover .navid-unit-tag {
+	animation-duration: 1.6s;
+}
+
+@keyframes navid-tag-swing {
+	0%, 100% { transform: rotate(-4deg); }
+	50% { transform: rotate(4deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.navid-unit-tag {
+		animation: none;
+	}
+}
+
+.navid-pslider .navid-card {
+	padding-bottom: 10px;
+}
+
+.navid-pslider .navid-card-title {
+	text-align: center;
+	font-size: 14px;
+	font-weight: 700;
 }

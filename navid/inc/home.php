@@ -165,6 +165,7 @@ function navid_products_slider_html( $title, $ids ) {
 	}
 	global $product;
 	$previous = $product;
+	$GLOBALS['navid_card_simple'] = true; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 	ob_start();
 	foreach ( $ids as $id ) {
 		$item = wc_get_product( $id );
@@ -177,6 +178,7 @@ function navid_products_slider_html( $title, $ids ) {
 		wc_get_template_part( 'content', 'product' );
 	}
 	$cards   = ob_get_clean();
+	unset( $GLOBALS['navid_card_simple'] );
 	wp_reset_postdata();
 	$product = $previous; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 	if ( '' === $cards ) {
