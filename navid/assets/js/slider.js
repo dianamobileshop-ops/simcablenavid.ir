@@ -46,7 +46,11 @@
 			i = (i + n) % n;
 			mark(i);
 			if (mode !== 'fade') {
-				slides[i].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+				// Scroll the track only: scrollIntoView() also scrolled the page, so autoplay
+				// kept pulling a visitor who had scrolled down back to the slider.
+				var t = track.getBoundingClientRect();
+				var s = slides[i].getBoundingClientRect();
+				track.scrollBy({ left: (s.left + s.width / 2) - (t.left + t.width / 2), behavior: 'smooth' });
 			}
 			restartBar();
 		}

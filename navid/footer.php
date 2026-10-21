@@ -121,7 +121,7 @@ $navid_price_url = function_exists( 'npt_online_view_url' ) ? npt_online_view_ur
 	<div class="navid-modal-backdrop"></div>
 	<div class="navid-modal-dialog">
 		<button type="button" class="navid-modal-close" aria-label="<?php esc_attr_e( 'بستن', 'navid' ); ?>">×</button>
-		<?php get_template_part( 'template-parts/login-card', null, array( 'id' => 'modal', 'redirect' => home_url( add_query_arg( array() ) ) ) ); ?>
+		<?php get_template_part( 'template-parts/login-card', null, array( 'id' => 'modal', 'redirect' => navid_current_url() ) ); ?>
 	</div>
 </div>
 <?php endif; ?>

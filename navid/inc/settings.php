@@ -137,7 +137,7 @@ function navid_save_settings() {
 	// Only the keys of the screen that was submitted change; everything else stays.
 	$groups = array(
 		't-look'   => array( 'primary_color' ),
-		't-header' => array( 'show_topbar', 'sticky_header', 'phone', 'address', 'email', 'about', 'special_label', 'special_url' ),
+		't-header' => array( 'sticky_header', 'phone', 'address', 'email', 'about', 'special_label', 'special_url' ),
 		't-bar'    => array( 'toolbar_title', 'toolbar_sub', 'price_url' ),
 		't-cats'   => array( 'home_cats', 'cats_effect', 'cats_shape', 'cats_cols' ),
 		't-slider' => array( 'slides', 'slider_mode', 'slider_speed', 'slider_ratio', 'slider_arrows', 'slider_autoplay' ),
@@ -151,9 +151,13 @@ function navid_save_settings() {
 		$clean = $merged;
 	}
 	update_option( 'navid_options', $clean );
-	// The price list header, footer and PDF read these two, so they stay in sync.
-	update_option( 'npt_phone', $clean['phone'] );
-	update_option( 'npt_address', $clean['address'] );
+	// The price list header, footer and PDF read these two, so they stay in sync —
+	// but only when they were on the submitted screen; saving another screen must not
+	// overwrite a number changed meanwhile in the price table settings.
+	if ( 't-header' === $section || ! isset( $groups[ $section ] ) ) {
+		update_option( 'npt_phone', $clean['phone'] );
+		update_option( 'npt_address', $clean['address'] );
+	}
 
 	wp_safe_redirect( add_query_arg( array( 'page' => 'navid-settings', 'tab' => $section, 'saved' => '1' ), admin_url( 'admin.php' ) ) );
 	exit;
@@ -367,10 +371,6 @@ function navid_settings_section( $key, $opt ) {
 			<section class="navid-admin-card">
 				<h2>هدر و فوتر</h2>
 			<div class="navid-row">
-				<label for="navid-topbar">نمایش نوار بالا</label>
-				<input id="navid-topbar" type="checkbox" name="navid[show_topbar]" value="1" <?php checked( '1', $opt['show_topbar'] ); ?>>
-			</div>
-			<div class="navid-row">
 				<label for="navid-sticky">هدر چسبان</label>
 				<input id="navid-sticky" type="checkbox" name="navid[sticky_header]" value="1" <?php checked( '1', $opt['sticky_header'] ); ?>>
 			</div>
@@ -578,6 +578,16 @@ function navid_render_settings() {
 }
 
 /**
+ * Orders list in the admin: the HPOS screen when it is on, the classic one otherwise.
+ *
+ * @return string
+ */
+function navid_orders_admin_url() {
+	$hpos = class_exists( 'Automattic\\WooCommerce\\Utilities\\OrderUtil' ) && \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
+	return $hpos ? admin_url( 'admin.php?page=wc-orders' ) : admin_url( 'edit.php?post_type=shop_order' );
+}
+
+/**
  * Landing screen: a report of how the site is doing, plus shortcuts.
  */
 function navid_render_report() {
@@ -599,7 +609,7 @@ function navid_render_report() {
 		$pf_table = NPT_Proforma::table_proformas();
 		if ( $pf_table === $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $pf_table ) ) ) { // phpcs:ignore
 			$pf_total = (int) $wpdb->get_var( 'SELECT COUNT(*) FROM ' . $pf_table ); // phpcs:ignore
-			$pf_week  = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM ' . $pf_table . ' WHERE created_at >= %s', gmdate( 'Y-m-d H:i:s', time() - 7 * DAY_IN_SECONDS ) ) ); // phpcs:ignore
+			$pf_week  = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM ' . $pf_table . ' WHERE created_at >= %s', wp_date( 'Y-m-d H:i:s', time() - 7 * DAY_IN_SECONDS ) ) ); // phpcs:ignore
 		}
 	}
 	if ( class_exists( 'NPT_SMS' ) ) {
@@ -624,7 +634,7 @@ function navid_render_report() {
 	);
 	$tiles = array(
 		array( 'محصولات', admin_url( 'edit.php?post_type=product' ), 'dashicons-products' ),
-		array( 'سفارش‌ها', admin_url( 'admin.php?page=wc-orders' ), 'dashicons-cart' ),
+		array( 'سفارش‌ها', navid_orders_admin_url(), 'dashicons-cart' ),
 		array( 'منوها', admin_url( 'nav-menus.php' ), 'dashicons-menu' ),
 		array( 'پنل مدیر', function_exists( 'npt_panel_url' ) ? npt_panel_url() : home_url( '/' ), 'dashicons-businessperson' ),
 		array( 'جدول قیمت', $base . '&tab=price', 'dashicons-list-view' ),

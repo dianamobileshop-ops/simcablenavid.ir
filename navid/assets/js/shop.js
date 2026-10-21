@@ -24,6 +24,10 @@
 			box.removeAttribute('open');
 		}
 		form.addEventListener('submit', function () {
+			// Empty price boxes stay out of the address (cleaner, indexable URLs).
+			Array.prototype.forEach.call(form.querySelectorAll('input[name=min_price], input[name=max_price]'), function (input) {
+				if (input.value.trim() === '') { input.disabled = true; }
+			});
 			Array.prototype.forEach.call(form.querySelectorAll('[data-navid-attr]'), function (box) {
 				var name = box.getAttribute('data-navid-attr');
 				var values = [];
@@ -232,7 +236,8 @@
 				.then(function (r) { return r.text().then(function (t) { return { r: r, t: t }; }); })
 				.then(function (res) {
 					var doc = new DOMParser().parseFromString(res.t, 'text/html');
-					var err = doc.querySelector('.woocommerce-error');
+					// Classic notices and the newer block notice banners.
+					var err = doc.querySelector('.woocommerce-error, .wc-block-components-notice-banner.is-error');
 					if (err) {
 						toast(err.textContent.trim().replace(/\s+/g, ' '), true);
 						return;

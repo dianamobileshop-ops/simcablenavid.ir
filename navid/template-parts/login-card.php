@@ -79,13 +79,14 @@ $navid_first    = $navid_sms ? 'sms' : 'password';
 				<input id="navid-<?php echo esc_attr( $navid_p ); ?>-rphone" type="tel" name="phone" inputmode="tel" dir="ltr" autocomplete="tel" placeholder="09121234567">
 				<label class="navid-reg-cap"><span class="navid-cap-q">…</span> <input type="text" name="captcha_answer" inputmode="numeric" dir="ltr" autocomplete="off" style="width:90px"></label>
 				<input type="hidden" name="captcha_id" value="">
-				<input type="text" name="npt_website" value="" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;width:1px;height:1px" aria-hidden="true">
+				<input type="text" name="npt_website" value="" tabindex="-1" autocomplete="off" class="navid-hp" aria-hidden="true">
 				<button type="submit" class="navid-auth-btn"><?php esc_html_e( 'دریافت کد تأیید', 'navid' ); ?></button>
 			</form>
 			<form class="navid-reg-code" hidden novalidate>
 				<label for="navid-<?php echo esc_attr( $navid_p ); ?>-rcode"><?php esc_html_e( 'کد ارسال‌شده را وارد کنید', 'navid' ); ?></label>
 				<input id="navid-<?php echo esc_attr( $navid_p ); ?>-rcode" type="text" name="code" inputmode="numeric" dir="ltr" autocomplete="one-time-code" maxlength="6" placeholder="••••••">
 				<button type="submit" class="navid-auth-btn"><?php esc_html_e( 'تأیید و ثبت‌نام', 'navid' ); ?></button>
+				<button type="button" class="navid-auth-link navid-reg-back"><?php esc_html_e( 'تغییر شماره', 'navid' ); ?></button>
 			</form>
 			<p class="navid-auth-status navid-reg-status" role="status"></p>
 		</section>

@@ -175,6 +175,24 @@ function navid_sort_options() {
 }
 
 /**
+ * Link for one sort choice: the current filters stay, the page number goes (on
+ * /page/2/ addresses too, which remove_query_arg( 'paged' ) could not drop).
+ *
+ * @param string $orderby Sort key.
+ * @return string
+ */
+function navid_sort_url( $orderby ) {
+	$args = array();
+	foreach ( $_GET as $key => $value ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( is_string( $value ) && 'paged' !== $key && 'product-page' !== $key ) {
+			$args[ sanitize_key( $key ) ] = rawurlencode( wc_clean( wp_unslash( $value ) ) );
+		}
+	}
+	$args['orderby'] = $orderby;
+	return add_query_arg( $args, navid_shop_base_url() );
+}
+
+/**
  * «Only in stock» filter of the sidebar (price range is handled by WooCommerce itself).
  *
  * @param WP_Query $query Product query.

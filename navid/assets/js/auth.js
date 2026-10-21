@@ -90,14 +90,12 @@
 		var regForm = card.querySelector('.navid-reg-form');
 		var regCode = card.querySelector('.navid-reg-code');
 		var regStatus = card.querySelector('.navid-reg-status');
-		var capLoaded = false;
 		function loadCaptcha() {
 			if (!regForm) { return; }
 			post('npt_captcha', {}).then(function (res) {
 				if (res && res.success) {
 					regForm.querySelector('.navid-cap-q').textContent = res.data.q;
 					regForm.querySelector('[name=captcha_id]').value = res.data.id;
-					capLoaded = true;
 				}
 			}).catch(function () {});
 		}
@@ -124,6 +122,16 @@
 					}
 				}).catch(function () { rsay('خطا در ارتباط با سرور. دوباره تلاش کنید.'); });
 			});
+			// Wrong number typed: back to the first step with a fresh challenge.
+			var back = regCode.querySelector('.navid-reg-back');
+			if (back) {
+				back.addEventListener('click', function () {
+					regCode.hidden = true;
+					regForm.hidden = false;
+					rsay('');
+					loadCaptcha();
+				});
+			}
 			regCode.addEventListener('submit', function (e) {
 				e.preventDefault();
 				post('npt_register_done', {

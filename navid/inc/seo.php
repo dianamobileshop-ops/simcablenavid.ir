@@ -73,6 +73,12 @@ add_action( 'wp_head', 'navid_seo_head', 5 );
  * @return array
  */
 function navid_robots( $robots ) {
+	if ( is_search() ) {
+		$robots['noindex'] = true;
+		$robots['follow']  = true;
+		unset( $robots['index'] );
+		return $robots;
+	}
 	$noisy = array( 'orderby', 'min_price', 'max_price', 'instock', 'npt_add' );
 	foreach ( $_GET as $key => $unused ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( in_array( $key, $noisy, true ) || 0 === strpos( (string) $key, 'filter_' ) ) {

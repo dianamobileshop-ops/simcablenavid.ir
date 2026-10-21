@@ -59,6 +59,8 @@
 		function hide() {
 			box.hidden = true;
 			box.textContent = '';
+			// Typing the same text again must ask the server again.
+			last = '';
 		}
 
 		function show(items, q) {

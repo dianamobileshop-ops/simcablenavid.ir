@@ -111,13 +111,17 @@ $navid_active  = '' !== $navid_min || '' !== $navid_max || $navid_stock;
 					<nav class="navid-sort" aria-label="<?php esc_attr_e( 'مرتب‌سازی', 'navid' ); ?>">
 						<span class="navid-sort-label"><?php esc_html_e( 'مرتب‌سازی:', 'navid' ); ?></span>
 						<?php foreach ( navid_sort_options() as $navid_key => $navid_label ) : ?>
-							<a href="<?php echo esc_url( add_query_arg( 'orderby', $navid_key, remove_query_arg( 'paged' ) ) ); ?>" class="<?php echo $navid_key === $navid_orderby ? 'is-on' : ''; ?>"><?php echo esc_html( $navid_label ); ?></a>
+							<a href="<?php echo esc_url( navid_sort_url( $navid_key ) ); ?>" class="<?php echo $navid_key === $navid_orderby ? 'is-on' : ''; ?>"><?php echo esc_html( $navid_label ); ?></a>
 						<?php endforeach; ?>
 					</nav>
-					<p class="navid-count"><?php woocommerce_result_count(); ?></p>
+					<div class="navid-count"><?php woocommerce_result_count(); ?></div>
 				</div>
 
 				<?php
+				// Notices (e.g. «added to cart» without AJAX) and anything plugins hook here.
+				// The theme's own sort links and count replace the two default callbacks,
+				// which are unhooked in inc/woocommerce.php.
+				do_action( 'woocommerce_before_shop_loop' );
 				woocommerce_product_loop_start();
 				if ( wc_get_loop_prop( 'total' ) ) {
 					while ( have_posts() ) {
@@ -126,9 +130,10 @@ $navid_active  = '' !== $navid_min || '' !== $navid_max || $navid_stock;
 					}
 				}
 				woocommerce_product_loop_end();
-				woocommerce_pagination();
+				do_action( 'woocommerce_after_shop_loop' );
 				?>
 			<?php else : ?>
+				<?php woocommerce_output_all_notices(); ?>
 				<?php do_action( 'woocommerce_no_products_found' ); ?>
 			<?php endif; ?>
 		</div>

@@ -2,7 +2,7 @@
 Theme Name: Navid
 Theme URI: https://simcablenavid.ir
 Description: قالب اختصاصی نوید. شامل جدول قیمت و پنل مدیریت در یک بسته.
-Version: 1.3.0
+Version: 1.3.1
 Update URI: https://simcablenavid.ir/navid
 Requires PHP: 7.4
 Text Domain: navid
@@ -11,7 +11,7 @@ License: GPL v2 or later
 
 @font-face {
 	font-family: Vazirmatn;
-	src: url('inc/npt/vendor/fonts/Vazirmatn-Regular.ttf') format('truetype');
+	src: url('assets/fonts/Vazirmatn-Regular.woff2') format('woff2'), url('inc/npt/vendor/fonts/Vazirmatn-Regular.ttf') format('truetype');
 	font-weight: 400;
 	font-style: normal;
 	font-display: swap;
@@ -19,7 +19,7 @@ License: GPL v2 or later
 
 @font-face {
 	font-family: Vazirmatn;
-	src: url('inc/npt/vendor/fonts/Vazirmatn-Bold.ttf') format('truetype');
+	src: url('assets/fonts/Vazirmatn-Bold.woff2') format('woff2'), url('inc/npt/vendor/fonts/Vazirmatn-Bold.ttf') format('truetype');
 	font-weight: 700;
 	font-style: normal;
 	font-display: swap;
@@ -54,6 +54,42 @@ body {
 img {
 	max-width: 100%;
 	height: auto;
+}
+
+/* Text for screen readers only (labels the theme and WordPress print). */
+.screen-reader-text {
+	position: absolute !important;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	white-space: nowrap;
+	border: 0;
+}
+
+.screen-reader-text:focus {
+	clip: auto;
+	clip-path: none;
+	width: auto;
+	height: auto;
+	margin: 0;
+	padding: 8px 12px;
+	background: #fff;
+	z-index: 100000;
+}
+
+/* Honeypot fields: off-screen without the sideways scroll left:-9999px causes on RTL pages. */
+.navid-hp {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	overflow: hidden !important;
+	clip: rect(0 0 0 0) !important;
+	clip-path: inset(50%) !important;
+	opacity: 0;
 }
 
 .navid-wrap {
@@ -1608,6 +1644,10 @@ img {
 	margin: 0;
 	color: var(--navid-muted);
 	font-size: 13px;
+}
+
+.navid-count p {
+	margin: 0;
 }
 
 .navid-shop-main ul.products {

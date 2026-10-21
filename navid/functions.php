@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'NAVID_VERSION', '1.3.0' );
+define( 'NAVID_VERSION', '1.3.1' );
 
 /**
  * Basic theme support.
@@ -171,13 +171,40 @@ function navid_logo_html() {
  */
 function navid_tabbar_enabled() {
 	if ( class_exists( 'NPT_Bar' ) ) {
+		// «enabled» is always on in the price table code; what matters is whether its
+		// bottom menu is actually drawn. With the menu off the theme bar comes back, so
+		// phones are never left without a bottom bar.
 		$settings = NPT_Bar::settings();
-		if ( ! empty( $settings['enabled'] ) ) {
+		if ( ! NPT_Bar::is_off() && ! empty( $settings['menu_enabled'] ) ) {
 			return false;
 		}
 	}
 	return true;
 }
+
+/**
+ * Address of the page being viewed (works on sub-directory installs too, where
+ * home_url( add_query_arg( array() ) ) repeated the directory).
+ *
+ * @return string
+ */
+function navid_current_url() {
+	$uri = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '/'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+	$home = wp_parse_url( home_url() );
+	$url  = $home['scheme'] . '://' . $home['host'] . ( isset( $home['port'] ) ? ':' . $home['port'] : '' ) . $uri;
+	return wp_validate_redirect( $url, home_url( '/' ) );
+}
+
+/**
+ * The body font is preloaded so the text does not reflow when it arrives.
+ */
+function navid_preload_font() {
+	printf(
+		'<link rel="preload" href="%s" as="font" type="font/woff2" crossorigin>' . "\n",
+		esc_url( get_template_directory_uri() . '/assets/fonts/Vazirmatn-Regular.woff2' )
+	);
+}
+add_action( 'wp_head', 'navid_preload_font', 2 );
 
 /**
  * Body classes: the layout leaves room for whichever bottom bar is shown.
