@@ -27,7 +27,7 @@ get_header();
 				<h1><?php the_title(); ?></h1>
 				<p class="navid-entry-meta">
 					<time datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>"><?php echo esc_html( get_the_date() ); ?></time>
-					· <?php echo esc_html( sprintf( '%s دقیقه مطالعه', navid_reading_minutes( get_post() ) ) ); ?>
+					· <?php echo esc_html( sprintf( '%s دقیقه مطالعه', navid_fa_digits( navid_reading_minutes( get_post() ) ) ) ); ?>
 				</p>
 			</header>
 			<?php if ( has_post_thumbnail() ) : ?>

@@ -6,13 +6,27 @@
 
 	var A = window.NAVIDAUTH || {};
 
-	function post(action, data, withScene) {
+	function send(action, data, withScene) {
 		var fd = new FormData();
 		fd.append('action', action);
 		fd.append('nonce', A.nonce);
 		if (withScene) { fd.append('scene', withScene); }
 		Object.keys(data).forEach(function (k) { fd.append(k, data[k]); });
-		return fetch(A.ajaxUrl, { method: 'POST', body: fd, credentials: 'same-origin' }).then(function (r) { return r.json(); });
+		return fetch(A.ajaxUrl, { method: 'POST', body: fd, credentials: 'same-origin' });
+	}
+
+	// 403 = the page came from a cache and its token expired: get a fresh one, try once more.
+	function post(action, data, withScene) {
+		return send(action, data, withScene).then(function (r) {
+			if (r.status !== 403) { return r.json(); }
+			return fetch(A.ajaxUrl + '?action=navid_nonces', { credentials: 'same-origin' })
+				.then(function (n) { return n.json(); })
+				.then(function (n) {
+					if (!n || !n.success || !n.data.otp) { return r.json(); }
+					A.nonce = n.data.otp;
+					return send(action, data, withScene).then(function (r2) { return r2.json(); });
+				});
+		});
 	}
 
 	function initCard(card) {
@@ -154,7 +168,9 @@
 		A.reload = true;
 		var closeBtn = modal.querySelector('.navid-modal-close');
 
+		var lastFocus = null;
 		function open() {
+			lastFocus = document.activeElement;
 			modal.hidden = false;
 			document.body.classList.add('navid-modal-open');
 			window.requestAnimationFrame(function () { modal.classList.add('is-open'); });
@@ -165,10 +181,35 @@
 			modal.classList.remove('is-open');
 			document.body.classList.remove('navid-modal-open');
 			window.setTimeout(function () { modal.hidden = true; }, 200);
+			// Keyboard users land back on the button that opened the pop-up.
+			if (lastFocus && lastFocus.focus) { lastFocus.focus(); }
 		}
 
+		// Tab stays inside the pop-up while it is open.
+		modal.addEventListener('keydown', function (e) {
+			if (e.key !== 'Tab') { return; }
+			var items = Array.prototype.filter.call(
+				modal.querySelectorAll('a[href], button:not([disabled]), input:not([type=hidden]):not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])'),
+				function (el) { return el.offsetParent !== null; }
+			);
+			if (!items.length) { return; }
+			var first = items[0];
+			var last = items[items.length - 1];
+			if (e.shiftKey && document.activeElement === first) {
+				e.preventDefault();
+				last.focus();
+			} else if (!e.shiftKey && document.activeElement === last) {
+				e.preventDefault();
+				first.focus();
+			}
+		});
+
+		var selector = '[data-navid-login], .mqb-otp-trigger, a[href="#mqb-otp"]';
+		if (A.trigger) {
+			try { document.querySelector(A.trigger); selector += ', ' + A.trigger; } catch (ignore) {}
+		}
 		document.addEventListener('click', function (e) {
-			var trigger = e.target.closest('[data-navid-login]');
+			var trigger = e.target.closest(selector);
 			if (trigger) {
 				e.preventDefault();
 				open();

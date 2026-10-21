@@ -146,6 +146,9 @@ class NPT_Proforma {
 			$digits = '0' . substr( $digits, 4 );
 		} elseif ( 0 === strpos( $digits, '98' ) && 12 === strlen( $digits ) ) {
 			$digits = '0' . substr( $digits, 2 );
+		} elseif ( 10 === strlen( $digits ) && 0 === strpos( $digits, '9' ) ) {
+			// Typed without the leading zero (912…).
+			$digits = '0' . $digits;
 		}
 		if ( ! preg_match( '/^09\d{9}$/', $digits ) ) {
 			return '';

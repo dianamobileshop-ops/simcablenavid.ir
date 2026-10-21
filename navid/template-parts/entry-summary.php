@@ -20,7 +20,7 @@ $navid_badge = $navid_cats ? $navid_cats[0]->name : '';
 		<?php endif; ?>
 	</a>
 	<div class="navid-post-body">
-		<p class="navid-post-meta"><?php echo esc_html( sprintf( '%s دقیقه مطالعه', navid_reading_minutes( get_post() ) ) ); ?></p>
+		<p class="navid-post-meta"><?php echo esc_html( sprintf( '%s دقیقه مطالعه', navid_fa_digits( navid_reading_minutes( get_post() ) ) ) ); ?></p>
 		<h2 class="navid-post-title"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h2>
 		<p class="navid-post-excerpt"><?php echo esc_html( wp_trim_words( get_the_excerpt(), 22 ) ); ?></p>
 		<div class="navid-post-foot">

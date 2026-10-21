@@ -31,6 +31,26 @@
 			}
 		});
 
+		// Search in the mobile tab bar opens and focuses the header search field.
+		var searchTab = document.querySelector('[data-navid-search]');
+		var searchInput = document.getElementById('navid-s');
+		if (searchTab && searchInput) {
+			searchTab.addEventListener('click', function (e) {
+				e.preventDefault();
+				document.body.classList.toggle('navid-search-open');
+				window.scrollTo({ top: 0, behavior: 'smooth' });
+				searchInput.focus();
+			});
+		}
+
+		// Back to top (footer).
+		Array.prototype.forEach.call(document.querySelectorAll('[data-navid-totop]'), function (btn) {
+			btn.addEventListener('click', function () {
+				var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+				window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+			});
+		});
+
 		var cats = document.querySelector('.navid-catmenu');
 		if (cats) {
 			document.addEventListener('click', function (e) {

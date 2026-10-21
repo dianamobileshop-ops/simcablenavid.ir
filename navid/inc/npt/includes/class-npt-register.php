@@ -44,18 +44,10 @@ class NPT_Register {
 		if ( $id && 'page' === get_post_type( $id ) && 'trash' !== get_post_status( $id ) ) {
 			return $id;
 		}
-		$found = get_posts( array(
-			'post_type'   => 'page',
-			'post_status' => 'publish,draft',
-			'search'      => '[navid_register]',
-			'number'      => 1,
-			'fields'      => 'IDs',
-		) );
+		$found = npt_find_shortcode_page( 'navid_register' );
 		if ( $found ) {
-			// Some sites return the post object here instead of its ID.
-			$found_id = (int) ( is_object( $found[0] ) ? $found[0]->ID : $found[0] );
-			update_option( self::PAGE_OPT, $found_id, false );
-			return $found_id;
+			update_option( self::PAGE_OPT, $found, false );
+			return $found;
 		}
 		$new_id = wp_insert_post( array(
 			'post_title'   => 'ثبت‌نام',

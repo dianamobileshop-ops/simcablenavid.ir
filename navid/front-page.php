@@ -52,18 +52,20 @@ if ( $navid_slides ) :
 	<?php endif; ?>
 <?php endif; ?>
 
+<?php if ( navid_wc() || $navid_opt['price_url'] ) : ?>
 <section class="navid-price-box" aria-label="<?php esc_attr_e( 'لیست قیمت', 'navid' ); ?>">
 	<?php if ( '' !== $navid_opt['toolbar_sub'] ) : ?><p class="navid-price-box-sub"><?php echo esc_html( $navid_opt['toolbar_sub'] ); ?></p><?php endif; ?>
 	<div class="navid-price-box-btns">
-		<?php if ( function_exists( 'npt_pdf_download_url' ) ) : ?>
+		<?php if ( navid_wc() && function_exists( 'npt_pdf_download_url' ) ) : ?>
 			<a class="navid-btn navid-btn--primary" href="<?php echo esc_url( npt_pdf_download_url( '' ) ); ?>" rel="nofollow"><?php esc_html_e( 'دانلود PDF', 'navid' ); ?></a>
+			<a class="navid-btn" href="<?php echo esc_url( npt_online_view_url( '' ) ); ?>" rel="nofollow"><?php esc_html_e( 'مشاهده آنلاین', 'navid' ); ?></a>
 		<?php endif; ?>
-		<a class="navid-btn" href="<?php echo esc_url( function_exists( 'npt_online_view_url' ) ? npt_online_view_url( '' ) : ( $navid_opt['price_url'] ? $navid_opt['price_url'] : home_url( '/' ) ) ); ?>" rel="nofollow"><?php esc_html_e( 'مشاهده آنلاین', 'navid' ); ?></a>
 		<?php if ( $navid_opt['price_url'] ) : ?>
 			<a class="navid-btn" href="<?php echo esc_url( $navid_opt['price_url'] ); ?>"><?php esc_html_e( 'جدول قیمت', 'navid' ); ?></a>
 		<?php endif; ?>
 	</div>
 </section>
+<?php endif; ?>
 
 <?php if ( $navid_cats ) : ?>
 	<section class="navid-home-cats" aria-label="<?php esc_attr_e( 'دسته‌بندی‌ها', 'navid' ); ?>">

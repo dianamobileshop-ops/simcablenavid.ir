@@ -92,6 +92,7 @@ function navid_settings_styles( $hook ) {
 		@media (max-width:960px){.navid-layout{grid-template-columns:1fr}.navid-side{position:static;max-height:none}.navid-topbar{flex-wrap:wrap;top:46px}.navid-qsearch{width:100%}.navid-row{grid-template-columns:1fr}}
 	';
 	wp_enqueue_media();
+	$css .= '.navid-app .navid-ok{color:#13803f;font-weight:700}.navid-app .navid-bad{color:#b42318;font-weight:700}';
 	wp_register_style( 'navid-settings', false, array(), NAVID_VERSION );
 	wp_enqueue_style( 'navid-settings' );
 	wp_add_inline_style( 'navid-settings', $css );
@@ -112,7 +113,6 @@ function navid_save_settings() {
 
 	$clean = array(
 		'primary_color' => $color ? $color : '#1faa6b',
-		'show_topbar'   => empty( $raw['show_topbar'] ) ? '0' : '1',
 		'sticky_header' => empty( $raw['sticky_header'] ) ? '0' : '1',
 		'toolbar_title' => isset( $raw['toolbar_title'] ) ? sanitize_text_field( $raw['toolbar_title'] ) : '',
 		'toolbar_sub'   => isset( $raw['toolbar_sub'] ) ? sanitize_text_field( $raw['toolbar_sub'] ) : '',
@@ -133,34 +133,60 @@ function navid_save_settings() {
 		'about'         => isset( $raw['about'] ) ? sanitize_textarea_field( $raw['about'] ) : '',
 		'phone'         => isset( $raw['phone'] ) ? sanitize_text_field( $raw['phone'] ) : '',
 		'address'       => isset( $raw['address'] ) ? sanitize_text_field( $raw['address'] ) : '',
+		'hours'         => isset( $raw['hours'] ) ? sanitize_text_field( $raw['hours'] ) : '',
+		'ft_features_show' => empty( $raw['ft_features_show'] ) ? '0' : '1',
+		'ft_features'   => isset( $raw['ft_features'] ) ? sanitize_textarea_field( $raw['ft_features'] ) : '',
+		'copyright'     => isset( $raw['copyright'] ) ? sanitize_text_field( $raw['copyright'] ) : '',
+		'jalali'        => ( isset( $raw['jalali'] ) && in_array( $raw['jalali'], array( 'all', 'front', 'off' ), true ) ) ? $raw['jalali'] : 'all',
+		'fa_digits'     => empty( $raw['fa_digits'] ) ? '0' : '1',
 	);
-	// Only the keys of the screen that was submitted change; everything else stays.
-	$groups = array(
-		't-look'   => array( 'primary_color' ),
-		't-header' => array( 'sticky_header', 'phone', 'address', 'email', 'about', 'special_label', 'special_url' ),
-		't-bar'    => array( 'toolbar_title', 'toolbar_sub', 'price_url' ),
-		't-cats'   => array( 'home_cats', 'cats_effect', 'cats_shape', 'cats_cols' ),
-		't-slider' => array( 'slides', 'slider_mode', 'slider_speed', 'slider_ratio', 'slider_arrows', 'slider_autoplay' ),
-	);
-	$section = isset( $raw['_tab'] ) ? sanitize_key( $raw['_tab'] ) : '';
-	if ( isset( $groups[ $section ] ) ) {
-		$merged = navid_options();
-		foreach ( $groups[ $section ] as $field ) {
-			$merged[ $field ] = $clean[ $field ];
-		}
-		$clean = $merged;
+	// eNamad: only the two numbers are kept, whatever was pasted (snippet, link or «id,code»).
+	$enamad         = isset( $raw['enamad'] ) ? navid_parse_enamad( $raw['enamad'] ) : null;
+	$clean['enamad'] = $enamad ? $enamad[0] . ',' . $enamad[1] : '';
+	foreach ( array( 'telegram', 'instagram', 'whatsapp', 'eitaa', 'bale', 'aparat', 'linkedin' ) as $net ) {
+		$value = isset( $raw[ 'social_' . $net ] ) ? trim( sanitize_text_field( $raw[ 'social_' . $net ] ) ) : '';
+		$clean[ 'social_' . $net ] = preg_match( '#^https?://#i', $value ) ? esc_url_raw( $value ) : $value;
 	}
-	update_option( 'navid_options', $clean );
+
+	// Each screen saves only its own fields; everything else stays as it was.
+	$groups  = navid_settings_groups();
+	$section = isset( $raw['_tab'] ) ? sanitize_key( $raw['_tab'] ) : '';
+	if ( ! isset( $groups[ $section ] ) ) {
+		wp_safe_redirect( admin_url( 'admin.php?page=navid-settings' ) );
+		exit;
+	}
+	$merged = navid_options();
+	foreach ( $groups[ $section ] as $field ) {
+		$merged[ $field ] = $clean[ $field ];
+	}
+	update_option( 'navid_options', $merged );
 	// The price list header, footer and PDF read these two, so they stay in sync —
-	// but only when they were on the submitted screen; saving another screen must not
-	// overwrite a number changed meanwhile in the price table settings.
-	if ( 't-header' === $section || ! isset( $groups[ $section ] ) ) {
-		update_option( 'npt_phone', $clean['phone'] );
-		update_option( 'npt_address', $clean['address'] );
+	// only when the contact screen was saved.
+	if ( 't-contact' === $section ) {
+		update_option( 'npt_phone', $merged['phone'] );
+		update_option( 'npt_address', $merged['address'] );
 	}
 
 	wp_safe_redirect( add_query_arg( array( 'page' => 'navid-settings', 'tab' => $section, 'saved' => '1' ), admin_url( 'admin.php' ) ) );
 	exit;
+}
+
+/**
+ * Theme screens and the fields each one saves.
+ *
+ * @return array
+ */
+function navid_settings_groups() {
+	return array(
+		't-look'    => array( 'primary_color' ),
+		't-header'  => array( 'sticky_header', 'special_label', 'special_url' ),
+		't-contact' => array( 'phone', 'address', 'email', 'hours' ),
+		't-footer'  => array( 'about', 'ft_features_show', 'ft_features', 'enamad', 'copyright', 'social_telegram', 'social_instagram', 'social_whatsapp', 'social_eitaa', 'social_bale', 'social_aparat', 'social_linkedin' ),
+		't-bar'     => array( 'toolbar_title', 'toolbar_sub', 'price_url' ),
+		't-cats'    => array( 'home_cats', 'cats_effect', 'cats_shape', 'cats_cols' ),
+		't-slider'  => array( 'slides', 'slider_mode', 'slider_speed', 'slider_ratio', 'slider_arrows', 'slider_autoplay' ),
+		't-date'    => array( 'jalali', 'fa_digits' ),
+	);
 }
 add_action( 'admin_post_navid_save_settings', 'navid_save_settings' );
 
@@ -177,59 +203,76 @@ function navid_admin_tree() {
 		return $base . '&tab=' . $key;
 	};
 	return array(
+		array( 'label' => 'گزارش و داشبورد', 'icon' => 'dashicons-chart-area', 'items' => array( 'overview' => array( 'گزارش کلی', $base ) ), 'single' => true ),
 		array(
-			'label' => 'پیکربندی نمایش',
+			'label' => 'ظاهر سایت',
 			'icon'  => 'dashicons-art',
 			'items' => array(
-				't-look'   => array( 'ظاهر و رنگ', $tab( 't-look' ) ),
-				't-header' => array( 'هدر و فوتر', $tab( 't-header' ) ),
-				't-bar'    => array( 'نوار جدول قیمت', $tab( 't-bar' ) ),
-				't-cats'   => array( 'دسته‌بندی‌های صفحه اصلی', $tab( 't-cats' ) ),
-				't-slider' => array( 'اسلایدر صفحه اصلی', $tab( 't-slider' ) ),
+				't-look'    => array( 'رنگ اصلی', $tab( 't-look' ) ),
+				't-header'  => array( 'هدر', $tab( 't-header' ) ),
+				't-footer'  => array( 'فوتر، شبکه‌های اجتماعی و اینماد', $tab( 't-footer' ) ),
+				't-date'    => array( 'تاریخ شمسی و اعداد فارسی', $tab( 't-date' ) ),
 			),
 		),
 		array(
-			'label' => 'جدول قیمت',
+			'label' => 'صفحه اصلی',
+			'icon'  => 'dashicons-admin-home',
+			'items' => array(
+				't-slider' => array( 'اسلایدر', $tab( 't-slider' ) ),
+				't-cats'   => array( 'دسته‌بندی‌ها', $tab( 't-cats' ) ),
+				't-bar'    => array( 'جعبهٔ لیست قیمت', $tab( 't-bar' ) ),
+			),
+		),
+		array( 'label' => 'اطلاعات تماس', 'icon' => 'dashicons-phone', 'items' => array( 't-contact' => array( 'اطلاعات تماس', $tab( 't-contact' ) ) ), 'single' => true ),
+		array( 'label' => 'پرداخت (بانک ملت)', 'icon' => 'dashicons-money-alt', 'items' => array( 't-pay' => array( 'پرداخت (بانک ملت)', $tab( 't-pay' ) ) ), 'single' => true ),
+		array(
+			'label' => 'جدول قیمت و PDF',
 			'icon'  => 'dashicons-list-view',
 			'items' => array(
 				'price'   => array( 'قیمت‌ها و تعدیل', $tab( 'price' ) ),
 				'header'  => array( 'سربرگ PDF', $tab( 'header' ) ),
-				'content' => array( 'محتوا', $tab( 'content' ) ),
-				'footer'  => array( 'پابرگ', $tab( 'footer' ) ),
+				'content' => array( 'محتوای جدول', $tab( 'content' ) ),
+				'footer'  => array( 'پابرگ PDF', $tab( 'footer' ) ),
+				'seo'     => array( 'سئوی لیست قیمت', $tab( 'seo' ) ),
 			),
 		),
-		array( 'label' => 'سئو', 'icon' => 'dashicons-search', 'items' => array( 'seo' => array( 'سئو', $tab( 'seo' ) ) ), 'single' => true ),
 		array(
-			'label' => 'پیامک',
+			'label' => 'پیامک و ورود',
 			'icon'  => 'dashicons-email-alt',
 			'items' => array(
-				'sms'       => array( 'تنظیمات پیامک', $tab( 'sms' ) ),
+				'sms'       => array( 'اتصال سامانهٔ پیامک', $tab( 'sms' ) ),
 				'otp'       => array( 'کدهای الگو', $tab( 'otp' ) ),
-				'templates' => array( 'الگوهای پیامک', $tab( 'templates' ) ),
-				'sms_login' => array( 'ورود پیامکی', $tab( 'sms_login' ) ),
+				'templates' => array( 'متن پیامک‌ها', $tab( 'templates' ) ),
+				'sms_login' => array( 'ورود و ثبت‌نام پیامکی', $tab( 'sms_login' ) ),
+				'contacts'  => array( 'مخاطبین', $tab( 'contacts' ) ),
 			),
 		),
-		array( 'label' => 'مخاطبین', 'icon' => 'dashicons-groups', 'items' => array( 'contacts' => array( 'مخاطبین', $tab( 'contacts' ) ) ), 'single' => true ),
 		array(
 			'label' => 'نوار موبایل',
 			'icon'  => 'dashicons-smartphone',
 			'items' => array(
 				'bar_menu'  => array( 'منوی پایین', $tab( 'bar_menu' ) ),
-				'bar_float' => array( 'آیکن شناور', $tab( 'bar_float' ) ),
+				'bar_float' => array( 'دکمهٔ تماس شناور', $tab( 'bar_float' ) ),
 			),
 		),
 		array(
 			'label' => 'پنل مدیر',
 			'icon'  => 'dashicons-businessperson',
 			'items' => array(
-				'login_page' => array( 'صفحه ورود', $tab( 'login_page' ) ),
+				'login_page' => array( 'صفحهٔ ورود', $tab( 'login_page' ) ),
 				'panel_dash' => array( 'داشبورد مدیر', $tab( 'panel_dash' ) ),
 				'managers'   => array( 'مدیران کسب‌وکار', $tab( 'managers' ) ),
 			),
 		),
-		array( 'label' => 'تنظیمات عمومی', 'icon' => 'dashicons-admin-generic', 'items' => array( 'general' => array( 'تنظیمات عمومی', $tab( 'general' ) ) ), 'single' => true ),
-		array( 'label' => 'پشتیبان و بروزرسانی', 'icon' => 'dashicons-backup', 'items' => array( 'backup' => array( 'پشتیبان و بروزرسانی', $tab( 'backup' ) ) ), 'single' => true ),
-		array( 'label' => 'گزارش خطاها', 'icon' => 'dashicons-warning', 'items' => array( 'errors' => array( 'گزارش خطاها', $tab( 'errors' ) ) ), 'single' => true ),
+		array(
+			'label' => 'سیستم',
+			'icon'  => 'dashicons-admin-tools',
+			'items' => array(
+				'general' => array( 'تنظیمات عمومی', $tab( 'general' ) ),
+				'backup'  => array( 'پشتیبان و بروزرسانی', $tab( 'backup' ) ),
+				'errors'  => array( 'گزارش خطاها', $tab( 'errors' ) ),
+			),
+		),
 	);
 }
 
@@ -369,14 +412,10 @@ function navid_settings_section( $key, $opt ) {
 		case 't-header':
 			?>
 			<section class="navid-admin-card">
-				<h2>هدر و فوتر</h2>
+				<h2>هدر</h2>
 			<div class="navid-row">
-				<label for="navid-sticky">هدر چسبان</label>
+				<label for="navid-sticky">هدر چسبان (هنگام پایین رفتن صفحه بالا می‌ماند)</label>
 				<input id="navid-sticky" type="checkbox" name="navid[sticky_header]" value="1" <?php checked( '1', $opt['sticky_header'] ); ?>>
-			</div>
-			<div class="navid-row">
-				<label for="navid-phone">شماره تماس</label>
-				<input id="navid-phone" type="text" name="navid[phone]" value="<?php echo esc_attr( $opt['phone'] ); ?>" dir="ltr">
 			</div>
 			<div class="navid-row">
 				<label for="navid-special-label">لینک ویژه کنار منو (مثلاً فروش ویژه)</label>
@@ -386,18 +425,109 @@ function navid_settings_section( $key, $opt ) {
 				<label for="navid-special-url">آدرس لینک ویژه</label>
 				<input id="navid-special-url" type="text" name="navid[special_url]" value="<?php echo esc_attr( $opt['special_url'] ); ?>" dir="ltr" placeholder="https://">
 			</div>
+			<p class="description">لوگو از «نمایش ← سفارشی‌سازی ← هویت سایت» و منوها از «نمایش ← فهرست‌ها» تنظیم می‌شوند.</p>
+			</section>
+			<?php
+			break;
+		case 't-contact':
+			?>
+			<section class="navid-admin-card">
+				<h2>اطلاعات تماس</h2>
+				<p class="description">در هدر، فوتر، صفحهٔ محصول، لیست قیمت و PDF استفاده می‌شود.</p>
 			<div class="navid-row">
-				<label for="navid-email">ایمیل</label>
-				<input id="navid-email" type="text" name="navid[email]" value="<?php echo esc_attr( $opt['email'] ); ?>" dir="ltr">
-			</div>
-			<div class="navid-row">
-				<label for="navid-about">متن معرفی در فوتر</label>
-				<textarea id="navid-about" name="navid[about]" rows="3"><?php echo esc_textarea( $opt['about'] ); ?></textarea>
+				<label for="navid-phone">شماره تماس</label>
+				<input id="navid-phone" type="text" name="navid[phone]" value="<?php echo esc_attr( $opt['phone'] ); ?>" dir="ltr">
 			</div>
 			<div class="navid-row">
 				<label for="navid-address">آدرس</label>
 				<input id="navid-address" type="text" name="navid[address]" value="<?php echo esc_attr( $opt['address'] ); ?>">
 			</div>
+			<div class="navid-row">
+				<label for="navid-email">ایمیل</label>
+				<input id="navid-email" type="text" name="navid[email]" value="<?php echo esc_attr( $opt['email'] ); ?>" dir="ltr">
+			</div>
+			<div class="navid-row">
+				<label for="navid-hours">ساعات کاری</label>
+				<input id="navid-hours" type="text" name="navid[hours]" value="<?php echo esc_attr( $opt['hours'] ); ?>" placeholder="شنبه تا پنجشنبه ۹ تا ۱۸">
+			</div>
+			</section>
+			<?php
+			break;
+		case 't-footer':
+			$navid_en = navid_parse_enamad( $opt['enamad'] );
+			?>
+			<section class="navid-admin-card">
+				<h2>فوتر</h2>
+			<div class="navid-row">
+				<label for="navid-about">متن معرفی</label>
+				<textarea id="navid-about" name="navid[about]" rows="3"><?php echo esc_textarea( $opt['about'] ); ?></textarea>
+			</div>
+			<div class="navid-row">
+				<label for="navid-ftf-show">نوار مزیت‌ها (بالای فوتر)</label>
+				<input id="navid-ftf-show" type="checkbox" name="navid[ft_features_show]" value="1" <?php checked( '1', $opt['ft_features_show'] ); ?>>
+			</div>
+			<div class="navid-row">
+				<label for="navid-ftf">مزیت‌ها — هر خط: عنوان | توضیح (حداکثر ۴ خط؛ خالی = متن پیش‌فرض)</label>
+				<textarea id="navid-ftf" name="navid[ft_features]" rows="4" placeholder="ارسال سریع | به سراسر کشور"><?php echo esc_textarea( $opt['ft_features'] ); ?></textarea>
+			</div>
+			<div class="navid-row">
+				<label for="navid-copy">متن کپی‌رایت ({year} = سال شمسی، {site} = نام سایت)</label>
+				<input id="navid-copy" type="text" name="navid[copyright]" value="<?php echo esc_attr( $opt['copyright'] ); ?>" placeholder="© {year} {site} — تمامی حقوق محفوظ است.">
+			</div>
+			</section>
+
+			<section class="navid-admin-card">
+				<h2>نماد اعتماد الکترونیکی (اینماد)</h2>
+			<div class="navid-row">
+				<label for="navid-enamad">کد یا لینک اینماد</label>
+				<div>
+					<textarea id="navid-enamad" name="navid[enamad]" rows="3" dir="ltr" placeholder="&lt;a referrerpolicy='origin' target='_blank' href='https://trustseal.enamad.ir/?id=…&amp;Code=…'&gt;…"><?php echo esc_textarea( $navid_en ? 'https://trustseal.enamad.ir/?id=' . $navid_en[0] . '&Code=' . $navid_en[1] : '' ); ?></textarea>
+					<p class="description">کدی که سایت اینماد داده است را کامل اینجا بچسبانید (یا فقط لینک آن). فقط شناسه و کد آن نگه داشته می‌شود و نشان در فوتر نمایش داده می‌شود.</p>
+					<?php if ( $navid_en ) : ?>
+						<p class="navid-ok">✓ اینماد ثبت شد — شناسه <code><?php echo esc_html( $navid_en[0] ); ?></code></p>
+					<?php elseif ( '' !== trim( (string) $opt['enamad'] ) ) : ?>
+						<p class="navid-bad">کد واردشده شناسه و Code اینماد را ندارد.</p>
+					<?php endif; ?>
+				</div>
+			</div>
+			</section>
+
+			<section class="navid-admin-card">
+				<h2>شبکه‌های اجتماعی</h2>
+				<p class="description">نام کاربری یا آدرس کامل. خالی = نمایش داده نمی‌شود.</p>
+				<?php
+				foreach ( array( 'telegram' => 'تلگرام', 'instagram' => 'اینستاگرام', 'whatsapp' => 'واتس‌اپ (شماره)', 'eitaa' => 'ایتا', 'bale' => 'بله', 'aparat' => 'آپارات', 'linkedin' => 'لینکدین' ) as $navid_k => $navid_l ) :
+					?>
+					<div class="navid-row">
+						<label for="navid-social-<?php echo esc_attr( $navid_k ); ?>"><?php echo esc_html( $navid_l ); ?></label>
+						<input id="navid-social-<?php echo esc_attr( $navid_k ); ?>" type="text" name="navid[social_<?php echo esc_attr( $navid_k ); ?>]" value="<?php echo esc_attr( $opt[ 'social_' . $navid_k ] ); ?>" dir="ltr">
+					</div>
+				<?php endforeach; ?>
+			</section>
+			<?php
+			break;
+		case 't-date':
+			?>
+			<section class="navid-admin-card">
+				<h2>تاریخ شمسی و اعداد فارسی</h2>
+				<?php if ( navid_jalali_plugin() ) : ?>
+					<p class="navid-bad">افزونهٔ «<?php echo esc_html( navid_jalali_plugin() ); ?>» فعال است و قالب تاریخ‌ها را به آن می‌سپارد. قالب خودش تاریخ شمسی دارد؛ می‌توانید آن افزونه را غیرفعال کنید.</p>
+				<?php endif; ?>
+			<div class="navid-row">
+				<label for="navid-jalali">تاریخ شمسی</label>
+				<select id="navid-jalali" name="navid[jalali]">
+					<?php
+					foreach ( array( 'all' => 'همه‌جا (سایت و پیشخوان)', 'front' => 'فقط سایت', 'off' => 'خاموش (میلادی)' ) as $navid_k => $navid_l ) {
+						printf( '<option value="%s"%s>%s</option>', esc_attr( $navid_k ), selected( $opt['jalali'], $navid_k, false ), esc_html( $navid_l ) );
+					}
+					?>
+				</select>
+			</div>
+			<div class="navid-row">
+				<label for="navid-fadigits">اعداد فارسی در تاریخ‌ها و شمارنده‌های سایت</label>
+				<input id="navid-fadigits" type="checkbox" name="navid[fa_digits]" value="1" <?php checked( '1', $opt['fa_digits'] ); ?>>
+			</div>
+			<p class="description">نمونه با تنظیمات فعلی: <strong><?php echo esc_html( navid_jdate( 'l j F Y - H:i' ) ); ?></strong>. قالب نمایش از «تنظیمات ← عمومی ← ساختار تاریخ» خوانده می‌شود (پیشنهاد: <code dir="ltr">j F Y</code>).</p>
 			</section>
 			<?php
 			break;
@@ -555,7 +685,14 @@ function navid_render_settings() {
 	}
 
 	// Theme screens: one section per menu entry, saved by the top Save button.
-	if ( in_array( $tab, array( 't-look', 't-header', 't-bar', 't-cats', 't-slider' ), true ) ) {
+	if ( 't-pay' === $tab ) {
+		navid_admin_shell_open( $tab, '', false );
+		navid_render_payment_screen();
+		navid_admin_shell_close();
+		return;
+	}
+
+	if ( isset( navid_settings_groups()[ $tab ] ) ) {
 		navid_admin_shell_open( $tab, 'navid-settings-form', false );
 		if ( isset( $_GET['saved'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			?>
@@ -588,6 +725,40 @@ function navid_orders_admin_url() {
 }
 
 /**
+ * Payment screen: status of the Mellat gateway and a link to its settings.
+ */
+function navid_render_payment_screen() {
+	$wc       = navid_wc();
+	$settings = get_option( 'woocommerce_navid_mellat_settings', array() );
+	$enabled  = isset( $settings['enabled'] ) && 'yes' === $settings['enabled'];
+	$filled   = ! empty( $settings['terminal'] ) && ! empty( $settings['username'] ) && ! empty( $settings['password'] );
+	$currency = $wc ? get_woocommerce_currency() : '';
+	$cur_ok   = in_array( $currency, array( 'IRR', 'IRT', 'IRHR', 'IRHT' ), true );
+	$rows     = array(
+		array( 'ووکامرس', $wc ? 'فعال' : 'غیرفعال — درگاه فقط با ووکامرس کار می‌کند', $wc ),
+		array( 'واحد پول فروشگاه', $wc ? ( $cur_ok ? $currency . ' (تبدیل خودکار به ریال)' : $currency . ' — باید ریال یا تومان باشد' ) : '—', $cur_ok ),
+		array( 'اطلاعات درگاه', $filled ? 'ترمینال، نام کاربری و رمز وارد شده' : 'وارد نشده', $filled ),
+		array( 'وضعیت', $enabled ? 'روشن' : 'خاموش', $enabled ),
+	);
+	?>
+	<section class="navid-admin-card">
+		<h2>درگاه پرداخت بانک ملت (به‌پرداخت)</h2>
+		<p class="description">داخل قالب است و افزونهٔ جداگانه لازم ندارد. برای کار کردن، IP سرور سایت باید نزد بانک ملت ثبت شده باشد.</p>
+		<table class="widefat striped" style="max-width:640px">
+			<tbody>
+			<?php foreach ( $rows as $row ) : ?>
+				<tr><td style="width:180px"><?php echo esc_html( $row[0] ); ?></td><td class="<?php echo $row[2] ? 'navid-ok' : 'navid-bad'; ?>"><?php echo esc_html( $row[1] ); ?></td></tr>
+			<?php endforeach; ?>
+			</tbody>
+		</table>
+		<?php if ( $wc ) : ?>
+			<p><a class="button button-primary" href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=checkout&section=navid_mellat' ) ); ?>">تنظیم درگاه ملت</a></p>
+		<?php endif; ?>
+	</section>
+	<?php
+}
+
+/**
  * Landing screen: a report of how the site is doing, plus shortcuts.
  */
 function navid_render_report() {
@@ -595,7 +766,7 @@ function navid_render_report() {
 	$base    = admin_url( 'admin.php?page=navid-settings' );
 	$wc_on   = class_exists( 'WooCommerce' );
 	$sms_on  = class_exists( 'NPT_SMS' ) && NPT_SMS::otp_ready();
-	$visits  = (int) get_option( 'npt_visits_' . wp_date( 'Ymd' ), 0 );
+	$visits  = (int) get_option( 'npt_visits_' . ( new DateTime( 'now', wp_timezone() ) )->format( 'Ymd' ), 0 );
 	$total   = (int) get_option( 'npt_visits_total', 0 );
 	$counts  = $wc_on ? wp_count_posts( 'product' ) : null;
 	$orders  = 0;
@@ -609,7 +780,7 @@ function navid_render_report() {
 		$pf_table = NPT_Proforma::table_proformas();
 		if ( $pf_table === $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $pf_table ) ) ) { // phpcs:ignore
 			$pf_total = (int) $wpdb->get_var( 'SELECT COUNT(*) FROM ' . $pf_table ); // phpcs:ignore
-			$pf_week  = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM ' . $pf_table . ' WHERE created_at >= %s', wp_date( 'Y-m-d H:i:s', time() - 7 * DAY_IN_SECONDS ) ) ); // phpcs:ignore
+			$pf_week  = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM ' . $pf_table . ' WHERE created_at >= %s', ( new DateTime( '@' . ( time() - 7 * DAY_IN_SECONDS ) ) )->setTimezone( wp_timezone() )->format( 'Y-m-d H:i:s' ) ) ); // phpcs:ignore
 		}
 	}
 	if ( class_exists( 'NPT_SMS' ) ) {
@@ -622,7 +793,7 @@ function navid_render_report() {
 	$activity = array_slice( (array) get_option( 'npt_activity', array() ), 0, 8 );
 
 	$stats = array(
-		array( 'بازدید امروز', number_format_i18n( $visits ), true ),
+		array( 'بازدیدکنندهٔ امروز', number_format_i18n( $visits ), true ),
 		array( 'کل بازدید', number_format_i18n( $total ), true ),
 		array( 'محصولات منتشرشده', $counts ? number_format_i18n( (int) $counts->publish ) : '—', true ),
 		array( 'سفارش‌های جاری', number_format_i18n( $orders ), true ),
@@ -639,6 +810,8 @@ function navid_render_report() {
 		array( 'پنل مدیر', function_exists( 'npt_panel_url' ) ? npt_panel_url() : home_url( '/' ), 'dashicons-businessperson' ),
 		array( 'جدول قیمت', $base . '&tab=price', 'dashicons-list-view' ),
 		array( 'پیامک', $base . '&tab=sms', 'dashicons-email-alt' ),
+		array( 'پرداخت (ملت)', $base . '&tab=t-pay', 'dashicons-money-alt' ),
+		array( 'فوتر و اینماد', $base . '&tab=t-footer', 'dashicons-shield' ),
 		array( 'پشتیبان', $base . '&tab=backup', 'dashicons-backup' ),
 		array( 'گزارش خطاها', $base . '&tab=errors', 'dashicons-warning' ),
 	);

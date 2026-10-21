@@ -2,7 +2,7 @@
 Theme Name: Navid
 Theme URI: https://simcablenavid.ir
 Description: قالب اختصاصی نوید. شامل جدول قیمت و پنل مدیریت در یک بسته.
-Version: 1.3.1
+Version: 1.4.0
 Update URI: https://simcablenavid.ir/navid
 Requires PHP: 7.4
 Text Domain: navid
@@ -235,43 +235,6 @@ img {
 	padding-block: 24px 48px;
 }
 
-/* Footer */
-.navid-footer {
-	background: var(--navid-card);
-	border-top: 1px solid var(--navid-line);
-	padding-block: 28px;
-	font-size: 14px;
-}
-
-.navid-footer-grid {
-	display: grid;
-	grid-template-columns: 1.2fr 1fr 1fr;
-	gap: 24px;
-}
-
-.navid-footer-name {
-	font-weight: 800;
-	margin: 0 0 6px;
-}
-
-.navid-footer-menu {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-	display: grid;
-	gap: 8px;
-}
-
-.navid-footer-menu a {
-	color: var(--navid-ink);
-	text-decoration: none;
-}
-
-.navid-footer-copy {
-	color: var(--navid-muted);
-	font-size: 13px;
-}
-
 /* Mobile bottom tab bar */
 .navid-tabbar {
 	display: none;
@@ -352,10 +315,6 @@ img {
 		padding: 12px 16px;
 	}
 
-	.navid-footer-grid {
-		grid-template-columns: 1fr;
-	}
-
 	.navid-tabbar {
 		position: fixed;
 		inset-inline: 0;
@@ -390,8 +349,9 @@ img {
 		margin-inline-start: 8px;
 	}
 
-	body {
-		padding-bottom: 76px;
+	/* Room for the fixed bottom bar, inside the dark footer (no light strip under it). */
+	.navid-ft-bottom {
+		padding-bottom: 84px;
 	}
 }
 
@@ -1042,94 +1002,9 @@ img {
 		display: none;
 	}
 
-	body.navid-has-tabbar {
-		padding-bottom: 72px;
-	}
-
-	body.mqb-has-bar {
-		padding-bottom: 92px;
-	}
 
 	.navid-has-tabbar .mqb-floating-trigger {
 		bottom: 88px !important;
-	}
-}
-
-/* Footer */
-.navid-footer {
-	background: #14202b;
-	color: #cdd5de;
-	padding: 0;
-	margin-top: 32px;
-	border-top: 0;
-}
-
-.navid-footer-grid {
-	grid-template-columns: 1.4fr 1fr 1fr 1.2fr;
-	gap: 28px;
-	padding-block: 36px 24px;
-}
-
-.navid-footer a {
-	color: #e8edf2;
-	text-decoration: none;
-}
-
-.navid-footer a:hover {
-	color: var(--navid-primary);
-}
-
-.navid-footer-title {
-	color: #fff;
-	font-size: 15px;
-	margin: 0 0 12px;
-}
-
-.navid-footer-about p {
-	margin: 12px 0;
-	line-height: 2;
-}
-
-.navid-footer-logo img {
-	background: #fff;
-	border-radius: 10px;
-	padding: 6px 10px;
-}
-
-.navid-social {
-	display: flex;
-	gap: 10px;
-}
-
-.navid-social a {
-	border: 1px solid #34465a;
-	border-radius: 999px;
-	padding: 4px 14px;
-	font-size: 13px;
-}
-
-.navid-footer-contact li {
-	line-height: 1.9;
-}
-
-.navid-footer-bottom {
-	border-top: 1px solid #263646;
-	padding: 14px 0;
-	font-size: 13px;
-	text-align: center;
-	color: #98a6b5;
-}
-
-@media (max-width: 960px) {
-	.navid-footer-grid {
-		grid-template-columns: 1fr 1fr;
-	}
-}
-
-@media (max-width: 768px) {
-	.navid-footer-grid {
-		grid-template-columns: 1fr;
-		padding-block: 26px 14px;
 	}
 }
 
@@ -3936,4 +3811,420 @@ ul.products::after {
 		min-height: 36px;
 		font-size: 12px;
 	}
+}
+
+/* ---- 1.4.0: footer ---- */
+.navid-footer {
+	--ft-bg: #101a24;
+	--ft-ink: #c9d3dd;
+	--ft-line: rgba(255, 255, 255, .08);
+	position: relative;
+	margin-top: 56px;
+	background: var(--ft-bg);
+	color: var(--ft-ink);
+	font-size: 14px;
+}
+
+.navid-footer::before {
+	content: "";
+	position: absolute;
+	inset: 0 0 auto;
+	height: 4px;
+	background: linear-gradient(90deg, var(--navid-primary), color-mix(in srgb, var(--navid-primary) 40%, #4fd1c5));
+}
+
+.navid-footer a {
+	color: #eef3f7;
+	text-decoration: none;
+	transition: color .2s;
+}
+
+.navid-footer a:hover {
+	color: var(--navid-primary);
+}
+
+.navid-ft-features {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 14px;
+	transform: translateY(-36px);
+	margin-bottom: -12px;
+}
+
+.navid-ft-features li {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 16px;
+	background: var(--navid-card);
+	color: var(--navid-ink);
+	border-radius: var(--navid-radius);
+	box-shadow: 0 10px 30px rgba(16, 26, 36, .14);
+}
+
+.navid-ft-features strong {
+	display: block;
+	font-size: 14px;
+	line-height: 1.6;
+}
+
+.navid-ft-features small {
+	display: block;
+	color: var(--navid-muted);
+	font-size: 12px;
+	line-height: 1.6;
+}
+
+.navid-ft-ficon {
+	display: grid;
+	place-items: center;
+	flex: 0 0 46px;
+	width: 46px;
+	height: 46px;
+	border-radius: 14px;
+	background: var(--navid-primary-soft);
+	color: var(--navid-primary);
+}
+
+.navid-ft-ficon svg {
+	width: 24px;
+	height: 24px;
+}
+
+.navid-ft-grid {
+	display: grid;
+	grid-template-columns: 1.5fr 1fr 1fr 1.3fr;
+	gap: 32px;
+	padding-block: 12px 32px;
+}
+
+.navid-ft-grid.has-badges {
+	grid-template-columns: 1.4fr 1fr 1fr 1.3fr auto;
+}
+
+.navid-ft-title {
+	position: relative;
+	margin: 0 0 16px;
+	padding-bottom: 10px;
+	color: #fff;
+	font-size: 15px;
+}
+
+.navid-ft-title::after {
+	content: "";
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	width: 28px;
+	height: 3px;
+	border-radius: 3px;
+	background: var(--navid-primary);
+}
+
+.navid-ft-logo {
+	display: inline-block;
+	padding: 8px 12px;
+	border-radius: 12px;
+	background: #fff;
+	color: var(--navid-ink) !important;
+	font-weight: 700;
+}
+
+.navid-ft-about p {
+	margin: 14px 0 16px;
+	line-height: 2.1;
+	color: var(--ft-ink);
+}
+
+.navid-ft-social {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.navid-ft-social a {
+	display: grid;
+	place-items: center;
+	width: 40px;
+	height: 40px;
+	border-radius: 12px;
+	background: rgba(255, 255, 255, .06);
+	border: 1px solid var(--ft-line);
+}
+
+.navid-ft-social a:hover {
+	background: var(--navid-primary);
+	border-color: var(--navid-primary);
+	color: #fff;
+	transform: translateY(-2px);
+}
+
+.navid-ft-links {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	gap: 10px;
+}
+
+.navid-ft-links a {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.navid-ft-links a::before {
+	content: "";
+	width: 5px;
+	height: 5px;
+	border-radius: 50%;
+	background: color-mix(in srgb, var(--navid-primary) 70%, transparent);
+	transition: transform .2s;
+}
+
+.navid-ft-links a:hover::before {
+	transform: scale(1.6);
+}
+
+.navid-ft-contact ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	gap: 12px;
+}
+
+.navid-ft-contact li {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	line-height: 1.9;
+}
+
+.navid-ft-contact svg {
+	flex: 0 0 20px;
+	margin-top: 4px;
+	color: var(--navid-primary);
+}
+
+.navid-ft-badges {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
+.navid-badge-box {
+	display: grid;
+	place-items: center;
+	width: 112px;
+	min-height: 120px;
+	padding: 6px;
+	border-radius: 14px;
+	background: #fff;
+}
+
+.navid-badge-box img {
+	display: block;
+	max-width: 100%;
+	height: auto;
+}
+
+.navid-ft-bottom {
+	border-top: 1px solid var(--ft-line);
+	color: #8fa0b1;
+	font-size: 13px;
+}
+
+.navid-ft-bottom .navid-wrap {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding-block: 14px;
+}
+
+.navid-totop {
+	display: grid;
+	place-items: center;
+	width: 38px;
+	height: 38px;
+	border: 1px solid var(--ft-line);
+	border-radius: 12px;
+	background: rgba(255, 255, 255, .06);
+	color: #fff;
+	cursor: pointer;
+}
+
+.navid-totop:hover {
+	background: var(--navid-primary);
+}
+
+@media (max-width: 1024px) {
+	.navid-ft-grid,
+	.navid-ft-grid.has-badges {
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.navid-ft-about {
+		grid-column: 1 / -1;
+	}
+
+	.navid-ft-features {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 600px) {
+	.navid-footer {
+		margin-top: 48px;
+	}
+
+	.navid-ft-features {
+		gap: 8px;
+		transform: translateY(-28px);
+	}
+
+	.navid-ft-features li {
+		flex-direction: column;
+		text-align: center;
+		padding: 12px 8px;
+	}
+
+	.navid-ft-grid,
+	.navid-ft-grid.has-badges {
+		gap: 24px;
+		padding-bottom: 20px;
+	}
+
+	.navid-ft-contact,
+	.navid-ft-trust {
+		grid-column: 1 / -1;
+	}
+
+	.navid-ft-bottom .navid-wrap {
+		font-size: 12px;
+	}
+}
+
+/* Payment pages (Mellat) */
+.navid-pay-box {
+	max-width: 520px;
+	margin: 24px auto;
+	padding: 24px;
+	text-align: center;
+	background: var(--navid-card);
+	border: 1px solid var(--navid-line);
+	border-radius: var(--navid-radius);
+}
+
+.navid-pay-box.is-bad {
+	border-color: #f3c2c2;
+	background: #fff6f6;
+}
+
+/* ---- 1.4.0: price table bar in the theme's look ---- */
+.mqb-themed {
+	--mqb-font: inherit;
+	font-family: inherit;
+}
+
+.mqb-themed .mqb-bar {
+	right: 10px;
+	left: 10px;
+	bottom: 10px;
+	background: var(--navid-card);
+	border: 1px solid var(--navid-line);
+	border-radius: 20px;
+	box-shadow: 0 -4px 28px rgba(16, 26, 36, .12);
+}
+
+.mqb-themed .mqb-item {
+	color: var(--navid-muted) !important;
+	padding: 8px 4px;
+}
+
+.mqb-themed .mqb-item:hover,
+.mqb-themed .mqb-item:focus,
+.mqb-themed .mqb-item.is-current {
+	color: var(--navid-primary) !important;
+	background: var(--navid-primary-soft);
+}
+
+.mqb-themed .mqb-icon {
+	display: grid;
+	place-items: center;
+	height: 24px;
+	color: inherit !important;
+}
+
+.mqb-themed .mqb-icon svg {
+	width: 22px;
+	height: 22px;
+}
+
+.mqb-themed .mqb-label {
+	font-size: 11.5px;
+	font-weight: 700;
+}
+
+.mqb-themed .mqb-floating-trigger {
+	background: var(--navid-primary) !important;
+	color: #fff !important;
+	border-radius: 18px !important;
+	box-shadow: 0 10px 26px color-mix(in srgb, var(--navid-primary) 40%, transparent) !important;
+}
+
+.mqb-themed .mqb-floating-trigger svg {
+	width: 26px;
+	height: 26px;
+}
+
+.mqb-themed .mqb-desktop-trigger,
+.mqb-themed .mqb-desktop-trigger::before,
+.mqb-themed .mqb-desktop-trigger::after {
+	background: var(--navid-primary);
+	font-family: inherit;
+}
+
+.mqb-themed .mqb-desktop-trigger {
+	box-shadow: 0 12px 30px color-mix(in srgb, var(--navid-primary) 35%, transparent);
+}
+
+.mqb-themed .mqb-desktop-trigger svg {
+	width: 22px;
+	height: 22px;
+}
+
+.mqb-themed .mqb-contact-item-icon svg,
+.mqb-themed .mqb-desktop-list .mqb-icon svg {
+	width: 24px;
+	height: 24px;
+}
+
+.mqb-themed .mqb-contact-card,
+.mqb-themed .mqb-desktop-panel {
+	font-family: inherit;
+	border-radius: 20px;
+}
+
+.navid-buy-wa {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	margin-top: 10px;
+	padding: 11px;
+	border: 1px solid #25d366;
+	border-radius: 12px;
+	color: #128c4a;
+	font-weight: 700;
+	text-decoration: none;
+}
+
+.navid-buy-wa:hover {
+	background: #25d366;
+	color: #fff;
 }

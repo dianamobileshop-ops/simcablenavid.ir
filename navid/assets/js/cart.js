@@ -24,8 +24,19 @@
 			btn.disabled = true;
 			var label = btn.textContent;
 			btn.textContent = 'در حال ثبت…';
-			fetch(window.NAVIDCART.ajaxUrl, { method: 'POST', body: fd, credentials: 'same-origin' })
-				.then(function (r) { return r.json(); })
+			var url = window.NAVIDCART.ajaxUrl;
+			fetch(url, { method: 'POST', body: fd, credentials: 'same-origin' })
+				.then(function (r) {
+					if (r.status !== 403) { return r.json(); }
+					// Cached page with an expired token: renew it and send again.
+					return fetch(url + '?action=navid_nonces', { credentials: 'same-origin' })
+						.then(function (n) { return n.json(); })
+						.then(function (n) {
+							window.NAVIDCART.nonce = n.data.cart;
+							fd.set('nonce', n.data.cart);
+							return fetch(url, { method: 'POST', body: fd, credentials: 'same-origin' }).then(function (r2) { return r2.json(); });
+						});
+				})
 				.then(function (res) {
 					if (!res || !res.success) {
 						status.textContent = (res && res.data && res.data.message) || 'ثبت پیش‌فاکتور انجام نشد.';

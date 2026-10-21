@@ -122,6 +122,30 @@ function npt_user_can_panel() {
 	return NPT_Panel::user_can_panel();
 }
 
+/**
+ * ID of a published or draft page whose content carries [$tag], or 0.
+ *
+ * The old lookup passed 'search' / 'number' / 'IDs', which get_posts() does not
+ * know: it ignored the search and adopted whatever page came first (often
+ * «Sample Page») as the panel or sign-up page.
+ */
+function npt_find_shortcode_page( $tag ) {
+	$ids = get_posts( array(
+		'post_type'        => 'page',
+		'post_status'      => array( 'publish', 'draft' ),
+		's'                => '[' . $tag,
+		'posts_per_page'   => 10,
+		'fields'           => 'ids',
+		'suppress_filters' => true,
+	) );
+	foreach ( $ids as $id ) {
+		if ( has_shortcode( (string) get_post_field( 'post_content', $id ), $tag ) ) {
+			return (int) $id;
+		}
+	}
+	return 0;
+}
+
 function npt_panel_url() {
 	return NPT_Panel::panel_url();
 }
@@ -2239,11 +2263,39 @@ function npt_count_visit() {
 	if ( '' === $agent || preg_match( '/bot|crawl|spider|slurp|preview|monitor/', $agent ) ) {
 		return;
 	}
-	$day = 'npt_visits_' . wp_date( 'Ymd' );
+	// One count per visitor per day: the old counter wrote to the database twice on
+	// every page view, which slowed busy pages for a number nobody needs that precise.
+	$stamp = ( new DateTime( 'now', wp_timezone() ) )->format( 'Ymd' );
+	if ( isset( $_COOKIE['npt_seen'] ) && $stamp === $_COOKIE['npt_seen'] ) {
+		return;
+	}
+	if ( ! headers_sent() ) {
+		setcookie( 'npt_seen', $stamp, array( 'expires' => time() + DAY_IN_SECONDS, 'path' => COOKIEPATH ? COOKIEPATH : '/', 'secure' => is_ssl(), 'httponly' => true, 'samesite' => 'Lax' ) );
+	}
+	$day = 'npt_visits_' . $stamp;
 	update_option( $day, (int) get_option( $day, 0 ) + 1, false );
 	update_option( 'npt_visits_total', (int) get_option( 'npt_visits_total', 0 ) + 1, false );
 }
 add_action( 'template_redirect', 'npt_count_visit', 1 );
+
+/** Daily rows older than 90 days are removed once a day (they used to pile up forever). */
+function npt_prune_visits() {
+	global $wpdb;
+	$keep = ( new DateTime( '-90 days', wp_timezone() ) )->format( 'Ymd' );
+	$rows = $wpdb->get_col( $wpdb->prepare( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s", $wpdb->esc_like( 'npt_visits_' ) . '%' ) ); // phpcs:ignore
+	foreach ( $rows as $name ) {
+		$date = substr( $name, strlen( 'npt_visits_' ) );
+		if ( ctype_digit( $date ) && 8 === strlen( $date ) && $date < $keep ) {
+			delete_option( $name );
+		}
+	}
+}
+add_action( 'npt_prune_visits', 'npt_prune_visits' );
+add_action( 'init', function () {
+	if ( ! wp_next_scheduled( 'npt_prune_visits' ) ) {
+		wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', 'npt_prune_visits' );
+	}
+} );
 
 function npt_format_date( $mysql_datetime ) {
 	if ( empty( $mysql_datetime ) || '0000-00-00 00:00:00' === $mysql_datetime ) {

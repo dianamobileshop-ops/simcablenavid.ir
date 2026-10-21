@@ -49,7 +49,7 @@ get_header();
 		</div>
 		<nav class="navid-pagination" aria-label="<?php esc_attr_e( 'صفحه‌بندی', 'navid' ); ?>">
 			<?php
-			echo wp_kses_post( paginate_links( array(
+			echo wp_kses_post( (string) paginate_links( array(
 				'prev_text' => '→',
 				'next_text' => '←',
 				'type'      => 'plain',

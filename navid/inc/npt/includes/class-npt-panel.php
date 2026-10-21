@@ -120,16 +120,10 @@ class NPT_Panel {
 			return $id;
 		}
 
-		$found = get_posts( array(
-			'post_type'   => 'page',
-			'post_status' => 'publish,draft',
-			'search'      => '[navid_panel]',
-			'number'      => 1,
-			'fields'      => 'IDs',
-		) );
+		$found = npt_find_shortcode_page( 'navid_panel' );
 		if ( $found ) {
-			update_option( self::PAGE_OPT, (int) $found[0], false );
-			return (int) $found[0];
+			update_option( self::PAGE_OPT, $found, false );
+			return $found;
 		}
 
 		$new_id = wp_insert_post( array(
@@ -208,6 +202,11 @@ class NPT_Panel {
 	}
 
 	public static function filter_admin_bar( $show ) {
+		// The panel page is a full-screen app with its own top and bottom bars; the
+		// WordPress toolbar would sit on top of them.
+		if ( did_action( 'wp' ) && ! is_admin() && self::on_panel_page() ) {
+			return false;
+		}
 		return self::is_panel_only() ? false : $show;
 	}
 
@@ -1050,11 +1049,23 @@ class NPT_Panel {
 	public static function render_assets() {
 		$head     = vsprintf( '#%02x%02x%02x', npt_header_color_rgb() );
 		$accent   = vsprintf( '#%02x%02x%02x', npt_accent_color_rgb() );
+		// One look for the whole site: the panel follows the theme's main color
+		// (the PDF header color stays for the printed price list only).
+		if ( function_exists( 'navid_options' ) ) {
+			$theme_color = sanitize_hex_color( navid_options()['primary_color'] );
+			if ( $theme_color ) {
+				$head   = $theme_color;
+				$accent = $theme_color;
+			}
+		}
+		$font_url = get_template_directory_uri() . '/assets/fonts/';
 		$cooldown = 60;
 		?>
 		<style id="npt-panel-css">
-		@font-face{font-family:'NPTPnlVazir';src:url('<?php echo esc_url( NPT_URL ); ?>vendor/fonts/Vazirmatn-Regular.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
-		@font-face{font-family:'NPTPnlVazir';src:url('<?php echo esc_url( NPT_URL ); ?>vendor/fonts/Vazirmatn-Bold.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap}
+		@font-face{font-family:'NPTPnlVazir';src:url('<?php echo esc_url( $font_url ); ?>Vazirmatn-Regular.woff2') format('woff2'),url('<?php echo esc_url( NPT_URL ); ?>vendor/fonts/Vazirmatn-Regular.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
+		@font-face{font-family:'NPTPnlVazir';src:url('<?php echo esc_url( $font_url ); ?>Vazirmatn-Bold.woff2') format('woff2'),url('<?php echo esc_url( NPT_URL ); ?>vendor/fonts/Vazirmatn-Bold.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap}
+		.nptp input[type=text],.nptp input[type=tel],.nptp input[type=email],.nptp input[type=number],.nptp input[type=search],.nptp input[type=password],.nptp select,.nptp textarea{padding:10px 12px;border:1px solid #dbe2ec;border-radius:11px;font:inherit;font-size:14.5px;background:#fbfcfe;color:inherit;min-height:42px;max-width:100%}
+		.nptp input:focus,.nptp select:focus,.nptp textarea:focus{outline:0;border-color:var(--pnl-head);background:#fff;box-shadow:0 0 0 3px color-mix(in srgb,var(--pnl-head) 15%,transparent)}
 		.nptp{--pnl-head:<?php echo esc_html( $head ); ?>;--pnl-accent:<?php echo esc_html( $accent ); ?>;direction:rtl;font-family:'NPTPnlVazir',Tahoma,Arial,sans-serif;color:#1c2430;max-width:1120px;margin:0 auto;padding:16px 12px;font-size:14.5px;line-height:1.85}
 		.nptp *,.nptp *:before,.nptp *:after{box-sizing:border-box}
 		.nptp img{max-width:100%;height:auto}
@@ -1708,7 +1719,7 @@ class NPT_Panel {
 			<nav class="nptp-drop" id="nptp-side" aria-label="بخش‌های پنل">
 				<div class="nptp-drop-inner">
 				<?php foreach ( self::menu_items() as $item_key => $item ) : ?>
-					<a class="<?php echo self::menu_is_current( $item_key ) ? 'is-current' : ''; ?>" href="<?php echo esc_url( $item['url'] ); ?>"><span class="nptp-side-icon" aria-hidden="true"><?php echo esc_html( $item['icon'] ); ?></span><span class="nptp-side-label"><?php echo esc_html( $item['label'] ); ?></span></a>
+					<a class="<?php echo self::menu_is_current( $item_key ) ? 'is-current' : ''; ?>" href="<?php echo esc_url( $item['url'] ); ?>"><span class="nptp-side-icon" aria-hidden="true"><?php echo self::icon( $item['svg'], $item['icon'] ); // phpcs:ignore ?></span><span class="nptp-side-label"><?php echo esc_html( $item['label'] ); ?></span></a>
 				<?php endforeach; ?>
 				</div>
 			</nav>
@@ -1832,10 +1843,10 @@ class NPT_Panel {
 				<a class="nptp-bottom-out" href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'npt_action', 'logout', self::panel_url() ), 'npt_panel_logout' ) ); ?>">خروج از حساب</a>
 			</div>
 			<nav class="nptp-bottom" aria-label="میانبرهای پنل">
-				<a href="<?php echo esc_url( add_query_arg( array( 'npt_tab' => 'proformas', 'npt_sub' => 'new' ), self::panel_url() ) ); ?>"><span aria-hidden="true">＋</span>پیش‌فاکتور جدید</a>
-				<a href="<?php echo esc_url( add_query_arg( 'npt_tab', 'contacts', self::panel_url() ) ); ?>"><span aria-hidden="true">👥</span>مخاطبین</a>
+				<a href="<?php echo esc_url( add_query_arg( array( 'npt_tab' => 'proformas', 'npt_sub' => 'new' ), self::panel_url() ) ); ?>"><span aria-hidden="true"><?php echo self::icon( 'plus', '＋' ); // phpcs:ignore ?></span>پیش‌فاکتور جدید</a>
+				<a href="<?php echo esc_url( add_query_arg( 'npt_tab', 'contacts', self::panel_url() ) ); ?>"><span aria-hidden="true"><?php echo self::icon( 'users', '👥' ); // phpcs:ignore ?></span>مخاطبین</a>
 				<button type="button" id="nptp-bottom-user" aria-label="حساب کاربری" aria-expanded="false" aria-controls="nptp-bottom-pop"><span class="nptp-avatar" aria-hidden="true"><?php echo esc_html( mb_substr( $me_name, 0, 1 ) ); ?></span>حساب</button>
-				<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'npt_action', 'logout', self::panel_url() ), 'npt_panel_logout' ) ); ?>"><span aria-hidden="true">⎋</span>خروج</a>
+				<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'npt_action', 'logout', self::panel_url() ), 'npt_panel_logout' ) ); ?>"><span aria-hidden="true"><?php echo self::icon( 'logout', '⎋' ); // phpcs:ignore ?></span>خروج</a>
 			</nav>
 			<script>(function () { var b = document.getElementById('nptp-bottom-user'), p = document.getElementById('nptp-bottom-pop'); if (!b || !p) { return; } b.addEventListener('click', function (e) { e.stopPropagation(); var open = p.hidden; p.hidden = !open; b.setAttribute('aria-expanded', open ? 'true' : 'false'); }); document.addEventListener('click', function (e) { if (!p.contains(e.target) && !b.contains(e.target)) { p.hidden = true; b.setAttribute('aria-expanded', 'false'); } }); }());</script>
 			<p class="nptp-credit">طراحی توسط <a href="https://spadts.ir" target="_blank" rel="noopener">ویرا فناوران اسپاد</a></p>
@@ -1853,15 +1864,20 @@ class NPT_Panel {
 	private static function menu_items() {
 		$base = self::panel_url();
 		return array(
-			'summary'   => array( 'label' => 'خلاصه گزارش', 'icon' => '📊', 'url' => add_query_arg( 'npt_tab', 'summary', $base ) ),
-			'proformas' => array( 'label' => 'اعلان‌ها', 'icon' => '🔔', 'url' => add_query_arg( 'npt_tab', 'proformas', $base ) ),
-			'new'       => array( 'label' => 'پیش‌فاکتور جدید', 'icon' => '＋', 'url' => add_query_arg( array( 'npt_tab' => 'proformas', 'npt_sub' => 'new' ), $base ) ),
-			'prices'    => array( 'label' => 'قیمت‌ها', 'icon' => '🏷', 'url' => add_query_arg( 'npt_tab', 'prices', $base ) ),
-			'sms'       => array( 'label' => 'ارسال پیامک', 'icon' => '✉', 'url' => add_query_arg( 'npt_tab', 'sms', $base ) ),
-			'report'    => array( 'label' => 'گزارش پیامک', 'icon' => '📋', 'url' => add_query_arg( array( 'npt_tab' => 'sms', 'npt_sub' => 'report' ), $base ) ),
-			'contacts'  => array( 'label' => 'مخاطبین', 'icon' => '👥', 'url' => add_query_arg( 'npt_tab', 'contacts', $base ) ),
-			'settings'  => array( 'label' => 'تنظیمات', 'icon' => '⚙', 'url' => add_query_arg( 'npt_tab', 'settings', $base ) ),
+			'summary'   => array( 'label' => 'خلاصه گزارش', 'svg' => 'chart', 'icon' => '📊', 'url' => add_query_arg( 'npt_tab', 'summary', $base ) ),
+			'proformas' => array( 'label' => 'اعلان‌ها', 'svg' => 'bell', 'icon' => '🔔', 'url' => add_query_arg( 'npt_tab', 'proformas', $base ) ),
+			'new'       => array( 'label' => 'پیش‌فاکتور جدید', 'svg' => 'plus', 'icon' => '＋', 'url' => add_query_arg( array( 'npt_tab' => 'proformas', 'npt_sub' => 'new' ), $base ) ),
+			'prices'    => array( 'label' => 'قیمت‌ها', 'svg' => 'tag', 'icon' => '🏷', 'url' => add_query_arg( 'npt_tab', 'prices', $base ) ),
+			'sms'       => array( 'label' => 'ارسال پیامک', 'svg' => 'send', 'icon' => '✉', 'url' => add_query_arg( 'npt_tab', 'sms', $base ) ),
+			'report'    => array( 'label' => 'گزارش پیامک', 'svg' => 'report', 'icon' => '📋', 'url' => add_query_arg( array( 'npt_tab' => 'sms', 'npt_sub' => 'report' ), $base ) ),
+			'contacts'  => array( 'label' => 'مخاطبین', 'svg' => 'users', 'icon' => '👥', 'url' => add_query_arg( 'npt_tab', 'contacts', $base ) ),
+			'settings'  => array( 'label' => 'تنظیمات', 'svg' => 'gear', 'icon' => '⚙', 'url' => add_query_arg( 'npt_tab', 'settings', $base ) ),
 		);
+	}
+
+	/** Theme line icon (same set as the site and the mobile bar), or the old glyph. */
+	private static function icon( $name, $fallback ) {
+		return function_exists( 'navid_icon' ) ? navid_icon( $name ) : esc_html( $fallback );
 	}
 
 	/** Whether a menu entry matches the current address. */
@@ -1900,7 +1916,7 @@ class NPT_Panel {
 		}
 		$pending = isset( $counts['pending'] ) ? $counts['pending'] : 0;
 		$called  = isset( $counts['called'] ) ? $counts['called'] : 0;
-		$visits_today = (int) get_option( 'npt_visits_' . wp_date( 'Ymd' ), 0 );
+		$visits_today = (int) get_option( 'npt_visits_' . ( new DateTime( 'now', wp_timezone() ) )->format( 'Ymd' ), 0 );
 		$visits_total = (int) get_option( 'npt_visits_total', 0 );
 		?>
 		<div class="nptp-stats">

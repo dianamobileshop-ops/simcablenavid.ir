@@ -7,7 +7,17 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'NAVID_VERSION', '1.3.1' );
+define( 'NAVID_VERSION', '1.4.0' );
+
+/**
+ * Whether WooCommerce is running. Every shop feature checks this, so the theme works
+ * on its own (blog, pages, price list settings) when no plugin is installed.
+ *
+ * @return bool
+ */
+function navid_wc() {
+	return class_exists( 'WooCommerce' );
+}
 
 /**
  * Basic theme support.
@@ -32,19 +42,41 @@ function navid_setup() {
 add_action( 'after_setup_theme', 'navid_setup' );
 
 /**
- * Styles. Only the theme stylesheet; no extra libraries.
+ * A theme script, deferred (it never blocks the page from drawing) and in the footer.
+ *
+ * @param string $handle Handle.
+ * @param string $file   File name under assets/js.
+ * @param array  $deps   Dependencies.
+ */
+function navid_script( $handle, $file, $deps = array() ) {
+	wp_enqueue_script( $handle, get_template_directory_uri() . '/assets/js/' . $file, $deps, NAVID_VERSION, array( 'in_footer' => true, 'strategy' => 'defer' ) );
+}
+
+/**
+ * Address of the stylesheet: the minified build when it is up to date, else style.css.
+ *
+ * @return string
+ */
+function navid_stylesheet_uri() {
+	$min = get_template_directory() . '/assets/css/navid.min.css';
+	if ( file_exists( $min ) && filemtime( $min ) >= filemtime( get_template_directory() . '/style.css' ) ) {
+		return get_template_directory_uri() . '/assets/css/navid.min.css';
+	}
+	return get_stylesheet_uri();
+}
+
+/**
+ * Styles and scripts: each page loads only what it uses.
  */
 function navid_assets() {
-	wp_enqueue_style( 'navid', get_stylesheet_uri(), array(), NAVID_VERSION );
-	wp_enqueue_script( 'navid-header', get_template_directory_uri() . '/assets/js/header.js', array(), NAVID_VERSION, true );
-	// Search in the mobile tab bar focuses the header search field.
-	wp_add_inline_script( 'navid-header', "document.addEventListener('DOMContentLoaded',function(){var a=document.querySelector('[data-navid-search]'),i=document.getElementById('navid-s');if(a&&i){a.addEventListener('click',function(e){e.preventDefault();document.body.classList.toggle('navid-search-open');window.scrollTo({top:0,behavior:'smooth'});i.focus();});}});" );
+	wp_enqueue_style( 'navid', navid_stylesheet_uri(), array(), NAVID_VERSION );
+	navid_script( 'navid-header', 'header.js' );
 	wp_localize_script( 'navid-header', 'NAVID', array( 'ajaxUrl' => admin_url( 'admin-ajax.php' ) ) );
-	if ( function_exists( 'is_woocommerce' ) && ( is_woocommerce() || is_cart() || is_checkout() ) ) {
-		wp_enqueue_script( 'navid-shop', get_template_directory_uri() . '/assets/js/shop.js', array(), NAVID_VERSION, true );
+	if ( navid_wc() && ( is_woocommerce() || is_cart() || is_checkout() ) ) {
+		navid_script( 'navid-shop', 'shop.js' );
 		wp_localize_script( 'navid-shop', 'NAVIDSHOP', array(
 			'fragments' => class_exists( 'WC_AJAX' ) ? WC_AJAX::get_endpoint( 'get_refreshed_fragments' ) : '',
-			'cartUrl'   => function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : '',
+			'cartUrl'   => wc_get_cart_url(),
 			'added'     => 'به سبد خرید اضافه شد',
 			'view'      => 'مشاهده سبد',
 			'adding'    => 'در حال افزودن…',
@@ -52,27 +84,44 @@ function navid_assets() {
 			'error'     => 'افزودن به سبد انجام نشد. دوباره تلاش کنید.',
 		) );
 	}
-	if ( function_exists( 'is_cart' ) && is_cart() ) {
-		wp_enqueue_script( 'navid-cart', get_template_directory_uri() . '/assets/js/cart.js', array(), NAVID_VERSION, true );
+	if ( navid_wc() && is_cart() ) {
+		navid_script( 'navid-cart', 'cart.js' );
 		wp_localize_script( 'navid-cart', 'NAVIDCART', array(
 			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 			'nonce'   => wp_create_nonce( 'navid_cart_pf' ),
 		) );
 	}
-	if ( function_exists( 'wc_get_page_permalink' ) && ! is_user_logged_in() ) {
-		wp_enqueue_script( 'navid-auth', get_template_directory_uri() . '/assets/js/auth.js', array(), NAVID_VERSION, true );
+	if ( navid_wc() && ! is_user_logged_in() ) {
+		navid_script( 'navid-auth', 'auth.js' );
 		$redirect = isset( $_GET['redirect_to'] ) ? wp_validate_redirect( esc_url_raw( wp_unslash( $_GET['redirect_to'] ) ), '' ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		wp_localize_script( 'navid-auth', 'NAVIDAUTH', array(
 			'ajaxUrl'  => admin_url( 'admin-ajax.php' ),
 			'nonce'    => class_exists( 'NPT_OTP' ) ? wp_create_nonce( NPT_OTP::NONCE ) : '',
 			'redirect' => $redirect ? $redirect : wc_get_page_permalink( 'myaccount' ),
 			'cooldown' => 60,
+			// The price table bar's login buttons open this same pop-up.
+			'trigger'  => class_exists( 'NPT_Bar' ) ? (string) NPT_Bar::settings()['otp_trigger'] : '',
 		) );
 	}
 	if ( is_front_page() ) {
-		wp_enqueue_script( 'navid-slider', get_template_directory_uri() . '/assets/js/slider.js', array(), NAVID_VERSION, true );
+		navid_script( 'navid-slider', 'slider.js' );
 	}
 }
+
+/**
+ * WooCommerce block styles are only needed where a page actually has WooCommerce blocks
+ * (the theme's shop pages are classic templates).
+ */
+function navid_trim_wc_styles() {
+	if ( ! navid_wc() || is_cart() || is_checkout() || is_account_page() ) {
+		return;
+	}
+	$post = is_singular() ? get_post() : null;
+	if ( ! $post || false === strpos( (string) $post->post_content, '<!-- wp:woocommerce/' ) ) {
+		wp_dequeue_style( 'wc-blocks-style' );
+	}
+}
+add_action( 'wp_enqueue_scripts', 'navid_trim_wc_styles', 100 );
 add_action( 'wp_enqueue_scripts', 'navid_assets' );
 
 /**
@@ -103,12 +152,28 @@ function navid_options() {
 		'special_label' => '',
 		'special_url'   => '',
 		'about'         => '',
+		'hours'         => '',
+		'ft_features_show' => '1',
+		'ft_features'   => '',
+		'enamad'        => '',
+		'copyright'     => '',
+		'social_telegram'  => '',
+		'social_instagram' => '',
+		'social_whatsapp'  => '',
+		'social_eitaa'     => '',
+		'social_bale'      => '',
+		'social_aparat'    => '',
+		'social_linkedin'  => '',
+		'jalali'        => 'all',
+		'fa_digits'     => '1',
 		'phone'         => (string) get_option( 'npt_phone', '' ),
 		'address'       => (string) get_option( 'npt_address', '' ),
 	);
 	return wp_parse_args( (array) get_option( 'navid_options', array() ), $defaults );
 }
 
+require_once get_template_directory() . '/inc/jalali.php';
+require_once get_template_directory() . '/inc/footer.php';
 require_once get_template_directory() . '/inc/settings.php';
 require_once get_template_directory() . '/inc/woocommerce.php';
 require_once get_template_directory() . '/inc/home.php';
@@ -116,6 +181,7 @@ require_once get_template_directory() . '/inc/blog.php';
 require_once get_template_directory() . '/inc/search.php';
 require_once get_template_directory() . '/inc/performance.php';
 require_once get_template_directory() . '/inc/seo.php';
+require_once get_template_directory() . '/inc/gateways/mellat.php';
 // Price table, proforma, SMS and panel code (formerly the navid-price-table plugin).
 require_once get_template_directory() . '/inc/npt/navid-price-table.php';
 
@@ -181,6 +247,20 @@ function navid_tabbar_enabled() {
 	}
 	return true;
 }
+
+/**
+ * Fresh security tokens for forms on a cached page (a page cache can serve HTML whose
+ * tokens expired hours ago). The scripts ask for new ones once and retry.
+ */
+function navid_ajax_nonces() {
+	nocache_headers();
+	wp_send_json_success( array(
+		'otp'  => class_exists( 'NPT_OTP' ) ? wp_create_nonce( NPT_OTP::NONCE ) : '',
+		'cart' => wp_create_nonce( 'navid_cart_pf' ),
+	) );
+}
+add_action( 'wp_ajax_navid_nonces', 'navid_ajax_nonces' );
+add_action( 'wp_ajax_nopriv_navid_nonces', 'navid_ajax_nonces' );
 
 /**
  * Address of the page being viewed (works on sub-directory installs too, where

@@ -91,3 +91,73 @@ function navid_robots( $robots ) {
 	return $robots;
 }
 add_filter( 'wp_robots', 'navid_robots' );
+
+/**
+ * Structured data for search engines: the business on the home page (name, logo,
+ * phone, address, social profiles) and a breadcrumb trail on posts and pages.
+ * WooCommerce prints its own for products and shop pages; SEO plugins print theirs.
+ */
+function navid_schema() {
+	if ( navid_seo_plugin_active() || is_admin() ) {
+		return;
+	}
+	$graph = array();
+	if ( is_front_page() ) {
+		$opt  = navid_options();
+		$org  = array(
+			'@type' => 'Organization',
+			'name'  => get_bloginfo( 'name' ),
+			'url'   => home_url( '/' ),
+		);
+		$logo = (int) get_theme_mod( 'custom_logo' );
+		if ( $logo && wp_get_attachment_image_url( $logo, 'full' ) ) {
+			$org['logo'] = wp_get_attachment_image_url( $logo, 'full' );
+		}
+		if ( '' !== trim( (string) $opt['phone'] ) ) {
+			$org['telephone'] = navid_en_digits( $opt['phone'] );
+		}
+		if ( '' !== trim( (string) $opt['email'] ) ) {
+			$org['email'] = $opt['email'];
+		}
+		if ( '' !== trim( (string) $opt['address'] ) ) {
+			$org['address'] = array( '@type' => 'PostalAddress', 'streetAddress' => $opt['address'], 'addressCountry' => 'IR' );
+		}
+		$same = wp_list_pluck( navid_social_links(), 'url' );
+		if ( $same ) {
+			$org['sameAs'] = array_values( $same );
+		}
+		$graph[] = $org;
+		$graph[] = array(
+			'@type'           => 'WebSite',
+			'name'            => get_bloginfo( 'name' ),
+			'url'             => home_url( '/' ),
+			'potentialAction' => array(
+				'@type'       => 'SearchAction',
+				'target'      => home_url( '/?s={search_term_string}' ),
+				'query-input' => 'required name=search_term_string',
+			),
+		);
+	} elseif ( is_singular( array( 'post', 'page' ) ) && ! ( navid_wc() && ( is_cart() || is_checkout() || is_account_page() ) ) ) {
+		$items = array( array( 'خانه', home_url( '/' ) ) );
+		if ( is_singular( 'post' ) ) {
+			$cats = get_the_category();
+			if ( $cats ) {
+				$items[] = array( $cats[0]->name, get_category_link( $cats[0] ) );
+			}
+		} else {
+			foreach ( array_reverse( get_post_ancestors( get_queried_object_id() ) ) as $parent ) {
+				$items[] = array( get_the_title( $parent ), get_permalink( $parent ) );
+			}
+		}
+		$items[] = array( wp_strip_all_tags( get_the_title() ), get_permalink() );
+		$list    = array();
+		foreach ( $items as $i => $item ) {
+			$list[] = array( '@type' => 'ListItem', 'position' => $i + 1, 'name' => $item[0], 'item' => $item[1] );
+		}
+		$graph[] = array( '@type' => 'BreadcrumbList', 'itemListElement' => $list );
+	}
+	if ( $graph ) {
+		echo '<script type="application/ld+json">' . wp_json_encode( array( '@context' => 'https://schema.org', '@graph' => $graph ), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . "</script>\n";
+	}
+}
+add_action( 'wp_head', 'navid_schema', 20 );

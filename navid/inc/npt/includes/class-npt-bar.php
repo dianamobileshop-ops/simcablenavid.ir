@@ -54,6 +54,7 @@ class NPT_Bar {
 	public static function defaults() {
 		return array(
 			'enabled'               => 1,
+			'theme_style'           => 1,
 			'menu_enabled'          => 1,
 			'sms_enabled'           => 1,
 			'enable_call'           => 1,
@@ -219,6 +220,7 @@ class NPT_Bar {
 
 		$clean = array(
 			'enabled'                   => 1,
+			'theme_style'               => empty( $input['theme_style'] ) ? 0 : 1,
 			'menu_enabled'              => empty( $input['menu_enabled'] ) ? 0 : 1,
 			'sms_enabled'               => empty( $input['sms_enabled'] ) ? 0 : 1,
 			'enable_call'               => empty( $input['enable_call'] ) ? 0 : 1,
@@ -245,8 +247,8 @@ class NPT_Bar {
 			'whatsapp_label'            => sanitize_text_field( isset( $input['whatsapp_label'] ) ? $input['whatsapp_label'] : '' ),
 			'telegram_label'            => sanitize_text_field( isset( $input['telegram_label'] ) ? $input['telegram_label'] : '' ),
 			'order'                     => $order,
-			'call_number'               => preg_replace( '/[^0-9+]/', '', (string) ( isset( $input['call_number'] ) ? $input['call_number'] : '' ) ),
-			'whatsapp_number'           => preg_replace( '/\D+/', '', (string) ( isset( $input['whatsapp_number'] ) ? $input['whatsapp_number'] : '' ) ),
+			'call_number'               => preg_replace( '/[^0-9+]/', '', self::ascii_digits( isset( $input['call_number'] ) ? $input['call_number'] : '' ) ),
+			'whatsapp_number'           => preg_replace( '/\D+/', '', self::ascii_digits( isset( $input['whatsapp_number'] ) ? $input['whatsapp_number'] : '' ) ),
 			'telegram_url'              => esc_url_raw( isset( $input['telegram_url'] ) ? $input['telegram_url'] : '', array( 'https' ) ),
 			'custom_links'              => $custom,
 			'background_color'          => self::hex( isset( $input['background_color'] ) ? $input['background_color'] : '', $defaults['background_color'] ),
@@ -265,6 +267,68 @@ class NPT_Bar {
 		);
 
 		return $clean;
+	}
+
+	/** Persian / Arabic digits as ASCII, so a number typed on a Persian keyboard is kept. */
+	private static function ascii_digits( $value ) {
+		return function_exists( 'navid_en_digits' ) ? navid_en_digits( (string) $value ) : (string) $value;
+	}
+
+	/** WhatsApp link: 0912… becomes 98912…. */
+	private static function wa_url( $number ) {
+		$digits = preg_replace( '/\D+/', '', self::ascii_digits( $number ) );
+		if ( 0 === strpos( $digits, '0' ) ) {
+			$digits = '98' . substr( $digits, 1 );
+		}
+		return 'https://wa.me/' . $digits;
+	}
+
+	/** Bar drawn in the theme's colors and icons (panel switch, on by default). */
+	public static function themed() {
+		$s = self::settings();
+		return ! empty( $s['theme_style'] ) && function_exists( 'navid_icon' );
+	}
+
+	/** Whether the theme's own login pop-up is on this page (then the bar never adds a second one). */
+	private static function theme_login() {
+		return function_exists( 'navid_login_modal_enabled' ) && navid_login_modal_enabled();
+	}
+
+	/**
+	 * Theme icon for a menu item that uses one of the default glyphs (or none),
+	 * guessed from the glyph or the link.
+	 */
+	private static function theme_icon( $glyph, $url ) {
+		$map = array( '⌂' => 'home', '≡' => 'list', '☎' => 'phone', '▣' => 'grid', '▤' => 'panel', '◉' => 'whatsapp', '➤' => 'telegram', '💬' => 'chat', '●' => '' );
+		$name = isset( $map[ $glyph ] ) ? $map[ $glyph ] : null;
+		if ( null === $name ) {
+			return '';
+		}
+		if ( '' === $name ) {
+			$u = strtolower( (string) $url );
+			if ( 0 === strpos( $u, 'tel:' ) ) {
+				$name = 'phone';
+			} elseif ( false !== strpos( $u, 'cart' ) || false !== strpos( $u, 'سبد' ) ) {
+				$name = 'cart';
+			} elseif ( false !== strpos( $u, 'account' ) || false !== strpos( $u, 'panel' ) ) {
+				$name = 'user';
+			} elseif ( '/' === $u || home_url( '/' ) === $u ) {
+				$name = 'home';
+			} else {
+				$name = 'chat';
+			}
+		}
+		return navid_icon( $name );
+	}
+
+	/** Whether a menu link points at the page being viewed. */
+	private static function is_current( $url ) {
+		if ( 0 !== strpos( (string) $url, '/' ) && 0 !== strpos( (string) $url, 'http' ) ) {
+			return false;
+		}
+		$path    = wp_parse_url( $url, PHP_URL_PATH );
+		$current = isset( $_SERVER['REQUEST_URI'] ) ? wp_parse_url( esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ), PHP_URL_PATH ) : ''; // phpcs:ignore
+		return untrailingslashit( (string) $path ) === untrailingslashit( (string) $current );
 	}
 
 	private static function hex( $value, $fallback ) {
@@ -311,7 +375,8 @@ class NPT_Bar {
 		if ( empty( $s['menu_enabled'] ) && empty( $s['floating_enabled'] ) ) {
 			return;
 		}
-		printf( "<meta name=\"theme-color\" content=\"%s\">\n", esc_attr( $s['background_color'] ) );
+		$color = self::themed() ? '#f4f6f8' : $s['background_color'];
+		printf( "<meta name=\"theme-color\" content=\"%s\">\n", esc_attr( $color ) );
 	}
 
 	public static function enqueue() {
@@ -327,7 +392,7 @@ class NPT_Bar {
 			array(
 				'ajaxUrl'  => admin_url( 'admin-ajax.php' ),
 				'nonce'    => wp_create_nonce( self::NONCE ),
-				'trigger'  => ! empty( $s['sms_enabled'] ) ? $s['otp_trigger'] : '.mqb-otp-disabled',
+				'trigger'  => ( ! empty( $s['sms_enabled'] ) && ! self::theme_login() ) ? $s['otp_trigger'] : '.mqb-otp-disabled',
 				'cooldown' => 60,
 				'messages' => array(
 					'network' => __( 'ارتباط با سرور برقرار نشد. دوباره تلاش کنید.', 'navid-price-table' ),
@@ -344,7 +409,10 @@ class NPT_Bar {
 		$items        = self::contact_items( $s );
 		$menu_items   = self::menu_items( $s );
 		$icons_only   = ! empty( $s['floating_icons_only'] );
-		$otp_open     = ! empty( $s['sms_enabled'] );
+		// One login for the whole site: when the theme pop-up is on the page, the bar's
+		// login buttons open that one and the bar does not print its own.
+		$otp_open     = ! empty( $s['sms_enabled'] ) && ! self::theme_login();
+		$themed       = self::themed();
 		$effect       = in_array( $s['floating_effect'], array( 'pulse', 'float', 'none' ), true ) ? $s['floating_effect'] : 'pulse';
 		$hide_at      = absint( $s['max_width'] ) + 1;
 		$style        = sprintf(
@@ -359,12 +427,13 @@ class NPT_Bar {
 		);
 		?>
 		<style id="mqb-responsive-css">@media (max-width:<?php echo esc_attr( $hide_at - 1 ); ?>px){.mqb-desktop-only{display:none!important}}@media (min-width:<?php echo esc_attr( $hide_at ); ?>px){.mqb-mobile-only{display:none!important}}</style>
-		<div class="mqb-root<?php echo ! empty( $s['menu_enabled'] ) ? ' mqb-has-bar' : ''; ?>" dir="rtl" style="<?php echo esc_attr( $style ); ?>">
+		<div class="mqb-root<?php echo ! empty( $s['menu_enabled'] ) ? ' mqb-has-bar' : ''; ?><?php echo $themed ? ' mqb-themed' : ''; ?>" dir="rtl" style="<?php echo esc_attr( $style ); ?>">
 			<?php if ( $menu_items && ! empty( $s['menu_enabled'] ) ) : ?>
 			<nav class="mqb-bar mqb-mobile-only" aria-label="<?php esc_attr_e( 'دسترسی سریع', 'navid-price-table' ); ?>">
 				<?php foreach ( $menu_items as $item ) : ?>
-					<a class="mqb-item <?php echo esc_attr( $item['class'] ); ?>" href="<?php echo esc_url( $item['url'], array( 'http', 'https', 'tel' ) ); ?>"<?php echo $item['external'] ? ' target="_blank" rel="noopener noreferrer"' : ''; ?>>
-						<span class="mqb-icon" aria-hidden="true" style="color:<?php echo esc_attr( $item['color'] ); ?>"><?php if ( $item['icon_url'] ) : ?><img src="<?php echo esc_url( $item['icon_url'] ); ?>" alt=""><?php else : ?><?php echo esc_html( $item['icon'] ); ?><?php endif; ?></span>
+					<?php $svg = ( $themed && ! $item['icon_url'] ) ? self::theme_icon( $item['icon'], $item['url'] ) : ''; ?>
+					<a class="mqb-item <?php echo esc_attr( $item['class'] ); ?><?php echo self::is_current( $item['url'] ) ? ' is-current' : ''; ?>" href="<?php echo esc_url( $item['url'], array( 'http', 'https', 'tel' ) ); ?>"<?php echo $item['external'] ? ' target="_blank" rel="noopener noreferrer"' : ''; ?><?php echo self::is_current( $item['url'] ) ? ' aria-current="page"' : ''; ?>>
+						<span class="mqb-icon" aria-hidden="true"<?php echo $themed ? '' : ' style="color:' . esc_attr( $item['color'] ) . '"'; ?>><?php if ( $item['icon_url'] ) : ?><img src="<?php echo esc_url( $item['icon_url'] ); ?>" alt=""><?php elseif ( $svg ) : ?><?php echo $svg; // phpcs:ignore ?><?php else : ?><?php echo esc_html( $item['icon'] ); ?><?php endif; ?></span>
 						<span class="mqb-label"><?php echo esc_html( $item['label'] ); ?></span>
 					</a>
 				<?php endforeach; ?>
@@ -372,7 +441,7 @@ class NPT_Bar {
 			<?php endif; ?>
 			<?php if ( ! empty( $s['floating_enabled'] ) ) : ?>
 			<button type="button" class="mqb-floating-trigger mqb-floating-trigger--<?php echo esc_attr( $effect ); ?> mqb-mobile-only" aria-expanded="false" aria-controls="mqb-contact-sheet" style="--mqb-float-bg:<?php echo esc_attr( $s['floating_background_color'] ); ?>;--mqb-float-icon-color:<?php echo esc_attr( $s['floating_icon_color'] ); ?>;">
-				<?php if ( $s['floating_icon'] ) : ?><img src="<?php echo esc_url( $s['floating_icon'] ); ?>" alt=""><?php else : ?><span aria-hidden="true" style="color:<?php echo esc_attr( $s['floating_icon_color'] ); ?>"><?php echo esc_html( $s['floating_icon_text'] ? $s['floating_icon_text'] : '💬' ); ?></span><?php endif; ?>
+				<?php if ( $s['floating_icon'] ) : ?><img src="<?php echo esc_url( $s['floating_icon'] ); ?>" alt=""><?php elseif ( $themed && in_array( $s['floating_icon_text'], array( '', '💬' ), true ) ) : ?><span aria-hidden="true"><?php echo navid_icon( 'chat' ); // phpcs:ignore ?></span><?php else : ?><span aria-hidden="true" style="color:<?php echo esc_attr( $s['floating_icon_color'] ); ?>"><?php echo esc_html( $s['floating_icon_text'] ? $s['floating_icon_text'] : '💬' ); ?></span><?php endif; ?>
 				<span class="screen-reader-text"><?php esc_html_e( 'نمایش راه‌های ارتباطی', 'navid-price-table' ); ?></span>
 			</button>
 			<div id="mqb-contact-sheet" class="mqb-contact-modal mqb-mobile-only<?php echo $icons_only ? ' mqb-contact-icons-only' : ''; ?>" hidden role="dialog" aria-modal="true" aria-labelledby="mqb-contact-title">
@@ -383,19 +452,20 @@ class NPT_Bar {
 					<?php if ( ! $items ) : ?><p class="mqb-contact-empty"><?php esc_html_e( 'هنوز راه ارتباطی فعالی ثبت نشده است.', 'navid-price-table' ); ?></p><?php endif; ?>
 					<?php foreach ( $items as $item ) : ?>
 						<a class="<?php echo esc_attr( $item['class'] ); ?>" href="<?php echo esc_url( $item['url'], array( 'http', 'https', 'tel' ) ); ?>"<?php echo $item['external'] ? ' target="_blank" rel="noopener noreferrer"' : ''; ?> aria-label="<?php echo esc_attr( $item['label'] ); ?>">
-							<span class="mqb-contact-item-icon" style="--mqb-item-color:<?php echo esc_attr( $item['color'] ); ?>"><?php if ( $item['icon_url'] ) : ?><img src="<?php echo esc_url( $item['icon_url'] ); ?>" alt=""><?php else : ?><?php echo esc_html( $item['icon'] ); ?><?php endif; ?></span><span class="mqb-contact-item-label"><?php echo esc_html( $item['label'] ); ?></span>
+							<?php $svg = ( $themed && ! $item['icon_url'] ) ? self::theme_icon( $item['icon'], $item['url'] ) : ''; ?>
+							<span class="mqb-contact-item-icon" style="--mqb-item-color:<?php echo esc_attr( $item['color'] ); ?>"><?php if ( $item['icon_url'] ) : ?><img src="<?php echo esc_url( $item['icon_url'] ); ?>" alt=""><?php elseif ( $svg ) : ?><?php echo $svg; // phpcs:ignore ?><?php else : ?><?php echo esc_html( $item['icon'] ); ?><?php endif; ?></span><span class="mqb-contact-item-label"><?php echo esc_html( $item['label'] ); ?></span>
 						</a>
 					<?php endforeach; ?>
 					</div>
 				</div>
 			</div>
 			<div class="mqb-desktop-contact mqb-desktop-only">
-				<button type="button" class="mqb-desktop-trigger" aria-expanded="false" aria-controls="mqb-desktop-panel"><span aria-hidden="true">☎</span><span><?php esc_html_e( 'تماس با ما', 'navid-price-table' ); ?></span></button>
+				<button type="button" class="mqb-desktop-trigger" aria-expanded="false" aria-controls="mqb-desktop-panel"><span aria-hidden="true"><?php echo $themed ? navid_icon( 'phone' ) : '☎'; // phpcs:ignore ?></span><span><?php esc_html_e( 'تماس با ما', 'navid-price-table' ); ?></span></button>
 				<div id="mqb-desktop-panel" class="mqb-desktop-panel" hidden>
 					<div class="mqb-desktop-heading"><strong><?php esc_html_e( 'راه‌های ارتباطی', 'navid-price-table' ); ?></strong><button type="button" class="mqb-desktop-close" aria-label="<?php esc_attr_e( 'بستن', 'navid-price-table' ); ?>">&times;</button></div>
 					<div class="mqb-desktop-list">
 					<?php foreach ( $items as $item ) : ?>
-						<a href="<?php echo esc_url( $item['url'], array( 'http', 'https', 'tel' ) ); ?>"<?php echo $item['external'] ? ' target="_blank" rel="noopener noreferrer"' : ''; ?>><span class="mqb-icon" aria-hidden="true"><?php echo esc_html( $item['icon'] ); ?></span><span><?php echo esc_html( $item['label'] ); ?></span></a>
+						<a href="<?php echo esc_url( $item['url'], array( 'http', 'https', 'tel' ) ); ?>"<?php echo $item['external'] ? ' target="_blank" rel="noopener noreferrer"' : ''; ?>><span class="mqb-icon" aria-hidden="true"><?php $svg = $themed ? self::theme_icon( $item['icon'], $item['url'] ) : ''; echo $svg ? $svg : esc_html( $item['icon'] ); // phpcs:ignore ?></span><span><?php echo esc_html( $item['label'] ); ?></span></a>
 					<?php endforeach; ?>
 					</div>
 				</div>
@@ -462,7 +532,7 @@ class NPT_Bar {
 	private static function contact_items( array $s ) {
 		$groups = array(
 			'call'     => ! empty( $s['enable_call'] ) && $s['call_number'] ? array( array( 'label' => $s['call_label'], 'url' => 'tel:' . preg_replace( '/[^0-9+]/', '', $s['call_number'] ), 'icon' => $s['call_icon'] ? $s['call_icon'] : '☎', 'class' => 'mqb-call', 'external' => false, 'color' => '#21bd49', 'icon_url' => $s['call_icon_url'] ) ) : array(),
-			'whatsapp' => ! empty( $s['enable_whatsapp'] ) && $s['whatsapp_number'] ? array( array( 'label' => $s['whatsapp_label'], 'url' => 'https://wa.me/' . preg_replace( '/\D+/', '', $s['whatsapp_number'] ), 'icon' => $s['whatsapp_icon'] ? $s['whatsapp_icon'] : '◉', 'class' => 'mqb-whatsapp', 'external' => true, 'color' => '#28cf73', 'icon_url' => $s['whatsapp_icon_url'] ) ) : array(),
+			'whatsapp' => ! empty( $s['enable_whatsapp'] ) && $s['whatsapp_number'] ? array( array( 'label' => $s['whatsapp_label'], 'url' => self::wa_url( $s['whatsapp_number'] ), 'icon' => $s['whatsapp_icon'] ? $s['whatsapp_icon'] : '◉', 'class' => 'mqb-whatsapp', 'external' => true, 'color' => '#28cf73', 'icon_url' => $s['whatsapp_icon_url'] ) ) : array(),
 			'telegram' => ! empty( $s['enable_telegram'] ) && $s['telegram_url'] ? array( array( 'label' => $s['telegram_label'], 'url' => $s['telegram_url'], 'icon' => $s['telegram_icon'] ? $s['telegram_icon'] : '➤', 'class' => 'mqb-telegram', 'external' => true, 'color' => '#27add7', 'icon_url' => $s['telegram_icon_url'] ) ) : array(),
 			'custom'   => array(),
 		);
@@ -510,6 +580,7 @@ class NPT_Bar {
 		<?php self::admin_intro(); ?>
 		<div class="mqb-section-card">
 			<div class="mqb-section-title"><h2>منوی پایین موبایل</h2><?php self::toggle( $f, 'menu_enabled', 'فعال‌سازی منوبار', $s['menu_enabled'] ); ?></div>
+			<div class="mqb-section-title"><span><strong>هماهنگ با قالب</strong> — رنگ اصلی و آیکن‌های قالب برای منو، دکمهٔ شناور و پنجرهٔ تماس (رنگ‌های جداگانهٔ زیر نادیده گرفته می‌شوند)</span><?php self::toggle( $f, 'theme_style', 'هماهنگ با قالب', $s['theme_style'] ); ?></div>
 			<div id="mqb-menu-items">
 			<?php foreach ( $s['menu_items'] as $i => $item ) : self::menu_row( $f, $i, $item ); endforeach; ?>
 			</div>

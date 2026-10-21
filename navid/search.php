@@ -27,7 +27,7 @@ get_header();
 		endwhile;
 		?>
 		</div>
-		<nav class="navid-pagination"><?php echo wp_kses_post( paginate_links() ); ?></nav>
+		<nav class="navid-pagination"><?php echo wp_kses_post( (string) paginate_links() ); ?></nav>
 	<?php else : ?>
 		<?php get_template_part( 'template-parts/none' ); ?>
 	<?php endif; ?>

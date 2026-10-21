@@ -61,11 +61,11 @@ function npt_meter_price_labels( $price, $product ) {
 		return $price;
 	}
 	// On the single-product page wrap the raw price so the meter JS can find it.
-	if ( is_product() && npt_meter_is_meter_product( $product->get_id() ) ) {
+	if ( function_exists( 'is_product' ) && is_product() && npt_meter_is_meter_product( $product->get_id() ) ) {
 		$price = '<span class="navid-original-unit-price">' . $price . '</span>';
 	}
 
-	$font_size = is_product() ? '14px' : '12px';
+	$font_size = ( function_exists( 'is_product' ) && is_product() ) ? '14px' : '12px';
 	$color     = '#777';
 	$style     = 'font-size: ' . esc_attr( $font_size ) . '; color: ' . esc_attr( $color ) . '; font-weight: normal; white-space: nowrap;';
 	if ( npt_meter_is_meter_product( $product->get_id() ) ) {
@@ -82,7 +82,7 @@ function npt_meter_price_labels( $price, $product ) {
 
 add_action( 'wp_head', 'npt_meter_input_css' );
 function npt_meter_input_css() {
-	if ( ! is_product() ) {
+	if ( ! function_exists( 'is_product' ) || ! is_product() ) {
 		return;
 	}
 	global $product;
@@ -137,7 +137,7 @@ function npt_meter_input_html() {
 
 add_action( 'wp_footer', 'npt_meter_js' );
 function npt_meter_js() {
-	if ( ! is_product() ) {
+	if ( ! function_exists( 'is_product' ) || ! is_product() ) {
 		return;
 	}
 	global $product;
@@ -212,9 +212,11 @@ function npt_meter_js() {
 /* -------------------------------------------------------------------------
  * 4) Cart label, shop-loop badges, loop button text
  * ---------------------------------------------------------------------- */
-add_filter( 'gettext', 'npt_meter_cart_label', 20, 3 );
+// gettext_woocommerce runs for WooCommerce strings only; the plain gettext filter ran
+// this check for every translated string on every page.
+add_filter( 'gettext_woocommerce', 'npt_meter_cart_label', 20, 3 );
 function npt_meter_cart_label( $translated_text, $text, $domain ) {
-	if ( $domain === 'woocommerce' && $translated_text === 'تعداد' && is_cart() ) {
+	if ( 'تعداد' === $translated_text && function_exists( 'is_cart' ) && is_cart() ) {
 		return 'تعداد / متراژ';
 	}
 	return $translated_text;

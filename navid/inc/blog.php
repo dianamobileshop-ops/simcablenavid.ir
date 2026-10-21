@@ -73,7 +73,7 @@ function navid_blog_shortcode( $atts ) {
 						?>
 					</a>
 					<div class="navid-post-body">
-						<p class="navid-post-meta"><?php echo esc_html( sprintf( '%s دقیقه مطالعه', navid_reading_minutes( $post ) ) ); ?></p>
+						<p class="navid-post-meta"><?php echo esc_html( sprintf( '%s دقیقه مطالعه', navid_fa_digits( navid_reading_minutes( $post ) ) ) ); ?></p>
 						<h3 class="navid-post-title"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
 						<p class="navid-post-excerpt"><?php echo esc_html( wp_trim_words( get_the_excerpt( $post ), 20 ) ); ?></p>
 						<div class="navid-post-foot">

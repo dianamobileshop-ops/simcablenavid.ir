@@ -23,6 +23,51 @@ function navid_register_sidebars() {
 add_action( 'widgets_init', 'navid_register_sidebars' );
 
 /**
+ * The «دسته بندی کالاها» panel of the header, cached: it needed one query per category
+ * on every page view. Rebuilt whenever a category or the panel settings change.
+ *
+ * @return string
+ */
+function navid_catmenu_html() {
+	if ( ! navid_wc() ) {
+		return '';
+	}
+	$key  = 'navid_catmenu_' . md5( wp_json_encode( navid_options()['home_cats'] ) . '|' . (int) get_option( 'navid_catmenu_v', 1 ) );
+	$html = get_transient( $key );
+	if ( false !== $html ) {
+		return (string) $html;
+	}
+	$cats = navid_home_categories();
+	$html = '';
+	if ( $cats ) {
+		$html .= '<details class="navid-catmenu"><summary>' . navid_icon( 'list' ) . esc_html__( 'دسته بندی کالاها', 'navid' ) . '</summary><div class="navid-catpanel">';
+		foreach ( $cats as $cat ) {
+			$link  = get_term_link( $cat );
+			$html .= '<div class="navid-catcol"><a class="navid-catcol-title" href="' . esc_url( is_wp_error( $link ) ? '' : $link ) . '">' . esc_html( $cat->name ) . '</a>';
+			$kids  = get_terms( array( 'taxonomy' => 'product_cat', 'parent' => $cat->term_id, 'hide_empty' => true, 'number' => 6 ) );
+			if ( ! is_wp_error( $kids ) ) {
+				foreach ( $kids as $kid ) {
+					$kid_link = get_term_link( $kid );
+					$html    .= '<a href="' . esc_url( is_wp_error( $kid_link ) ? '' : $kid_link ) . '">' . esc_html( $kid->name ) . '</a>';
+				}
+			}
+			$html .= '</div>';
+		}
+		$html .= '</div></details>';
+	}
+	set_transient( $key, $html, DAY_IN_SECONDS );
+	return $html;
+}
+
+/** Any category change rebuilds the header panel. */
+function navid_catmenu_flush() {
+	update_option( 'navid_catmenu_v', (int) get_option( 'navid_catmenu_v', 1 ) + 1, false );
+}
+foreach ( array( 'created_product_cat', 'edited_product_cat', 'delete_product_cat', 'update_option_navid_options' ) as $navid_hook ) {
+	add_action( $navid_hook, 'navid_catmenu_flush' );
+}
+
+/**
  * Meta box: show the price or the "call" text for this product.
  */
 function navid_price_metabox() {

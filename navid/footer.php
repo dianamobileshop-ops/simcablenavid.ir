@@ -1,91 +1,124 @@
 <?php
 /**
- * Site footer: desktop columns and the mobile bottom tab bar.
+ * Site footer: trust strip, columns (about, links, categories, contact, trust badges),
+ * copyright, and the mobile bottom tab bar.
  *
  * @package Navid
  */
 
 defined( 'ABSPATH' ) || exit;
 
-$navid_opt   = navid_options();
-$shop_url    = function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'shop' ) : home_url( '/' );
-$account_url = function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'myaccount' ) : wp_login_url();
-$cart_url    = function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : home_url( '/' );
-$cart_count  = ( function_exists( 'WC' ) && WC()->cart ) ? WC()->cart->get_cart_contents_count() : 0;
+$navid_opt      = navid_options();
+$navid_wc       = navid_wc();
+$shop_url       = $navid_wc ? wc_get_page_permalink( 'shop' ) : home_url( '/' );
+$account_url    = $navid_wc ? wc_get_page_permalink( 'myaccount' ) : wp_login_url();
+$cart_url       = $navid_wc ? wc_get_cart_url() : home_url( '/' );
+$cart_count     = ( $navid_wc && WC()->cart ) ? WC()->cart->get_cart_contents_count() : 0;
+$navid_cats     = $navid_wc ? array_slice( navid_home_categories(), 0, 7 ) : array();
+$navid_blog_url = get_option( 'page_for_posts' ) ? get_permalink( get_option( 'page_for_posts' ) ) : '';
+$navid_price    = ( $navid_wc && function_exists( 'npt_online_view_url' ) ) ? npt_online_view_url( '' ) : '';
+$navid_socials  = navid_social_links();
+$navid_features = navid_footer_features();
+$navid_badges   = navid_trust_badges_html();
+$navid_tel      = preg_replace( '/[^0-9+]/', '', navid_en_digits( (string) $navid_opt['phone'] ) );
 ?>
 </main>
 
-<?php
-$navid_telegram  = trim( (string) get_option( 'npt_telegram', '' ), " @" );
-$navid_instagram = trim( (string) get_option( 'npt_instagram', '' ), " @" );
-$navid_cats      = function_exists( 'navid_home_categories' ) ? array_slice( navid_home_categories(), 0, 8 ) : array();
-$navid_blog_url  = get_option( 'page_for_posts' ) ? get_permalink( get_option( 'page_for_posts' ) ) : '';
-$navid_price_url = function_exists( 'npt_online_view_url' ) ? npt_online_view_url( '' ) : '';
-?>
 <footer class="navid-footer">
-	<div class="navid-wrap navid-footer-grid">
-		<div class="navid-footer-col navid-footer-about">
-			<a class="navid-footer-logo" href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php echo navid_logo_html(); // phpcs:ignore WordPress.Security.EscapeOutput ?></a>
-			<?php if ( $navid_opt['about'] ) : ?>
-				<p><?php echo esc_html( $navid_opt['about'] ); ?></p>
-			<?php endif; ?>
-			<?php if ( $navid_telegram || $navid_instagram ) : ?>
-				<div class="navid-social">
-					<?php if ( $navid_telegram ) : ?><a href="<?php echo esc_url( 'https://t.me/' . $navid_telegram ); ?>" target="_blank" rel="noopener" aria-label="Telegram">تلگرام</a><?php endif; ?>
-					<?php if ( $navid_instagram ) : ?><a href="<?php echo esc_url( 'https://instagram.com/' . $navid_instagram ); ?>" target="_blank" rel="noopener" aria-label="Instagram">اینستاگرام</a><?php endif; ?>
-				</div>
-			<?php endif; ?>
-		</div>
-
-		<nav class="navid-footer-col" aria-label="<?php esc_attr_e( 'لینک‌های سایت', 'navid' ); ?>">
-			<h3 class="navid-footer-title"><?php esc_html_e( 'دسترسی سریع', 'navid' ); ?></h3>
-			<?php
-			if ( has_nav_menu( 'footer' ) ) {
-				wp_nav_menu( array(
-					'theme_location' => 'footer',
-					'container'      => false,
-					'menu_class'     => 'navid-footer-menu',
-					'depth'          => 1,
-					'fallback_cb'    => false,
-				) );
-			} else {
-				?>
-				<ul class="navid-footer-menu">
-					<li><a href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php esc_html_e( 'صفحه اصلی', 'navid' ); ?></a></li>
-					<li><a href="<?php echo esc_url( $shop_url ); ?>"><?php esc_html_e( 'فروشگاه', 'navid' ); ?></a></li>
-					<?php if ( $navid_price_url ) : ?><li><a href="<?php echo esc_url( $navid_price_url ); ?>" rel="nofollow"><?php esc_html_e( 'لیست قیمت', 'navid' ); ?></a></li><?php endif; ?>
-					<?php if ( $navid_blog_url ) : ?><li><a href="<?php echo esc_url( $navid_blog_url ); ?>"><?php esc_html_e( 'وبلاگ', 'navid' ); ?></a></li><?php endif; ?>
-					<li><a href="<?php echo esc_url( $account_url ); ?>"><?php esc_html_e( 'حساب کاربری', 'navid' ); ?></a></li>
-				</ul>
-				<?php
-			}
-			?>
-		</nav>
-
-		<?php if ( $navid_cats ) : ?>
-			<nav class="navid-footer-col" aria-label="<?php esc_attr_e( 'دسته‌بندی‌ها', 'navid' ); ?>">
-				<h3 class="navid-footer-title"><?php esc_html_e( 'دسته‌بندی محصولات', 'navid' ); ?></h3>
-				<ul class="navid-footer-menu">
-					<?php foreach ( $navid_cats as $navid_cat ) : ?>
-						<li><a href="<?php echo esc_url( get_term_link( $navid_cat ) ); ?>"><?php echo esc_html( $navid_cat->name ); ?></a></li>
-					<?php endforeach; ?>
-				</ul>
-			</nav>
-		<?php endif; ?>
-
-		<div class="navid-footer-col">
-			<h3 class="navid-footer-title"><?php esc_html_e( 'تماس با ما', 'navid' ); ?></h3>
-			<ul class="navid-footer-menu navid-footer-contact">
-				<?php if ( $navid_opt['address'] ) : ?><li><?php echo esc_html( $navid_opt['address'] ); ?></li><?php endif; ?>
-				<?php if ( $navid_opt['phone'] ) : ?><li><a href="tel:<?php echo esc_attr( preg_replace( '/[^0-9+]/', '', $navid_opt['phone'] ) ); ?>" dir="ltr"><?php echo esc_html( $navid_opt['phone'] ); ?></a></li><?php endif; ?>
-				<?php if ( $navid_opt['email'] ) : ?><li><a href="mailto:<?php echo esc_attr( $navid_opt['email'] ); ?>" dir="ltr"><?php echo esc_html( $navid_opt['email'] ); ?></a></li><?php endif; ?>
+	<?php if ( $navid_features ) : ?>
+		<div class="navid-wrap">
+			<ul class="navid-ft-features">
+				<?php foreach ( $navid_features as $navid_i => $navid_feature ) : ?>
+					<li>
+						<span class="navid-ft-ficon" aria-hidden="true"><?php echo navid_icon( array( 'truck', 'shield', 'card', 'headset' )[ $navid_i % 4 ] ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
+						<span><strong><?php echo esc_html( $navid_feature[0] ); ?></strong><?php if ( '' !== $navid_feature[1] ) : ?><small><?php echo esc_html( $navid_feature[1] ); ?></small><?php endif; ?></span>
+					</li>
+				<?php endforeach; ?>
 			</ul>
+		</div>
+	<?php endif; ?>
+
+	<div class="navid-ft-main">
+		<div class="navid-wrap navid-ft-grid<?php echo $navid_badges ? ' has-badges' : ''; ?>">
+			<section class="navid-ft-col navid-ft-about">
+				<a class="navid-ft-logo" href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php echo navid_logo_html(); // phpcs:ignore WordPress.Security.EscapeOutput ?></a>
+				<p><?php echo esc_html( '' !== $navid_opt['about'] ? $navid_opt['about'] : get_bloginfo( 'description' ) ); ?></p>
+				<?php if ( $navid_socials ) : ?>
+					<div class="navid-ft-social">
+						<?php foreach ( $navid_socials as $navid_social ) : ?>
+							<a href="<?php echo esc_url( $navid_social['url'] ); ?>" target="_blank" rel="noopener" aria-label="<?php echo esc_attr( $navid_social['label'] ); ?>" title="<?php echo esc_attr( $navid_social['label'] ); ?>"><?php echo navid_icon( $navid_social['icon'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?></a>
+						<?php endforeach; ?>
+					</div>
+				<?php endif; ?>
+			</section>
+
+			<nav class="navid-ft-col" aria-label="<?php esc_attr_e( 'دسترسی سریع', 'navid' ); ?>">
+				<h2 class="navid-ft-title"><?php esc_html_e( 'دسترسی سریع', 'navid' ); ?></h2>
+				<?php
+				if ( has_nav_menu( 'footer' ) ) {
+					wp_nav_menu( array(
+						'theme_location' => 'footer',
+						'container'      => false,
+						'menu_class'     => 'navid-ft-links',
+						'depth'          => 1,
+						'fallback_cb'    => false,
+					) );
+				} else {
+					?>
+					<ul class="navid-ft-links">
+						<li><a href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php esc_html_e( 'صفحه اصلی', 'navid' ); ?></a></li>
+						<?php if ( $navid_wc ) : ?><li><a href="<?php echo esc_url( $shop_url ); ?>"><?php esc_html_e( 'فروشگاه', 'navid' ); ?></a></li><?php endif; ?>
+						<?php if ( $navid_price ) : ?><li><a href="<?php echo esc_url( $navid_price ); ?>" rel="nofollow"><?php esc_html_e( 'لیست قیمت', 'navid' ); ?></a></li><?php endif; ?>
+						<?php if ( $navid_blog_url ) : ?><li><a href="<?php echo esc_url( $navid_blog_url ); ?>"><?php esc_html_e( 'وبلاگ', 'navid' ); ?></a></li><?php endif; ?>
+						<li><a href="<?php echo esc_url( $account_url ); ?>"><?php esc_html_e( 'حساب کاربری', 'navid' ); ?></a></li>
+					</ul>
+					<?php
+				}
+				?>
+			</nav>
+
+			<?php if ( $navid_cats ) : ?>
+				<nav class="navid-ft-col" aria-label="<?php esc_attr_e( 'دسته‌بندی‌ها', 'navid' ); ?>">
+					<h2 class="navid-ft-title"><?php esc_html_e( 'دسته‌بندی محصولات', 'navid' ); ?></h2>
+					<ul class="navid-ft-links">
+						<?php foreach ( $navid_cats as $navid_cat ) : ?>
+							<li><a href="<?php echo esc_url( get_term_link( $navid_cat ) ); ?>"><?php echo esc_html( $navid_cat->name ); ?></a></li>
+						<?php endforeach; ?>
+					</ul>
+				</nav>
+			<?php endif; ?>
+
+			<section class="navid-ft-col navid-ft-contact">
+				<h2 class="navid-ft-title"><?php esc_html_e( 'تماس با ما', 'navid' ); ?></h2>
+				<ul>
+					<?php if ( $navid_opt['address'] ) : ?>
+						<li><?php echo navid_icon( 'pin' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><span><?php echo esc_html( $navid_opt['address'] ); ?></span></li>
+					<?php endif; ?>
+					<?php if ( $navid_tel ) : ?>
+						<li><?php echo navid_icon( 'phone' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><a href="tel:<?php echo esc_attr( $navid_tel ); ?>" dir="ltr"><?php echo esc_html( $navid_opt['phone'] ); ?></a></li>
+					<?php endif; ?>
+					<?php if ( $navid_opt['email'] ) : ?>
+						<li><?php echo navid_icon( 'mail' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><a href="mailto:<?php echo esc_attr( $navid_opt['email'] ); ?>" dir="ltr"><?php echo esc_html( $navid_opt['email'] ); ?></a></li>
+					<?php endif; ?>
+					<?php if ( $navid_opt['hours'] ) : ?>
+						<li><?php echo navid_icon( 'clock' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><span><?php echo esc_html( $navid_opt['hours'] ); ?></span></li>
+					<?php endif; ?>
+				</ul>
+			</section>
+
+			<?php if ( $navid_badges ) : ?>
+				<section class="navid-ft-col navid-ft-trust">
+					<h2 class="navid-ft-title"><?php esc_html_e( 'نمادهای اعتماد', 'navid' ); ?></h2>
+					<div class="navid-ft-badges"><?php echo $navid_badges; // phpcs:ignore WordPress.Security.EscapeOutput -- built from parsed ids only ?></div>
+				</section>
+			<?php endif; ?>
 		</div>
 	</div>
 
-	<div class="navid-footer-bottom">
+	<div class="navid-ft-bottom">
 		<div class="navid-wrap">
-			<span>&copy; <?php echo esc_html( function_exists( 'npt_jalali_now' ) ? (function () { $j = npt_jalali_now(); return $j['year']; })() : gmdate( 'Y' ) ); ?> <?php bloginfo( 'name' ); ?> — <?php esc_html_e( 'تمامی حقوق محفوظ است.', 'navid' ); ?></span>
+			<span><?php echo esc_html( navid_copyright_text() ); ?></span>
+			<button type="button" class="navid-totop" data-navid-totop aria-label="<?php esc_attr_e( 'بازگشت به بالا', 'navid' ); ?>"><?php echo navid_icon( 'up' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></button>
 		</div>
 	</div>
 </footer>
@@ -100,6 +133,7 @@ $navid_price_url = function_exists( 'npt_online_view_url' ) ? npt_online_view_ur
 		<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
 		<span><?php esc_html_e( 'جستجو', 'navid' ); ?></span>
 	</a>
+	<?php if ( $navid_wc ) : ?>
 	<a href="<?php echo esc_url( $shop_url ); ?>">
 		<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
 		<span><?php esc_html_e( 'دسته‌بندی', 'navid' ); ?></span>
@@ -109,14 +143,20 @@ $navid_price_url = function_exists( 'npt_online_view_url' ) ? npt_online_view_ur
 		<span><?php esc_html_e( 'سبد خرید', 'navid' ); ?></span>
 		<?php echo navid_cart_count_html( $cart_count ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 	</a>
-	<a href="<?php echo esc_url( $account_url ); ?>"<?php echo is_user_logged_in() ? '' : ' data-navid-login'; ?>>
+	<?php elseif ( $navid_blog_url ) : ?>
+	<a href="<?php echo esc_url( $navid_blog_url ); ?>">
+		<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></svg>
+		<span><?php esc_html_e( 'وبلاگ', 'navid' ); ?></span>
+	</a>
+	<?php endif; ?>
+	<a href="<?php echo esc_url( $account_url ); ?>"<?php echo ( is_user_logged_in() || ! $navid_wc ) ? '' : ' data-navid-login'; ?>>
 		<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
 		<span><?php esc_html_e( 'حساب کاربری', 'navid' ); ?></span>
 	</a>
 </nav>
 <?php endif; ?>
 
-<?php if ( function_exists( 'is_account_page' ) && ! is_user_logged_in() && ! is_account_page() && ! is_checkout() ) : ?>
+<?php if ( navid_login_modal_enabled() ) : ?>
 <div class="navid-modal" id="navid-login-modal" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'ورود | ثبت‌نام', 'navid' ); ?>" hidden>
 	<div class="navid-modal-backdrop"></div>
 	<div class="navid-modal-dialog">

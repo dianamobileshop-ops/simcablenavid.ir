@@ -82,6 +82,15 @@ while ( have_posts() ) :
 						<a class="navid-buy-call" href="tel:<?php echo esc_attr( $navid_tel ); ?>"><?php esc_html_e( 'تماس با ما', 'navid' ); ?> <span dir="ltr"><?php echo esc_html( $navid_opt['phone'] ); ?></span></a>
 					<?php endif; ?>
 				<?php endif; ?>
+				<?php
+				// Quick question about this product on WhatsApp (number from the footer settings).
+				$navid_wa = wp_list_filter( navid_social_links(), array( 'icon' => 'whatsapp' ) );
+				if ( $navid_wa ) :
+					$navid_wa  = reset( $navid_wa );
+					$navid_msg = sprintf( 'سلام، دربارهٔ «%s» سؤال دارم: %s', get_the_title(), get_permalink() );
+					?>
+					<a class="navid-buy-wa" href="<?php echo esc_url( add_query_arg( 'text', rawurlencode( $navid_msg ), $navid_wa['url'] ) ); ?>" target="_blank" rel="noopener"><?php echo navid_icon( 'whatsapp' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php esc_html_e( 'مشاوره در واتس‌اپ', 'navid' ); ?></a>
+				<?php endif; ?>
 			</aside>
 		</div>
 
