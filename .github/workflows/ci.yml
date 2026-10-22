@@ -1,0 +1,42 @@
+# Checks every push and pull request: PHP syntax on 7.4, 8.2 and 8.3, JavaScript syntax,
+# and that the minified CSS was rebuilt. Failures are listed on the run's page (Actions tab).
+name: Checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4', '8.2', '8.3']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+
+      - name: PHP syntax
+        run: |
+          find navid -name '*.php' -not -path '*/vendor/*' -print0 | xargs -0 -n1 php -l > lint.txt 2>&1 || { grep -v '^No syntax errors' lint.txt | sed 's/^/::error::/'; exit 1; }
+
+      - name: JavaScript syntax
+        if: matrix.php == '8.2'
+        run: |
+          for f in navid/assets/js/*.js; do node --check "$f" || { echo "::error file=$f::JavaScript syntax error"; exit 1; }; done
+
+      - name: Minified CSS is up to date
+        if: matrix.php == '8.2'
+        run: |
+          php tools/build-css.php
+          if ! git diff --quiet -- navid/assets/css/navid.min.css; then
+            echo "::error file=navid/assets/css/navid.min.css::Not rebuilt: run php tools/build-css.php and commit"
+            exit 1
+          fi

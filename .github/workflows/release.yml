@@ -1,0 +1,60 @@
+# Publishing a release: push a tag like v1.5.4 (it must equal Version in navid/style.css).
+# The workflow checks the code, builds navid-theme-1.5.4.zip and attaches it to a GitHub
+# Release. Sites running the theme read that release and offer the update.
+# Every failure shows up on the run's page under the repository's Actions tab.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+
+      - name: Tag matches the theme version
+        run: |
+          V=$(grep -m1 '^Version:' navid/style.css | awk '{print $2}')
+          if [ "v$V" != "$GITHUB_REF_NAME" ]; then
+            echo "::error file=navid/style.css::Tag $GITHUB_REF_NAME does not match Version $V in style.css"
+            exit 1
+          fi
+          if ! grep -q "define( 'NAVID_VERSION', '$V' )" navid/functions.php; then
+            echo "::error file=navid/functions.php::NAVID_VERSION is not $V"
+            exit 1
+          fi
+          echo "VERSION=$V" >> "$GITHUB_ENV"
+
+      - name: PHP syntax (7.4)
+        run: |
+          find navid -name '*.php' -not -path '*/vendor/*' -print0 | xargs -0 -n1 php -l > lint.txt 2>&1 || { grep -v '^No syntax errors' lint.txt | sed 's/^/::error::/'; exit 1; }
+
+      - name: JavaScript syntax
+        run: |
+          for f in navid/assets/js/*.js; do node --check "$f" || { echo "::error file=$f::JavaScript syntax error"; exit 1; }; done
+
+      - name: Minified CSS is up to date
+        run: |
+          php tools/build-css.php
+          if ! git diff --quiet -- navid/assets/css/navid.min.css; then
+            echo "::error file=navid/assets/css/navid.min.css::Not rebuilt: run php tools/build-css.php and commit"
+            exit 1
+          fi
+
+      - name: Build the theme zip
+        run: zip -qr "navid-theme-${VERSION}.zip" navid -x '*.DS_Store'
+
+      - name: Publish the release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: navid-theme-${{ env.VERSION }}.zip
+          generate_release_notes: true
