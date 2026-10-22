@@ -152,6 +152,13 @@ function navid_save_settings() {
 		'toolbar_title' => isset( $raw['toolbar_title'] ) ? sanitize_text_field( $raw['toolbar_title'] ) : '',
 		'toolbar_sub'   => isset( $raw['toolbar_sub'] ) ? sanitize_text_field( $raw['toolbar_sub'] ) : '',
 		'price_url'     => isset( $raw['price_url'] ) ? esc_url_raw( $raw['price_url'] ) : '',
+		'sec_admin_sms' => empty( $raw['sec_admin_sms'] ) ? '0' : '1',
+		'sec_limit'     => empty( $raw['sec_limit'] ) ? '0' : '1',
+		'sec_max'       => isset( $raw['sec_max'] ) ? min( 20, max( 3, absint( $raw['sec_max'] ) ) ) : 5,
+		'sec_lock'      => isset( $raw['sec_lock'] ) ? min( 240, max( 5, absint( $raw['sec_lock'] ) ) ) : 15,
+		'sec_xmlrpc'    => empty( $raw['sec_xmlrpc'] ) ? '0' : '1',
+		'sec_generic'   => empty( $raw['sec_generic'] ) ? '0' : '1',
+		'sec_enum'      => empty( $raw['sec_enum'] ) ? '0' : '1',
 		'login_sms'      => empty( $raw['login_sms'] ) ? '0' : '1',
 		'login_password' => empty( $raw['login_password'] ) ? '0' : '1',
 		'login_register' => empty( $raw['login_register'] ) ? '0' : '1',
@@ -231,7 +238,7 @@ function navid_settings_groups() {
 		't-header'  => array( 'sticky_header', 'sticky_header_mobile', 'special_label', 'special_url' ),
 		't-contact' => array( 'phone', 'address', 'email', 'hours' ),
 		't-footer'  => array( 'about', 'ft_features_show', 'ft_features', 'enamad', 'copyright', 'social_telegram', 'social_instagram', 'social_whatsapp', 'social_eitaa', 'social_bale', 'social_aparat', 'social_linkedin' ),
-		't-login'   => array( 'login_sms', 'login_password', 'login_register', 'login_note' ),
+		't-security' => array( 'login_sms', 'login_password', 'login_register', 'login_note', 'sec_admin_sms', 'sec_limit', 'sec_max', 'sec_lock', 'sec_xmlrpc', 'sec_generic', 'sec_enum' ),
 		't-bar'     => array( 'toolbar_title', 'toolbar_sub', 'price_url', 'bar_show_pdf', 'bar_show_view', 'bar_show_proforma' ),
 		't-home'    => array( 'home_order', 'home_on', 'ps1_title', 'ps1_ids', 'ps2_title', 'ps2_ids' ),
 		't-cats'    => array( 'home_cats', 'cats_effect', 'cats_shape', 'cats_cols' ),
@@ -292,7 +299,6 @@ function navid_admin_tree() {
 			'label' => 'پیامک و ورود',
 			'icon'  => 'dashicons-email-alt',
 			'items' => array(
-				't-login'   => array( 'ورود مشتریان', $tab( 't-login' ) ),
 				'sms'       => array( 'اتصال سامانهٔ پیامک', $tab( 'sms' ) ),
 				'otp'       => array( 'کدهای الگو', $tab( 'otp' ) ),
 				'templates' => array( 'متن پیامک‌ها', $tab( 'templates' ) ),
@@ -317,6 +323,7 @@ function navid_admin_tree() {
 				'managers'   => array( 'مدیران کسب‌وکار', $tab( 'managers' ) ),
 			),
 		),
+		array( 'label' => 'امنیت و ورود', 'icon' => 'dashicons-shield', 'items' => array( 't-security' => array( 'امنیت و ورود (مشتریان و مدیران)', $tab( 't-security' ) ) ), 'single' => true ),
 		array(
 			'label' => 'خطاها و گزارش',
 			'icon'  => 'dashicons-warning',
@@ -619,36 +626,82 @@ function navid_settings_section( $key, $opt ) {
 			</section>
 			<?php
 			break;
-		case 't-login':
+		case 't-security':
 			$sms_ready = class_exists( 'NPT_OTP' ) && class_exists( 'NPT_SMS' ) && NPT_OTP::enabled() && NPT_SMS::otp_ready();
+			$base_url  = admin_url( 'admin.php?page=navid-settings&tab=' );
 			?>
 			<section class="navid-admin-card">
 				<h2>ورود و ثبت‌نام مشتریان</h2>
-			<p class="description">
-				وضعیت پیامک:
-				<?php if ( $sms_ready ) : ?>
-					<strong style="color:#127a3c">آماده است</strong>
-				<?php else : ?>
-					<strong style="color:#b3261e">آماده نیست</strong> — ورود و ثبت‌نام با شماره وقتی کار می‌کند که ورود پیامکی روشن و سامانهٔ پیامک و کد الگو تنظیم شده باشد (بخش «پیامک و ورود»). تا آن موقع فقط ورود با رمز عبور نمایش داده می‌شود.
-				<?php endif; ?>
-			</p>
-			<div class="navid-row">
-				<label for="navid-login-sms">ورود با شمارهٔ موبایل و کد پیامکی</label>
-				<input id="navid-login-sms" type="checkbox" name="navid[login_sms]" value="1" <?php checked( '1', $opt['login_sms'] ); ?>>
-			</div>
-			<div class="navid-row">
-				<label for="navid-login-pass">ورود با رمز عبور (برای مدیران و مشتریان قدیمی)</label>
-				<input id="navid-login-pass" type="checkbox" name="navid[login_password]" value="1" <?php checked( '1', $opt['login_password'] ); ?>>
-			</div>
-			<div class="navid-row">
-				<label for="navid-login-reg">ثبت‌نام مشتری جدید (نام و نام‌خانوادگی + شماره)</label>
-				<input id="navid-login-reg" type="checkbox" name="navid[login_register]" value="1" <?php checked( '1', $opt['login_register'] ); ?>>
-			</div>
-			<div class="navid-row">
-				<label for="navid-login-note">متن زیر کارت ورود (اختیاری)</label>
-				<input id="navid-login-note" type="text" name="navid[login_note]" value="<?php echo esc_attr( $opt['login_note'] ); ?>">
-			</div>
-			<p class="description">مشتریان قدیمی که شماره ندارند، بعد از ورود با رمز در صفحهٔ حساب کاربری از آن‌ها خواسته می‌شود شماره‌شان را با کد پیامکی تأیید کنند.</p>
+				<p class="description">
+					وضعیت پیامک:
+					<?php if ( $sms_ready ) : ?>
+						<strong style="color:#127a3c">آماده است</strong>
+					<?php else : ?>
+						<strong style="color:#b3261e">آماده نیست</strong> — ورود با شماره وقتی کار می‌کند که ورود پیامکی روشن و سامانهٔ پیامک و کد الگو تنظیم شده باشد (<a href="<?php echo esc_url( $base_url . 'sms' ); ?>">اتصال سامانهٔ پیامک</a>، <a href="<?php echo esc_url( $base_url . 'otp' ); ?>">کدهای الگو</a>). تا آن موقع فقط ورود با رمز عبور نمایش داده می‌شود.
+					<?php endif; ?>
+				</p>
+				<div class="navid-row">
+					<label for="navid-login-sms">ورود با شمارهٔ موبایل و کد پیامکی</label>
+					<input id="navid-login-sms" type="checkbox" name="navid[login_sms]" value="1" <?php checked( '1', $opt['login_sms'] ); ?>>
+				</div>
+				<div class="navid-row">
+					<label for="navid-login-pass">ورود با رمز عبور (مدیران و مشتریان قدیمی)</label>
+					<input id="navid-login-pass" type="checkbox" name="navid[login_password]" value="1" <?php checked( '1', $opt['login_password'] ); ?>>
+				</div>
+				<div class="navid-row">
+					<label for="navid-login-reg">ثبت‌نام مشتری جدید (شماره + نام و نام‌خانوادگی)</label>
+					<input id="navid-login-reg" type="checkbox" name="navid[login_register]" value="1" <?php checked( '1', $opt['login_register'] ); ?>>
+				</div>
+				<div class="navid-row">
+					<label for="navid-login-note">متن زیر کارت ورود (اختیاری)</label>
+					<input id="navid-login-note" type="text" name="navid[login_note]" value="<?php echo esc_attr( $opt['login_note'] ); ?>">
+				</div>
+				<p class="description">مشتریان قدیمی که شماره ندارند، بعد از ورود با رمز در داشبورد حساب کاربری از آن‌ها خواسته می‌شود شماره‌شان را با کد پیامکی تأیید کنند.</p>
+			</section>
+
+			<section class="navid-admin-card">
+				<h2>ورود مدیران و مدیران کسب‌وکار</h2>
+				<p class="description">
+					مدیر سایت با نام کاربری و رمز عبور از صفحهٔ ورود وردپرس وارد می‌شود. مدیر کسب‌وکار از «پنل مدیر» (<code>/panel/</code>) با رمز یا کد پیامکی وارد می‌شود و می‌تواند «ورود دو مرحله‌ای» را از داخل پنل روشن کند.
+				</p>
+				<div class="navid-row">
+					<label for="navid-sec-admin-sms">اجازهٔ ورود مدیر سایت با کد پیامکی <small style="color:#b42318">(پیشنهاد نمی‌شود: رمز عبور و دو مرحله‌ای را دور می‌زند)</small></label>
+					<input id="navid-sec-admin-sms" type="checkbox" name="navid[sec_admin_sms]" value="1" <?php checked( '1', $opt['sec_admin_sms'] ); ?>>
+				</div>
+				<p>
+					<a class="button" href="<?php echo esc_url( $base_url . 'managers' ); ?>">مدیران کسب‌وکار</a>
+					<a class="button" href="<?php echo esc_url( $base_url . 'login_page' ); ?>">صفحهٔ ورود پنل</a>
+					<a class="button" href="<?php echo esc_url( $base_url . 'sms_login' ); ?>">ورود و ثبت‌نام پیامکی (محدودیت‌ها)</a>
+				</p>
+			</section>
+
+			<section class="navid-admin-card">
+				<h2>محافظت از ورود (برای همهٔ کاربران)</h2>
+				<div class="navid-row">
+					<label for="navid-sec-limit">قفل موقت بعد از چند بار رمز اشتباه</label>
+					<input id="navid-sec-limit" type="checkbox" name="navid[sec_limit]" value="1" <?php checked( '1', $opt['sec_limit'] ); ?>>
+				</div>
+				<div class="navid-row">
+					<label for="navid-sec-max">تعداد تلاش ناموفق مجاز</label>
+					<input id="navid-sec-max" type="number" min="3" max="20" name="navid[sec_max]" value="<?php echo esc_attr( (int) $opt['sec_max'] ); ?>" style="width:90px">
+				</div>
+				<div class="navid-row">
+					<label for="navid-sec-lock">مدت قفل (دقیقه)</label>
+					<input id="navid-sec-lock" type="number" min="5" max="240" name="navid[sec_lock]" value="<?php echo esc_attr( (int) $opt['sec_lock'] ); ?>" style="width:90px">
+				</div>
+				<div class="navid-row">
+					<label for="navid-sec-generic">پیام یکسان برای نام کاربری یا رمز اشتباه (لو نرفتن وجود حساب)</label>
+					<input id="navid-sec-generic" type="checkbox" name="navid[sec_generic]" value="1" <?php checked( '1', $opt['sec_generic'] ); ?>>
+				</div>
+				<div class="navid-row">
+					<label for="navid-sec-enum">جلوگیری از پیدا کردن نام کاربران (آدرس‌های <code>?author=</code> و فهرست کاربران API)</label>
+					<input id="navid-sec-enum" type="checkbox" name="navid[sec_enum]" value="1" <?php checked( '1', $opt['sec_enum'] ); ?>>
+				</div>
+				<div class="navid-row">
+					<label for="navid-sec-xml">بستن XML-RPC (مسیر قدیمی حملهٔ رمزعبور)</label>
+					<input id="navid-sec-xml" type="checkbox" name="navid[sec_xmlrpc]" value="1" <?php checked( '1', $opt['sec_xmlrpc'] ); ?>>
+				</div>
+				<p class="description">قفل برای هر ترکیب «آدرس IP» و «نام کاربری» جداگانه شمرده می‌شود و رخدادها در «گزارش خطاها» (بخش «امنیت») ثبت می‌شود. کد پیامکی جدا محدود است: سقف برای هر شماره، هر IP و کل روز، و بعد از ۳ کد اشتباه ۱۰ دقیقه قفل.</p>
 			</section>
 			<?php
 			break;
@@ -871,6 +924,9 @@ function navid_settings_section( $key, $opt ) {
 function navid_render_settings() {
 	$opt = navid_options();
 	$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	if ( 't-login' === $tab ) {
+		$tab = 't-security'; // the old address of the customer login screen
+	}
 
 	// Screens that belong to the price table code, rendered inside this shell.
 	$plugin_tabs = array( 'general', 'price', 'seo', 'sms', 'contacts', 'bar_menu', 'bar_float', 'login_page', 'panel_dash', 'backup', 'managers', 'errors', 'header', 'content', 'footer', 'otp', 'templates', 'sms_login' );

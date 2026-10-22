@@ -2,7 +2,7 @@
 Theme Name: Navid
 Theme URI: https://simcablenavid.ir
 Description: قالب اختصاصی نوید. شامل جدول قیمت و پنل مدیریت در یک بسته.
-Version: 1.6.0
+Version: 1.7.0
 Update URI: https://simcablenavid.ir/navid
 Requires PHP: 7.4
 Text Domain: navid
@@ -5238,5 +5238,139 @@ ul.products::after {
 	.navid-lg-otp.is-shake,
 	.navid-auth-card.navid-lg .navid-lg-otp input.is-filled {
 		animation: none;
+	}
+}
+
+/* ---- 1.7.0: product page, buying first ---- */
+.navid-product {
+	grid-template-areas:
+		"gallery head buy"
+		"gallery info buy";
+	grid-template-rows: auto 1fr;
+}
+
+.navid-product > .navid-product-title {
+	grid-area: head;
+	margin: 0;
+}
+
+.navid-product > .navid-product-gallery {
+	grid-area: gallery;
+}
+
+.navid-product > .navid-product-info {
+	grid-area: info;
+}
+
+.navid-product > .navid-buybox {
+	grid-area: buy;
+}
+
+@media (max-width: 1100px) {
+	.navid-product {
+		grid-template-areas:
+			"gallery head"
+			"gallery info"
+			"buy buy";
+	}
+}
+
+.navid-buy-actions {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 8px;
+	margin-top: 10px;
+}
+
+.navid-buy-actions:has(> :only-child) {
+	grid-template-columns: 1fr;
+}
+
+.navid-buy-actions a {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	min-height: 46px;
+	margin: 0;
+	padding: 8px 6px;
+	border-radius: 12px;
+	font-size: 13px;
+	font-weight: 700;
+	line-height: 1.5;
+	text-align: center;
+	text-decoration: none;
+}
+
+.navid-buy-actions svg {
+	flex: none;
+	width: 18px;
+	height: 18px;
+}
+
+.navid-oos {
+	margin: 6px 0;
+	padding: 8px 12px;
+	border-radius: 10px;
+	background: #fdecec;
+	color: #b42318;
+	font-size: 13px;
+	font-weight: 700;
+}
+
+/* No magnifier on the photo, and no floating buttons on the product page */
+.navid-product-gallery .woocommerce-product-gallery__trigger,
+.navid-stickybar,
+body.single-product .mqb-floating-trigger {
+	display: none !important;
+}
+
+@media (max-width: 700px) {
+	.navid-product {
+		display: flex;
+		flex-direction: column;
+	}
+
+	/* The title sits at the top of the photo area instead of taking a block of its own. */
+	.navid-product > .navid-product-title {
+		position: absolute;
+		inset-inline: 0;
+		top: 0;
+		z-index: 3;
+		padding: 10px 14px 0;
+		font-size: 15px;
+		line-height: 1.8;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+		pointer-events: none;
+	}
+
+	.navid-product > .navid-product-gallery {
+		order: 1;
+		padding-top: 52px;
+	}
+
+	.navid-product > .navid-buybox {
+		order: 2;
+		margin-top: -22px;
+		padding-top: 18px;
+		border-radius: 22px 22px 0 0;
+		box-shadow: 0 -10px 26px rgba(16, 26, 36, .1);
+	}
+
+	.navid-product > .navid-product-info {
+		order: 3;
+		margin-top: 0;
+		border-radius: 0;
+		box-shadow: none;
+	}
+
+	/* Fewer lines above the price: category, stock, code and rating stay out of the first screen. */
+	.navid-product-cats,
+	.navid-product-chips,
+	.navid-seller {
+		display: none;
 	}
 }

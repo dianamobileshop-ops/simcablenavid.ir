@@ -260,33 +260,6 @@
 					if (btn.textContent === (T.adding || '…')) { btn.textContent = label; }
 				});
 		});
-
-		// Sticky purchase bar on phones, shown while the real button is out of view.
-		if (window.matchMedia('(max-width: 768px)').matches && 'IntersectionObserver' in window) {
-			var bar = document.createElement('div');
-			bar.className = 'navid-stickybar';
-			var priceEl = document.createElement('span');
-			priceEl.className = 'navid-stickybar-price';
-			var go = document.createElement('button');
-			go.type = 'button';
-			go.textContent = T.addLabel || label;
-			bar.appendChild(priceEl);
-			bar.appendChild(go);
-			document.body.appendChild(bar);
-			var priceSrc = document.querySelector('.navid-buybox-price');
-			function readPrice() { priceEl.textContent = priceSrc ? priceSrc.textContent.trim().replace(/\s+/g, ' ').slice(0, 40) : ''; }
-			go.addEventListener('click', function () {
-				if (btn.classList.contains('disabled') || btn.disabled) {
-					form.scrollIntoView({ behavior: 'smooth', block: 'center' });
-				} else {
-					btn.click();
-				}
-			});
-			new IntersectionObserver(function (entries) {
-				readPrice();
-				bar.classList.toggle('is-in', !entries[0].isIntersecting && entries[0].boundingClientRect.top < 0);
-			}).observe(btn);
-		}
 	}
 
 	document.addEventListener('DOMContentLoaded', initCart);

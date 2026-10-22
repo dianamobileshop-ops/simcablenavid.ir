@@ -27,6 +27,8 @@ while ( have_posts() ) :
 		<?php do_action( 'woocommerce_before_single_product' ); ?>
 
 		<div id="product-<?php the_ID(); ?>" <?php wc_product_class( 'navid-product', $product ); ?>>
+			<h1 class="navid-product-title"><?php the_title(); ?></h1>
+
 			<div class="navid-product-gallery">
 				<?php echo navid_unit_tag_html( $product ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 				<?php woocommerce_show_product_images(); ?>
@@ -34,8 +36,6 @@ while ( have_posts() ) :
 
 			<div class="navid-product-info">
 				<?php echo wc_get_product_category_list( $product->get_id(), ' · ', '<div class="navid-product-cats">', '</div>' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
-				<h1 class="navid-product-title"><?php the_title(); ?></h1>
-
 				<div class="navid-product-chips">
 					<?php if ( $navid_rating > 0 ) : ?>
 						<span class="navid-chip navid-chip--rating">★ <?php echo esc_html( number_format_i18n( $navid_rating, 1 ) ); ?>
@@ -71,11 +71,10 @@ while ( have_posts() ) :
 
 				<?php if ( $navid_visible ) : ?>
 					<div class="navid-buybox-price"><?php woocommerce_template_single_price(); ?></div>
-					<div class="navid-buybox-cart"><?php woocommerce_template_single_add_to_cart(); ?></div>
-					<?php $navid_pf = navid_proforma_url(); ?>
-					<?php if ( $navid_pf ) : ?>
-						<a class="navid-buy-pf" href="<?php echo esc_url( add_query_arg( 'npt_add', $product->get_id(), $navid_pf ) ); ?>"><?php esc_html_e( 'افزودن به پیش‌فاکتور', 'navid' ); ?></a>
+					<?php if ( ! $product->is_in_stock() ) : ?>
+						<p class="navid-oos"><?php esc_html_e( 'این کالا فعلاً ناموجود است.', 'navid' ); ?></p>
 					<?php endif; ?>
+					<div class="navid-buybox-cart"><?php woocommerce_template_single_add_to_cart(); ?></div>
 				<?php else : ?>
 					<div class="navid-buybox-price"><span class="navid-call-price"><?php esc_html_e( 'تماس بگیرید', 'navid' ); ?></span></div>
 					<p class="navid-buybox-note"><?php esc_html_e( 'قیمت این کالا تلفنی اعلام می‌شود.', 'navid' ); ?></p>
@@ -83,14 +82,23 @@ while ( have_posts() ) :
 						<a class="navid-buy-call" href="tel:<?php echo esc_attr( $navid_tel ); ?>"><?php esc_html_e( 'تماس با ما', 'navid' ); ?> <span dir="ltr"><?php echo esc_html( $navid_opt['phone'] ); ?></span></a>
 					<?php endif; ?>
 				<?php endif; ?>
+
 				<?php
-				// Quick question about this product on WhatsApp (number from the footer settings).
+				// Proforma and a WhatsApp question, side by side, right under the price and the cart button.
+				$navid_pf = $navid_visible ? navid_proforma_url() : '';
 				$navid_wa = wp_list_filter( navid_social_links(), array( 'icon' => 'whatsapp' ) );
-				if ( $navid_wa ) :
-					$navid_wa  = reset( $navid_wa );
-					$navid_msg = sprintf( 'سلام، دربارهٔ «%s» سؤال دارم: %s', get_the_title(), get_permalink() );
+				$navid_wa = $navid_wa ? reset( $navid_wa ) : null;
+				if ( $navid_pf || $navid_wa ) :
 					?>
-					<a class="navid-buy-wa" href="<?php echo esc_url( add_query_arg( 'text', rawurlencode( $navid_msg ), $navid_wa['url'] ) ); ?>" target="_blank" rel="noopener"><?php echo navid_icon( 'whatsapp' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php esc_html_e( 'مشاوره در واتس‌اپ', 'navid' ); ?></a>
+					<div class="navid-buy-actions">
+						<?php if ( $navid_pf ) : ?>
+							<a class="navid-buy-pf" href="<?php echo esc_url( add_query_arg( 'npt_add', $product->get_id(), $navid_pf ) ); ?>"><?php echo navid_icon( 'report' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><span><?php esc_html_e( 'افزودن به پیش‌فاکتور', 'navid' ); ?></span></a>
+						<?php endif; ?>
+						<?php if ( $navid_wa ) : ?>
+							<?php $navid_msg = sprintf( 'سلام، دربارهٔ «%s» سؤال دارم: %s', get_the_title(), get_permalink() ); ?>
+							<a class="navid-buy-wa" href="<?php echo esc_url( add_query_arg( 'text', rawurlencode( $navid_msg ), $navid_wa['url'] ) ); ?>" target="_blank" rel="noopener"><?php echo navid_icon( 'whatsapp' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><span><?php esc_html_e( 'مشاوره در واتس‌اپ', 'navid' ); ?></span></a>
+						<?php endif; ?>
+					</div>
 				<?php endif; ?>
 			</aside>
 		</div>

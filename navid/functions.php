@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'NAVID_VERSION', '1.6.0' );
+define( 'NAVID_VERSION', '1.7.0' );
 
 /**
  * Whether WooCommerce is running. Every shop feature checks this, so the theme works
@@ -166,6 +166,13 @@ function navid_options() {
 		'toolbar_title' => 'دریافت لیست قیمت رسمی سیم و کابل نوید',
 		'toolbar_sub'   => '',
 		'price_url'     => '',
+		'sec_admin_sms' => '0',
+		'sec_limit'     => '1',
+		'sec_max'       => 5,
+		'sec_lock'      => 15,
+		'sec_xmlrpc'    => '1',
+		'sec_generic'   => '1',
+		'sec_enum'      => '1',
 		'login_sms'      => '1',
 		'login_password' => '1',
 		'login_register' => '1',
@@ -219,6 +226,7 @@ require_once get_template_directory() . '/inc/jalali.php';
 require_once get_template_directory() . '/inc/diagnostics.php';
 require_once get_template_directory() . '/inc/updater.php';
 require_once get_template_directory() . '/inc/login.php';
+require_once get_template_directory() . '/inc/security.php';
 require_once get_template_directory() . '/inc/footer.php';
 require_once get_template_directory() . '/inc/settings.php';
 require_once get_template_directory() . '/inc/woocommerce.php';

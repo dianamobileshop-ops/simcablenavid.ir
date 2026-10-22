@@ -1,15 +1,21 @@
-# Publishing a release: push a tag like v1.5.4 (it must equal Version in navid/style.css).
-# The workflow checks the code, builds navid-theme-1.5.4.zip and attaches it to a GitHub
-# Release. Sites running the theme read that release and offer the update.
-# Every failure shows up on the run's page under the repository's Actions tab.
+# Releases are made automatically: when navid/style.css gets a Version that has no release yet,
+# a push to main or to a claude/* branch (or a v* tag) checks the code, builds
+# navid-theme-X.zip and publishes a GitHub Release with it. Sites running the theme read
+# that release and offer the update. Every failure shows up on the run's page (Actions tab).
 name: Release
 
 on:
   push:
+    branches: ['main', 'claude/**']
+    paths: ['navid/**']
     tags: ['v*']
 
 permissions:
   contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   release:
@@ -21,28 +27,45 @@ jobs:
         with:
           php-version: '7.4'
 
-      - name: Tag matches the theme version
+      - name: Read the version and look for an existing release
+        id: ver
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           V=$(grep -m1 '^Version:' navid/style.css | awk '{print $2}')
-          if [ "v$V" != "$GITHUB_REF_NAME" ]; then
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          if [ "${GITHUB_REF_TYPE}" = "tag" ] && [ "${GITHUB_REF_NAME}" != "v$V" ]; then
             echo "::error file=navid/style.css::Tag $GITHUB_REF_NAME does not match Version $V in style.css"
             exit 1
           fi
+          if gh release view "v$V" >/dev/null 2>&1; then
+            echo "Release v$V already exists: nothing to do."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Version is the same in functions.php
+        if: steps.ver.outputs.skip == 'false'
+        run: |
+          V='${{ steps.ver.outputs.version }}'
           if ! grep -q "define( 'NAVID_VERSION', '$V' )" navid/functions.php; then
             echo "::error file=navid/functions.php::NAVID_VERSION is not $V"
             exit 1
           fi
-          echo "VERSION=$V" >> "$GITHUB_ENV"
 
       - name: PHP syntax (7.4)
+        if: steps.ver.outputs.skip == 'false'
         run: |
           find navid -name '*.php' -not -path '*/vendor/*' -print0 | xargs -0 -n1 php -l > lint.txt 2>&1 || { grep -v '^No syntax errors' lint.txt | sed 's/^/::error::/'; exit 1; }
 
       - name: JavaScript syntax
+        if: steps.ver.outputs.skip == 'false'
         run: |
           for f in navid/assets/js/*.js; do node --check "$f" || { echo "::error file=$f::JavaScript syntax error"; exit 1; }; done
 
       - name: Minified CSS is up to date
+        if: steps.ver.outputs.skip == 'false'
         run: |
           php tools/build-css.php
           if ! git diff --quiet -- navid/assets/css/navid.min.css; then
@@ -51,10 +74,18 @@ jobs:
           fi
 
       - name: Build the theme zip
-        run: zip -qr "navid-theme-${VERSION}.zip" navid -x '*.DS_Store'
+        if: steps.ver.outputs.skip == 'false'
+        run: zip -qr "navid-theme-${{ steps.ver.outputs.version }}.zip" navid -x '*.DS_Store'
 
       - name: Publish the release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: navid-theme-${{ env.VERSION }}.zip
-          generate_release_notes: true
+        if: steps.ver.outputs.skip == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V='${{ steps.ver.outputs.version }}'
+          git log -1 --format=%B | grep -v '^Co-Authored-By:' | grep -v '^Claude-Session:' > notes.md
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            gh release create "v$V" "navid-theme-$V.zip" --title "$V" --notes-file notes.md --verify-tag
+          else
+            gh release create "v$V" "navid-theme-$V.zip" --title "$V" --notes-file notes.md --target "$GITHUB_SHA"
+          fi

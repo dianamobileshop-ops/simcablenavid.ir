@@ -231,6 +231,12 @@ function navid_render_support_screen() {
 			<?php endif; ?>
 			<a class="button" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=navid_check_update' ), 'navid_check_update' ) ); ?>">بررسی دوبارهٔ بروزرسانی</a>
 		</p>
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin:10px 0">
+			<?php wp_nonce_field( 'navid_auto_update' ); ?>
+			<input type="hidden" name="action" value="navid_auto_update">
+			<label><input type="checkbox" name="auto" value="1" <?php checked( in_array( get_template(), (array) get_site_option( 'auto_update_themes', array() ), true ) ); ?>> بروزرسانی خودکار قالب (بدون کلیک؛ وردپرس روزی دو بار بررسی می‌کند)</label>
+			<button type="submit" class="button">ذخیره</button>
+		</form>
 		<p class="description">پیش از هر بروزرسانی از «پشتیبان‌گیری و بازیابی» یک پشتیبان بگیرید. تنظیمات قالب در پایگاه‌داده می‌ماند و با بروزرسانی پاک نمی‌شود.</p>
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 			<?php wp_nonce_field( 'navid_update_settings' ); ?>
@@ -308,3 +314,21 @@ function navid_handle_update_settings() {
 	exit;
 }
 add_action( 'admin_post_navid_update_settings', 'navid_handle_update_settings' );
+
+/**
+ * Switches WordPress' own automatic update for this theme on or off.
+ */
+function navid_handle_auto_update() {
+	if ( ! current_user_can( 'update_themes' ) ) {
+		wp_die( esc_html__( 'دسترسی ندارید.', 'navid' ) );
+	}
+	check_admin_referer( 'navid_auto_update' );
+	$list = array_values( array_diff( (array) get_site_option( 'auto_update_themes', array() ), array( get_template() ) ) );
+	if ( ! empty( $_POST['auto'] ) ) {
+		$list[] = get_template();
+	}
+	update_site_option( 'auto_update_themes', array_values( array_unique( $list ) ) );
+	wp_safe_redirect( admin_url( 'admin.php?page=navid-settings&tab=t-support&checked=1' ) );
+	exit;
+}
+add_action( 'admin_post_navid_auto_update', 'navid_handle_auto_update' );
