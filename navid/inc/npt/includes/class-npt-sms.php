@@ -386,9 +386,15 @@ class NPT_SMS {
 		}
 		$rec    = isset( $data['recId'] ) ? $data['recId'] : '';
 		$status = isset( $data['status'] ) ? trim( (string) $data['status'] ) : '';
-		// A real record id is a long number; small values are provider error codes.
-		$ok  = '' === $status && is_numeric( $rec ) && (float) $rec >= 1000;
-		$str = '' !== $status ? $status : ( $ok ? '' : 'ارسال انجام نشد (کد ' . ( is_scalar( $rec ) ? $rec : '؟' ) . ')' );
+		// The provider words a delivered message as «عملیات موفق» in the status field, and an error
+		// as its reason there (with a small number in recId). With no status text, only a real
+		// record id (a long number) counts as sent.
+		if ( '' !== $status ) {
+			$ok = false !== mb_strpos( $status, 'موفق' ) && false === mb_strpos( $status, 'ناموفق' );
+		} else {
+			$ok = is_numeric( $rec ) && (float) $rec >= 1000;
+		}
+		$str = $ok ? '' : ( '' !== $status ? $status : 'ارسال انجام نشد (کد ' . ( is_scalar( $rec ) ? $rec : '؟' ) . ')' );
 		return array( 'ok' => $ok, 'value' => $rec, 'ret' => $ok ? 1 : (int) ( is_numeric( $rec ) ? $rec : 0 ), 'str' => $str );
 	}
 
