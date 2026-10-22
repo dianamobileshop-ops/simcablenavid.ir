@@ -224,6 +224,13 @@ class NPT_SMS {
 			'sanitize_callback' => 'sanitize_text_field',
 			'default'           => '',
 		) );
+		register_setting( 'npt_settings', 'npt_sms_console_otp', array(
+			'type'              => 'string',
+			'sanitize_callback' => function ( $v ) {
+				return empty( $v ) ? '0' : '1';
+			},
+			'default'           => '0',
+		) );
 		register_setting( 'npt_settings', 'npt_sms_otp_params', array(
 			'type'              => 'string',
 			'sanitize_callback' => 'sanitize_text_field',
@@ -257,7 +264,10 @@ class NPT_SMS {
 	/** Token mode: the console makes the code and the text. Returns the code, '' in password mode, or WP_Error. */
 	public static function api_otp_code( $phone ) {
 		$creds = self::credentials();
-		if ( 'token' !== $creds['mode'] || ! self::auth_ready( $creds ) ) {
+		// The console's own OTP service needs extra set-up and approval in the provider's panel,
+		// so it is opt-in. By default the code is made here and sent like every other message
+		// (the same «send/simple» route that the connection test uses).
+		if ( '1' !== (string) get_option( 'npt_sms_console_otp', '0' ) || 'token' !== $creds['mode'] || ! self::auth_ready( $creds ) ) {
 			return '';
 		}
 		$response = wp_remote_post( 'https://console.melipayamak.com/api/send/otp/' . rawurlencode( $creds['token'] ), array(
@@ -298,7 +308,7 @@ class NPT_SMS {
 
 		$params  = trim( (string) get_option( 'npt_sms_otp_params', '' ) );
 		if ( '' === $params || 'code' === $params ) {
-			$params = 'کد ورود به پنل نوید: code';
+			$params = 'کد تأیید ورود به سیم و کابل نوید: code';
 		}
 		$text    = str_replace( 'code', $code, $params );
 		$pattern = trim( (string) get_option( 'npt_sms_otp_pattern', '' ) );
@@ -1023,6 +1033,7 @@ class NPT_SMS {
 	public static function render_otp_fields() {
 		$pattern = trim( (string) get_option( 'npt_sms_otp_pattern', '' ) );
 		?>
+		<p class="description"><strong>مسیر ارسال:</strong> همهٔ پیامک‌ها (کد ورود، پیش‌فاکتور، اطلاع به مدیر، ارسال گروهی و تست اتصال) از همان یک مسیر می‌روند: پیامک معمولی از «خط ارسال»؛ و فقط اگر «کد الگو» پر باشد، کد ورود با همان الگو.</p>
 		<p class="description">کد تأیید ورود پیامکی با یکی از این دو روش ارسال می‌شود. اگر «کد الگو» پر باشد، همان الگو (سریع‌تر و ارزان‌تر) و اگر خالی باشد، پیامک معمولی از «خط ارسال» استفاده می‌شود.</p>
 		<table class="form-table">
 			<tr>
@@ -1044,6 +1055,13 @@ class NPT_SMS {
 				<td>
 					<input type="text" id="npt_sms_otp_params" name="npt_sms_otp_params" class="regular-text" dir="ltr" value="<?php echo esc_attr( get_option( 'npt_sms_otp_params', 'code' ) ); ?>">
 					<p class="description">در متن الگو به‌جای جای‌گاه کد، کلمه‌ی <code>code</code> را بنویسید (مثلاً <code>code</code> یا <code>4,code</code>). این افزونه مقدار <code>code</code> را با کد تولیدشده جایگزین می‌کند؛ ترتیب و نام پارامترها باید با همان چیزی باشد که در پنل تأیید شده است.</p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row">سرویس OTP کنسول ملی‌پیامک</th>
+				<td>
+					<label><input type="checkbox" name="npt_sms_console_otp" value="1" <?php checked( '1', (string) get_option( 'npt_sms_console_otp', '0' ) ); ?>> کد ورود را با سرویس OTP خود کنسول بفرست (روشی جدا از ارسال معمولی)</label>
+					<p class="description">پیشنهاد: خاموش بماند. این سرویس در پنل ملی‌پیامک نیاز به تنظیم و تأیید مدیر دارد و اگر فعال نشده باشد، کد ارسال نمی‌شود. با خاموش بودن، کد مثل «تست اتصال» از خط ارسال می‌رود.</p>
 				</td>
 			</tr>
 		</table>
