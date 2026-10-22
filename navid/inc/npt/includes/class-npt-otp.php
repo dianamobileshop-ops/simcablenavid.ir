@@ -42,7 +42,7 @@ class NPT_OTP {
 	const COOLDOWN   = 60;
 	const IP_LIMIT   = 10;   // sends per IP per hour
 	const DAY_LIMIT  = 300;  // sends for the whole site per day (SMS credit guard)
-	const NUMBER_HOUR_LIMIT = 3; // codes per mobile number per hour
+	const NUMBER_HOUR_LIMIT = 5; // codes per mobile number per hour
 
 	public static function init() {
 		add_action( 'wp_ajax_npt_captcha', array( __CLASS__, 'ajax_captcha' ) );
@@ -122,7 +122,11 @@ class NPT_OTP {
 
 		if ( is_wp_error( $result ) ) {
 			delete_transient( 'npt_cool_' . self::key( $phone ) );
-			self::error( $result->get_error_message(), 502 );
+			// A code that never left the gateway must not use up the visitor's allowance.
+			self::refund( $phone );
+			// The gateway's own wording stays in the panel's error log; the visitor gets a plain message.
+			NPT_Log::add( 'پیامک', 'ارسال کد ورود به ...' . substr( $phone, -4 ) . ' ناموفق: ' . $result->get_error_message() );
+			self::error( 'ارسال پیامک الان ممکن نیست. چند دقیقه بعد دوباره امتحان کنید یا با رمز عبور وارد شوید.', 502 );
 		}
 
 		set_transient( 'npt_otp_' . self::key( $phone ), array(
@@ -351,6 +355,17 @@ class NPT_OTP {
 		set_transient( $ip_key, $hits + 1, HOUR_IN_SECONDS );
 		set_transient( $day_key, $day + 1, DAY_IN_SECONDS );
 		return true;
+	}
+
+	/** Gives back the allowance that limits_ok() took for a send that failed. */
+	private static function refund( $phone ) {
+		$key = self::key( $phone );
+		foreach ( array( 'npt_hr_' . $key => HOUR_IN_SECONDS, 'npt_ip_' . self::key( npt_client_ip() ) => HOUR_IN_SECONDS, 'npt_day_' . gmdate( 'Ymd' ) => DAY_IN_SECONDS ) as $name => $ttl ) {
+			$value = absint( get_transient( $name ) );
+			if ( $value > 0 ) {
+				set_transient( $name, $value - 1, $ttl );
+			}
+		}
 	}
 
 	private static function http_status( WP_Error $error ) {

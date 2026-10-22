@@ -107,6 +107,7 @@
 		}
 		boxes.forEach(function (b, k) {
 			b.addEventListener('input', function () {
+				otpBox.classList.remove('is-shake');
 				var v = b.value.replace(/\D+/g, '');
 				if (v.length > 1) { fill(v); return; }
 				b.value = v;

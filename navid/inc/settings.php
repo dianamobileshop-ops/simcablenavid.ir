@@ -92,7 +92,7 @@ function navid_settings_styles( $hook ) {
 		@media (max-width:960px){.navid-layout{grid-template-columns:1fr}.navid-side{position:static;max-height:none}.navid-topbar{flex-wrap:wrap;top:46px}.navid-qsearch{width:100%}.navid-row{grid-template-columns:1fr}}
 	';
 	wp_enqueue_media();
-	$css .= '.navid-okmark{position:fixed;inset:0;z-index:100000;display:grid;place-items:center;background:rgba(16,26,36,.35);animation:navid-okfade .25s ease}.navid-okmark.is-out{opacity:0;transition:opacity .35s ease}.navid-okmark div{display:grid;place-items:center;width:150px;height:150px;border-radius:50%;background:#fff;box-shadow:0 20px 60px rgba(16,26,36,.3);animation:navid-okpop .45s cubic-bezier(.2,1.3,.4,1)}.navid-okmark svg{width:84px;height:84px}.navid-okmark .c{stroke:#1f9d55;stroke-dasharray:151;stroke-dashoffset:151;animation:navid-okdraw .55s .1s ease forwards}.navid-okmark .t{stroke:#1f9d55;stroke-dasharray:40;stroke-dashoffset:40;animation:navid-okdraw .4s .5s ease forwards}@keyframes navid-okdraw{to{stroke-dashoffset:0}}@keyframes navid-okpop{from{transform:scale(.4);opacity:0}}@keyframes navid-okfade{from{opacity:0}}';
+	$css .= '.navid-okmark{position:fixed;inset:0;z-index:100000;display:grid;place-items:center;background:rgba(16,26,36,.35);pointer-events:none;animation:navid-okfade .25s ease,navid-okgone .35s ease 1.5s forwards}.navid-okmark.is-out{opacity:0;transition:opacity .35s ease}@keyframes navid-okgone{to{opacity:0;visibility:hidden}}.navid-okmark div{display:grid;place-items:center;width:150px;height:150px;border-radius:50%;background:#fff;box-shadow:0 20px 60px rgba(16,26,36,.3);animation:navid-okpop .45s cubic-bezier(.2,1.3,.4,1)}.navid-okmark svg{width:84px;height:84px}.navid-okmark .c{stroke:#1f9d55;stroke-dasharray:151;stroke-dashoffset:151;animation:navid-okdraw .55s .1s ease forwards}.navid-okmark .t{stroke:#1f9d55;stroke-dasharray:40;stroke-dashoffset:40;animation:navid-okdraw .4s .5s ease forwards}@keyframes navid-okdraw{to{stroke-dashoffset:0}}@keyframes navid-okpop{from{transform:scale(.4);opacity:0}}@keyframes navid-okfade{from{opacity:0}}';
 	$css .= '.navid-app .navid-ok{color:#13803f;font-weight:700}.navid-app .navid-bad{color:#b42318;font-weight:700}';
 	wp_register_style( 'navid-settings', false, array(), NAVID_VERSION );
 	wp_enqueue_style( 'navid-settings' );
@@ -418,9 +418,12 @@ function navid_admin_shell_close() {
 			box.setAttribute('role', 'status');
 			box.innerHTML = '<div><svg viewBox="0 0 52 52" fill="none" stroke-width="3" aria-hidden="true"><circle class="c" cx="26" cy="26" r="24"/><path class="t" d="M15 27l8 8 14-16" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>';
 			document.body.appendChild(box);
-			var gone = function () { box.classList.add('is-out'); window.setTimeout(function () { box.remove(); }, 380); };
-			box.addEventListener('click', gone);
-			window.setTimeout(gone, 1500);
+			// The overlay never takes clicks (pointer-events: none) and fades out by itself in CSS;
+			// the script only removes it afterwards.
+			var gone = function () { if (box.parentNode) { box.parentNode.removeChild(box); } };
+			window.setTimeout(gone, 2000);
+			box.addEventListener('animationend', function (e) { if (e.animationName === 'navid-okgone') { gone(); } });
+			window.addEventListener('pageshow', function (e) { if (e.persisted) { gone(); } });
 		}
 
 		// Open the accordion that an anchor link points to.

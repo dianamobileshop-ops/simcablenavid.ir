@@ -2,7 +2,7 @@
 Theme Name: Navid
 Theme URI: https://simcablenavid.ir
 Description: قالب اختصاصی نوید. شامل جدول قیمت و پنل مدیریت در یک بسته.
-Version: 1.7.0
+Version: 1.7.1
 Update URI: https://simcablenavid.ir/navid
 Requires PHP: 7.4
 Text Domain: navid
@@ -5372,5 +5372,90 @@ body.single-product .mqb-floating-trigger {
 	.navid-product-chips,
 	.navid-seller {
 		display: none;
+	}
+}
+
+/* ---- 1.7.1: product page on phones: price, cart and the two actions in the first screen ---- */
+.navid-product-gallery .woocommerce-product-gallery {
+	float: none !important;
+	width: 100% !important;
+}
+
+@media (max-width: 700px) {
+	.navid-product {
+		align-items: stretch;
+	}
+
+	.navid-single-product .woocommerce-breadcrumb {
+		display: none;
+	}
+
+	.navid-product > .navid-product-gallery {
+		padding: 46px 12px 26px;
+	}
+
+	.navid-product-gallery .woocommerce-product-gallery__image img,
+	.navid-product-gallery img.wp-post-image {
+		display: block;
+		width: auto;
+		max-width: 100%;
+		max-height: 30vh;
+		margin-inline: auto;
+	}
+
+	.navid-product-gallery .flex-control-thumbs {
+		display: none;
+	}
+
+	.navid-product-gallery .navid-unit-tag {
+		top: 50px;
+		left: 12px;
+	}
+
+	.navid-product > .navid-buybox {
+		padding-top: 14px;
+		padding-bottom: 14px;
+	}
+
+	.navid-buybox-price {
+		margin: 0 0 8px;
+	}
+
+	.navid-buybox-price .price {
+		margin: 0;
+		font-size: 17px;
+	}
+
+	.navid-buybox form.cart:not(.variations_form),
+	.navid-buybox .woocommerce-variation-add-to-cart {
+		flex-wrap: nowrap;
+		gap: 8px;
+	}
+
+	.navid-buybox .navid-qty {
+		flex: 0 0 auto;
+	}
+
+	.navid-buybox .single_add_to_cart_button {
+		flex: 1 1 auto;
+		min-width: 0;
+		padding-inline: 8px;
+	}
+}
+
+@media (max-width: 700px) {
+	/* Full-bleed cards, whatever gutter the page wrapper has. */
+	.navid-product > .navid-product-gallery,
+	.navid-product > .navid-product-info,
+	.navid-product > .navid-buybox {
+		margin-inline: calc(50% - 50vw);
+		padding-inline: 16px;
+	}
+
+	/* The desktop purchase box is sticky with an offset; on a phone it simply follows the photo. */
+	.navid-product > .navid-buybox {
+		position: relative;
+		top: auto;
+		inset-block-start: auto;
 	}
 }
