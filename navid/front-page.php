@@ -20,6 +20,9 @@ foreach ( navid_home_layout() as $navid_section ) {
 		case 'slider':
 			get_template_part( 'template-parts/home', 'slider' );
 			break;
+		case 'pricebar':
+			echo do_shortcode( '[navid_price_bar]' );
+			break;
 		case 'content':
 			// Whatever is written (or any shortcode placed) in the home page editor.
 			$navid_home_post = get_queried_object();

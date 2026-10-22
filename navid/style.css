@@ -2,7 +2,7 @@
 Theme Name: Navid
 Theme URI: https://simcablenavid.ir
 Description: قالب اختصاصی نوید. شامل جدول قیمت و پنل مدیریت در یک بسته.
-Version: 1.5.4
+Version: 1.5.5
 Update URI: https://simcablenavid.ir/navid
 Requires PHP: 7.4
 Text Domain: navid
@@ -99,10 +99,10 @@ img {
 	margin-inline: auto;
 }
 
-/* Header: desktop top bar + menu row; on phones it becomes a rounded card */
+/* Header: desktop top bar + menu row; on phones it becomes a rounded card.
+   It sticks to the top only where the panel's switches say so (is-sticky / is-sticky-m). */
 .navid-header {
-	position: sticky;
-	top: 0;
+	position: relative;
 	z-index: 100;
 	background: var(--navid-card);
 	border-bottom: 1px solid var(--navid-line);
@@ -4614,4 +4614,27 @@ ul.products::after {
 	text-align: center;
 	font-size: 14px;
 	font-weight: 700;
+}
+
+/* ---- 1.5.5: sticky header switches ---- */
+@media (min-width: 769px) {
+	.navid-header.is-sticky {
+		position: sticky;
+		top: 0;
+	}
+
+	.admin-bar .navid-header.is-sticky {
+		top: 32px;
+	}
+}
+
+@media (max-width: 768px) {
+	.navid-header.is-sticky-m {
+		position: sticky;
+		top: 0;
+	}
+
+	.admin-bar .navid-header.is-sticky-m {
+		top: 46px;
+	}
 }

@@ -147,6 +147,7 @@ function navid_save_settings() {
 		'accent_color'  => $accent ? $accent : '#e56a00',
 		'footer_bg'     => $footer ? $footer : '#0f2342',
 		'sticky_header' => empty( $raw['sticky_header'] ) ? '0' : '1',
+		'sticky_header_mobile' => empty( $raw['sticky_header_mobile'] ) ? '0' : '1',
 		'toolbar_title' => isset( $raw['toolbar_title'] ) ? sanitize_text_field( $raw['toolbar_title'] ) : '',
 		'toolbar_sub'   => isset( $raw['toolbar_sub'] ) ? sanitize_text_field( $raw['toolbar_sub'] ) : '',
 		'price_url'     => isset( $raw['price_url'] ) ? esc_url_raw( $raw['price_url'] ) : '',
@@ -226,7 +227,7 @@ function navid_save_settings() {
 function navid_settings_groups() {
 	return array(
 		't-look'    => array( 'primary_color', 'accent_color', 'footer_bg' ),
-		't-header'  => array( 'sticky_header', 'special_label', 'special_url' ),
+		't-header'  => array( 'sticky_header', 'sticky_header_mobile', 'special_label', 'special_url' ),
 		't-contact' => array( 'phone', 'address', 'email', 'hours' ),
 		't-footer'  => array( 'about', 'ft_features_show', 'ft_features', 'enamad', 'copyright', 'social_telegram', 'social_instagram', 'social_whatsapp', 'social_eitaa', 'social_bale', 'social_aparat', 'social_linkedin' ),
 		't-login'   => array( 'login_sms', 'login_password', 'login_register', 'login_note' ),
@@ -478,8 +479,12 @@ function navid_settings_section( $key, $opt ) {
 			<section class="navid-admin-card">
 				<h2>هدر</h2>
 			<div class="navid-row">
-				<label for="navid-sticky">هدر چسبان (هنگام پایین رفتن صفحه بالا می‌ماند)</label>
+				<label for="navid-sticky">هدر چسبان در کامپیوتر (هنگام پایین رفتن صفحه بالا می‌ماند)</label>
 				<input id="navid-sticky" type="checkbox" name="navid[sticky_header]" value="1" <?php checked( '1', $opt['sticky_header'] ); ?>>
+			</div>
+			<div class="navid-row">
+				<label for="navid-sticky-m">هدر چسبان در موبایل و تبلت (با اسکرول بالای صفحه می‌ماند)</label>
+				<input id="navid-sticky-m" type="checkbox" name="navid[sticky_header_mobile]" value="1" <?php checked( '1', $opt['sticky_header_mobile'] ); ?>>
 			</div>
 			<div class="navid-row">
 				<label for="navid-special-label">لینک ویژه کنار منو (مثلاً فروش ویژه)</label>

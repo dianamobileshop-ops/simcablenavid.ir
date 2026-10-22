@@ -8,7 +8,7 @@
 defined( 'ABSPATH' ) || exit;
 
 $navid_opt    = navid_options();
-$header_class = 'navid-header' . ( '1' === $navid_opt['sticky_header'] ? ' is-sticky' : '' );
+$header_class = 'navid-header' . ( '1' === $navid_opt['sticky_header'] ? ' is-sticky' : '' ) . ( '1' === $navid_opt['sticky_header_mobile'] ? ' is-sticky-m' : '' );
 $cart_count   = ( function_exists( 'WC' ) && WC()->cart ) ? WC()->cart->get_cart_contents_count() : 0;
 $shop_url     = function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'shop' ) : home_url( '/' );
 $account_url  = function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'myaccount' ) : wp_login_url();

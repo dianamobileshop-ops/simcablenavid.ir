@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'NAVID_VERSION', '1.5.4' );
+define( 'NAVID_VERSION', '1.5.5' );
 
 /**
  * Whether WooCommerce is running. Every shop feature checks this, so the theme works
@@ -162,6 +162,7 @@ function navid_options() {
 		'footer_bg'     => '#0f2342',
 		'show_topbar'   => '1',
 		'sticky_header' => '1',
+		'sticky_header_mobile' => '1',
 		'toolbar_title' => 'دریافت لیست قیمت رسمی سیم و کابل نوید',
 		'toolbar_sub'   => '',
 		'price_url'     => '',
@@ -176,7 +177,7 @@ function navid_options() {
 		// Same contact details the price list header/footer already uses.
 		'slider_mode'   => 'slide',
 		'slider_fit'    => 'full',
-		'home_order'    => 'slider,content,products1,products2,cats,blog',
+		'home_order'    => 'slider,pricebar,content,products1,products2,cats,blog',
 		'home_on'       => array(),
 		'ps1_title'     => 'محصولات منتخب',
 		'ps1_ids'       => array(),

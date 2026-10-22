@@ -112,6 +112,7 @@ function navid_slide_html( $slide, $i ) {
 function navid_home_sections() {
 	return array(
 		'slider'    => 'اسلایدر بنر',
+		'pricebar'  => 'نوار لیست قیمت (زیر اسلایدر؛ چسبان هنگام اسکرول)',
 		'content'   => 'محتوای برگهٔ خانه (متن و شورت‌کدهای ویرایشگر)',
 		'products1' => 'اسلایدر محصولات ۱',
 		'products2' => 'اسلایدر محصولات ۲',
@@ -136,7 +137,14 @@ function navid_home_layout() {
 		}
 	}
 	foreach ( array_keys( $all ) as $key ) {
-		if ( ! in_array( $key, $order, true ) ) {
+		if ( in_array( $key, $order, true ) ) {
+			continue;
+		}
+		// A section added in a later version goes right after the slider, not at the very end.
+		$at = ( 'pricebar' === $key ) ? array_search( 'slider', $order, true ) : false;
+		if ( false !== $at ) {
+			array_splice( $order, $at + 1, 0, array( $key ) );
+		} else {
 			$order[] = $key;
 		}
 	}
