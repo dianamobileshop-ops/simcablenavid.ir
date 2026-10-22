@@ -29,6 +29,8 @@ function navid_meta_description() {
 		$text = has_excerpt( $post ) ? get_the_excerpt( $post ) : $post->post_content;
 	} elseif ( is_category() || is_tag() || is_tax() ) {
 		$text = term_description();
+	} elseif ( is_home() && get_option( 'page_for_posts' ) ) {
+		$text = has_excerpt( get_option( 'page_for_posts' ) ) ? get_the_excerpt( get_option( 'page_for_posts' ) ) : get_bloginfo( 'description' );
 	} elseif ( is_front_page() || is_home() ) {
 		$text = get_bloginfo( 'description' );
 	}
@@ -62,6 +64,10 @@ function navid_seo_head() {
 	if ( is_singular() && has_post_thumbnail() ) {
 		echo '<meta property="og:image" content="' . esc_url( get_the_post_thumbnail_url( null, 'large' ) ) . '">' . "\n";
 	}
+	if ( is_singular( 'post' ) ) {
+		echo '<meta property="article:published_time" content="' . esc_attr( get_the_date( 'c' ) ) . '">' . "\n";
+		echo '<meta property="article:modified_time" content="' . esc_attr( get_the_modified_date( 'c' ) ) . '">' . "\n";
+	}
 	echo '<meta name="twitter:card" content="summary_large_image">' . "\n";
 }
 add_action( 'wp_head', 'navid_seo_head', 5 );
@@ -73,6 +79,13 @@ add_action( 'wp_head', 'navid_seo_head', 5 );
  * @return array
  */
 function navid_robots( $robots ) {
+	// Author and date archives repeat the same posts as the categories.
+	if ( is_author() || is_date() ) {
+		$robots['noindex'] = true;
+		$robots['follow']  = true;
+		unset( $robots['index'] );
+		return $robots;
+	}
 	if ( is_search() ) {
 		$robots['noindex'] = true;
 		$robots['follow']  = true;
@@ -155,6 +168,34 @@ function navid_schema() {
 			$list[] = array( '@type' => 'ListItem', 'position' => $i + 1, 'name' => $item[0], 'item' => $item[1] );
 		}
 		$graph[] = array( '@type' => 'BreadcrumbList', 'itemListElement' => $list );
+		if ( is_singular( 'post' ) ) {
+			$post_id = get_queried_object_id();
+			$logo    = (int) get_theme_mod( 'custom_logo' );
+			$article = array(
+				'@type'            => 'BlogPosting',
+				'@id'              => get_permalink() . '#article',
+				'mainEntityOfPage' => get_permalink(),
+				'headline'         => wp_strip_all_tags( get_the_title() ),
+				'description'      => navid_meta_description(),
+				'datePublished'    => get_the_date( 'c' ),
+				'dateModified'     => get_the_modified_date( 'c' ),
+				'inLanguage'       => 'fa-IR',
+				'wordCount'        => (int) preg_match_all( '/[\p{L}\p{N}]+/u', wp_strip_all_tags( strip_shortcodes( get_post_field( 'post_content', $post_id ) ) ) ),
+				'author'           => array( '@type' => 'Person', 'name' => get_the_author_meta( 'display_name', (int) get_post_field( 'post_author', $post_id ) ) ),
+				'publisher'        => array( '@type' => 'Organization', 'name' => get_bloginfo( 'name' ), 'url' => home_url( '/' ) ),
+			);
+			if ( has_post_thumbnail( $post_id ) ) {
+				$article['image'] = array( get_the_post_thumbnail_url( $post_id, 'large' ) );
+			}
+			if ( $logo && wp_get_attachment_image_url( $logo, 'full' ) ) {
+				$article['publisher']['logo'] = array( '@type' => 'ImageObject', 'url' => wp_get_attachment_image_url( $logo, 'full' ) );
+			}
+			$tags = wp_get_post_tags( $post_id, array( 'fields' => 'names' ) );
+			if ( $tags ) {
+				$article['keywords'] = implode( '، ', $tags );
+			}
+			$graph[] = $article;
+		}
 	}
 	if ( $graph ) {
 		echo '<script type="application/ld+json">' . wp_json_encode( array( '@context' => 'https://schema.org', '@graph' => $graph ), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . "</script>\n";

@@ -40,11 +40,9 @@ $tel          = preg_replace( '/[^0-9+]/', '', (string) $navid_opt['phone'] );
 			<?php echo navid_logo_html(); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 		</a>
 
-		<?php if ( $tel ) : ?>
-			<a class="navid-iconbtn navid-phone" href="tel:<?php echo esc_attr( $tel ); ?>" aria-label="<?php esc_attr_e( 'تماس تلفنی', 'navid' ); ?>">
-				<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>
-			</a>
-		<?php endif; ?>
+		<a class="navid-iconbtn navid-phone" href="<?php echo esc_url( $account_url ); ?>" aria-label="<?php echo esc_attr( is_user_logged_in() ? __( 'حساب کاربری', 'navid' ) : __( 'ورود / ثبت نام', 'navid' ) ); ?>"<?php echo ( is_user_logged_in() || ! navid_wc() ) ? '' : ' data-navid-login'; ?>>
+			<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
+		</a>
 
 		<form class="navid-search" role="search" method="get" action="<?php echo esc_url( home_url( '/' ) ); ?>">
 			<?php if ( navid_wc() ) : ?><input type="hidden" name="post_type" value="product"><?php endif; ?>

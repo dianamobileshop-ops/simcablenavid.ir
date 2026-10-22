@@ -10,11 +10,18 @@ defined( 'ABSPATH' ) || exit;
 get_header();
 ?>
 <div class="navid-wrap navid-single">
+	<div class="navid-blog-layout">
+	<div class="navid-blog-main">
 	<?php
 	while ( have_posts() ) :
 		the_post();
 		$navid_cats = get_the_category();
 		?>
+		<nav class="navid-crumbs" aria-label="<?php esc_attr_e( 'مسیر صفحه', 'navid' ); ?>">
+			<a href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php esc_html_e( 'خانه', 'navid' ); ?></a>
+			<?php if ( get_option( 'page_for_posts' ) ) : ?><span>›</span><a href="<?php echo esc_url( get_permalink( get_option( 'page_for_posts' ) ) ); ?>"><?php echo esc_html( get_the_title( get_option( 'page_for_posts' ) ) ); ?></a><?php endif; ?>
+			<?php if ( $navid_cats ) : ?><span>›</span><a href="<?php echo esc_url( get_category_link( $navid_cats[0] ) ); ?>"><?php echo esc_html( $navid_cats[0]->name ); ?></a><?php endif; ?>
+		</nav>
 		<article <?php post_class( 'navid-article' ); ?>>
 			<header class="navid-article-head">
 				<?php if ( $navid_cats ) : ?>
@@ -28,6 +35,9 @@ get_header();
 				<p class="navid-entry-meta">
 					<time datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>"><?php echo esc_html( get_the_date() ); ?></time>
 					· <?php echo esc_html( sprintf( '%s دقیقه مطالعه', navid_fa_digits( navid_reading_minutes( get_post() ) ) ) ); ?>
+					<?php if ( get_the_modified_date( 'Ymd' ) !== get_the_date( 'Ymd' ) ) : ?>
+						· <?php esc_html_e( 'بروزرسانی:', 'navid' ); ?> <time datetime="<?php echo esc_attr( get_the_modified_date( 'c' ) ); ?>"><?php echo esc_html( get_the_modified_date() ); ?></time>
+					<?php endif; ?>
 				</p>
 			</header>
 			<?php if ( has_post_thumbnail() ) : ?>
@@ -68,6 +78,9 @@ get_header();
 		wp_reset_postdata();
 	endwhile;
 	?>
+	</div>
+	<?php get_template_part( 'template-parts/sidebar', 'blog' ); ?>
+	</div>
 </div>
 <?php
 get_footer();

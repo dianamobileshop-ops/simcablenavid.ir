@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class NPT_Log {
 
 	const OPT     = 'npt_error_log';
-	const MAX     = 50;
+	const MAX     = 200;
 	const ACT_OPT = 'npt_activity';
 	const ACT_MAX = 300;
 
@@ -48,15 +48,46 @@ class NPT_Log {
 		update_option( self::ACT_OPT, array_slice( $list, 0, self::ACT_MAX ), false );
 	}
 
-	public static function text() {
+	/** Distinct areas in the log with how many lines each has. */
+	public static function areas() {
+		$out = array();
+		foreach ( (array) get_option( self::OPT, array() ) as $row ) {
+			$out[ $row['area'] ] = ( isset( $out[ $row['area'] ] ) ? $out[ $row['area'] ] : 0 ) + 1;
+		}
+		arsort( $out );
+		return $out;
+	}
+
+	/** Lines logged in the last 24 hours (for the menu badge). */
+	public static function recent_count() {
+		$since = strtotime( '-1 day', current_time( 'timestamp' ) ); // phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp
+		$n     = 0;
+		foreach ( (array) get_option( self::OPT, array() ) as $row ) {
+			if ( strtotime( $row['t'] ) >= $since ) {
+				$n++;
+			}
+		}
+		return $n;
+	}
+
+	/**
+	 * Support text: system report plus the log lines (all, or one area).
+	 *
+	 * @param string $area Area name, '' for all.
+	 * @return string
+	 */
+	public static function text( $area = '' ) {
 		$list  = get_option( self::OPT, array() );
 		$lines = array();
 		foreach ( is_array( $list ) ? $list : array() as $row ) {
+			if ( '' !== $area && $row['area'] !== $area ) {
+				continue;
+			}
 			$lines[] = '[' . $row['t'] . '] ' . $row['area'] . ': ' . $row['msg'];
 		}
 		$report = function_exists( 'navid_system_report' ) ? navid_system_report() : '';
-		$body   = $lines ? implode( "\n", $lines ) : ( function_exists( 'navid_system_report' ) ? '' : '' );
-		return '' !== $report ? $report . "\n\n— خطاها —\n" . ( $body ? $body : 'خطایی ثبت نشده است.' ) : $body;
+		$body   = $lines ? implode( "\n", $lines ) : '';
+		return '' !== $report ? $report . "\n\n— خطاها" . ( '' !== $area ? ' (' . $area . ')' : '' ) . " —\n" . ( $body ? $body : 'خطایی ثبت نشده است.' ) : $body;
 	}
 
 	public static function handle_clear() {
@@ -71,10 +102,22 @@ class NPT_Log {
 
 	/** The settings panel: read-only text with one copy button, plus clear. */
 	public static function render() {
-		$text = self::text();
+		$area  = isset( $_GET['area'] ) ? sanitize_text_field( wp_unslash( $_GET['area'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$areas = self::areas();
+		if ( '' !== $area && ! isset( $areas[ $area ] ) ) {
+			$area = '';
+		}
+		$text = self::text( $area );
+		$base = admin_url( 'admin.php?page=navid-settings&tab=errors' );
 		?>
 		<h2>گزارش خطاها</h2>
-		<p class="description">هر خطای قالب (هشدار و خطای PHP در فایل‌های قالب، پیامک، پیش‌فاکتور، درگاه، پشتیبان و بروزرسانی) این‌جا ثبت می‌شود. «کپی همه» را بزنید و متن را برای پشتیبانی بفرستید.</p>
+		<p class="navid-area-tabs" style="display:flex;flex-wrap:wrap;gap:6px">
+			<a class="button<?php echo '' === $area ? ' button-primary' : ''; ?>" href="<?php echo esc_url( $base ); ?>">همه (<?php echo (int) array_sum( $areas ); ?>)</a>
+			<?php foreach ( $areas as $name => $count ) : ?>
+				<a class="button<?php echo $name === $area ? ' button-primary' : ''; ?>" href="<?php echo esc_url( add_query_arg( 'area', rawurlencode( $name ), $base ) ); ?>"><?php echo esc_html( $name ); ?> (<?php echo (int) $count; ?>)</a>
+			<?php endforeach; ?>
+		</p>
+		<p class="description">همهٔ خطاهای سایت این‌جا جمع می‌شود: خطای PHP قالب، خطای جاوااسکریپت مرورگر بازدیدکنندگان، پیامک، درگاه، سفارش ناموفق، ایمیل، پیش‌فاکتور، پشتیبان و بروزرسانی. «کپی گزارش» را بزنید و برای پشتیبانی بفرستید.</p>
 		<textarea id="npt-log-text" readonly rows="12" style="width:100%;max-width:760px;direction:ltr;text-align:left;font-family:monospace;font-size:12px"><?php echo esc_textarea( $text ); ?></textarea>
 		<p>
 			<button type="button" class="button button-primary" id="npt-log-copy" <?php echo '' === $text ? 'disabled' : ''; ?>>کپی گزارش برای پشتیبانی</button>
@@ -89,6 +132,12 @@ class NPT_Log {
 			<?php endforeach; ?>
 			</tbody>
 		</table>
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin:12px 0">
+			<?php wp_nonce_field( 'navid_log_scope' ); ?>
+			<input type="hidden" name="action" value="navid_log_scope">
+			<label><input type="checkbox" name="all" value="1" <?php checked( '1', (string) get_option( 'navid_log_all_php', '0' ) ); ?>> خطاهای PHP افزونه‌ها (ووکامرس و غیره) را هم ثبت کن</label>
+			<button type="submit" class="button">ذخیره</button>
+		</form>
 		<?php if ( (array) get_option( self::OPT, array() ) ) : ?>
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" onsubmit="return confirm('گزارش خطاها پاک شود؟');">
 				<?php wp_nonce_field( 'npt_log_clear' ); ?>

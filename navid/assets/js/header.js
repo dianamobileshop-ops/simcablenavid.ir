@@ -221,3 +221,24 @@
 		track.scrollBy({ left: (rtl ? -dir : dir) * step, behavior: 'smooth' });
 	});
 })();
+
+/* Script errors of this site are reported to the error log in the panel (a few per visitor). */
+(function () {
+	var sent = 0;
+	function report(message, file, line) {
+		if (sent >= 3 || !message || !window.NAVID || !navigator.sendBeacon) { return; }
+		sent++;
+		var fd = new FormData();
+		fd.append('action', 'navid_js_error');
+		fd.append('m', String(message).slice(0, 200));
+		fd.append('f', file || '');
+		fd.append('l', line || 0);
+		fd.append('p', location.pathname);
+		navigator.sendBeacon(window.NAVID.ajaxUrl, fd);
+	}
+	window.addEventListener('error', function (e) { report(e.message, e.filename, e.lineno); });
+	window.addEventListener('unhandledrejection', function (e) {
+		var r = e.reason;
+		report(r && r.message ? r.message : r, r && r.fileName ? r.fileName : location.href, 0);
+	});
+})();

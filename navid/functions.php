@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'NAVID_VERSION', '1.5.5' );
+define( 'NAVID_VERSION', '1.6.0' );
 
 /**
  * Whether WooCommerce is running. Every shop feature checks this, so the theme works
@@ -218,6 +218,7 @@ function navid_options() {
 require_once get_template_directory() . '/inc/jalali.php';
 require_once get_template_directory() . '/inc/diagnostics.php';
 require_once get_template_directory() . '/inc/updater.php';
+require_once get_template_directory() . '/inc/login.php';
 require_once get_template_directory() . '/inc/footer.php';
 require_once get_template_directory() . '/inc/settings.php';
 require_once get_template_directory() . '/inc/woocommerce.php';
@@ -283,6 +284,7 @@ function navid_ajax_nonces() {
 	wp_send_json_success( array(
 		'otp'  => class_exists( 'NPT_OTP' ) ? wp_create_nonce( NPT_OTP::NONCE ) : '',
 		'cart' => wp_create_nonce( 'navid_cart_pf' ),
+		'name' => is_user_logged_in() ? wp_create_nonce( 'navid_save_name' ) : '',
 	) );
 }
 add_action( 'wp_ajax_navid_nonces', 'navid_ajax_nonces' );

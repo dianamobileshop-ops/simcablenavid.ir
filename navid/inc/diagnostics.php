@@ -31,10 +31,24 @@ function navid_log( $area, $message ) {
  */
 function navid_is_theme_file( $file ) {
 	static $root = null;
+	static $all = null;
 	if ( null === $root ) {
 		$root = wp_normalize_path( get_template_directory() ) . '/';
+		$all  = '1' === (string) get_option( 'navid_log_all_php', '0' ) ? wp_normalize_path( WP_CONTENT_DIR ) . '/' : '';
 	}
-	return 0 === strpos( wp_normalize_path( (string) $file ), $root );
+	$file = wp_normalize_path( (string) $file );
+	// The theme always; with the switch on, every plugin and theme under wp-content too.
+	return 0 === strpos( $file, $root ) || ( '' !== $all && 0 === strpos( $file, $all ) );
+}
+
+/**
+ * Whether a file is inside the theme folder itself.
+ *
+ * @param string $file Path.
+ * @return bool
+ */
+function navid_is_in_theme( $file ) {
+	return 0 === strpos( wp_normalize_path( (string) $file ), wp_normalize_path( get_template_directory() ) . '/' );
 }
 
 /**
@@ -55,12 +69,12 @@ function navid_error_handler( $no, $msg, $file, $line ) {
 		E_WARNING => 'Warning', E_USER_WARNING => 'Warning', E_NOTICE => 'Notice', E_USER_NOTICE => 'Notice',
 		E_DEPRECATED => 'Deprecated', E_USER_DEPRECATED => 'Deprecated',
 	);
-	$short = str_replace( wp_normalize_path( get_template_directory() ) . '/', '', wp_normalize_path( $file ) );
+	$short = str_replace( wp_normalize_path( WP_CONTENT_DIR ) . '/', '', wp_normalize_path( $file ) );
 	$text  = ( isset( $labels[ $no ] ) ? $labels[ $no ] : 'Error' ) . ': ' . $msg . ' (' . $short . ':' . $line . ')';
 	$key   = 'navid_err_' . md5( $text );
 	if ( false === get_transient( $key ) ) {
 		set_transient( $key, 1, HOUR_IN_SECONDS );
-		navid_log( 'قالب', $text );
+		navid_log( navid_is_in_theme( $file ) ? 'قالب' : 'افزونه', $text );
 	}
 	return false;
 }
@@ -71,8 +85,8 @@ function navid_error_handler( $no, $msg, $file, $line ) {
 function navid_shutdown_handler() {
 	$err = error_get_last();
 	if ( $err && in_array( $err['type'], array( E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_RECOVERABLE_ERROR ), true ) && navid_is_theme_file( $err['file'] ) && function_exists( 'update_option' ) ) {
-		$short = str_replace( wp_normalize_path( get_template_directory() ) . '/', '', wp_normalize_path( $err['file'] ) );
-		navid_log( 'قالب', 'Fatal: ' . $err['message'] . ' (' . $short . ':' . $err['line'] . ')' );
+		$short = str_replace( wp_normalize_path( WP_CONTENT_DIR ) . '/', '', wp_normalize_path( $err['file'] ) );
+		navid_log( navid_is_in_theme( $err['file'] ) ? 'قالب' : 'افزونه', 'Fatal: ' . $err['message'] . ' (' . $short . ':' . $err['line'] . ')' );
 	}
 }
 
@@ -130,3 +144,71 @@ function navid_system_report() {
 	);
 	return implode( "\n", $lines );
 }
+
+/**
+ * Errors from visitors' browsers: a script of this site that crashed. The address is the
+ * only thing stored about the visitor's page (no query string, no cookies, no IP).
+ * Open to guests on purpose (cached pages carry no tokens) and kept small by limits.
+ */
+function navid_ajax_js_error() {
+	$message = isset( $_POST['m'] ) ? sanitize_text_field( wp_unslash( $_POST['m'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+	$file    = isset( $_POST['f'] ) ? esc_url_raw( wp_unslash( $_POST['f'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+	$line    = isset( $_POST['l'] ) ? absint( $_POST['l'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+	$page    = isset( $_POST['p'] ) ? sanitize_text_field( wp_unslash( $_POST['p'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+	$host    = wp_parse_url( $file, PHP_URL_HOST );
+	$ours    = wp_parse_url( home_url(), PHP_URL_HOST );
+	// Only this site's own files: browser extensions and third-party scripts are not ours to fix.
+	if ( '' === $message || $host !== $ours || 'Script error.' === $message || false !== strpos( $message, 'ResizeObserver' ) ) {
+		wp_send_json_success();
+	}
+	$ip   = function_exists( 'npt_client_ip' ) ? npt_client_ip() : ( isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '' );
+	$rate = 'navid_jsr_' . md5( $ip );
+	$hits = (int) get_transient( $rate );
+	if ( $hits >= 10 ) {
+		wp_send_json_success();
+	}
+	set_transient( $rate, $hits + 1, HOUR_IN_SECONDS );
+	$text = mb_substr( $message, 0, 200 ) . ' (' . wp_basename( (string) wp_parse_url( $file, PHP_URL_PATH ) ) . ':' . $line . ') صفحه: ' . mb_substr( $page, 0, 80 );
+	$key  = 'navid_jse_' . md5( $text );
+	if ( false === get_transient( $key ) ) {
+		set_transient( $key, 1, DAY_IN_SECONDS );
+		navid_log( 'مرورگر', $text );
+	}
+	wp_send_json_success();
+}
+add_action( 'wp_ajax_navid_js_error', 'navid_ajax_js_error' );
+add_action( 'wp_ajax_nopriv_navid_js_error', 'navid_ajax_js_error' );
+
+/**
+ * Failed emails and failed orders go to the same log.
+ *
+ * @param WP_Error $error Mail error.
+ */
+function navid_log_mail_error( $error ) {
+	navid_log( 'ایمیل', is_wp_error( $error ) ? $error->get_error_message() : 'ارسال ایمیل ناموفق بود.' );
+}
+add_action( 'wp_mail_failed', 'navid_log_mail_error' );
+
+/**
+ * A failed payment or order.
+ *
+ * @param int $order_id Order id.
+ */
+function navid_log_failed_order( $order_id ) {
+	navid_log( 'سفارش', 'سفارش شمارهٔ ' . (int) $order_id . ' ناموفق شد (پرداخت انجام نشد یا رد شد).' );
+}
+add_action( 'woocommerce_order_status_failed', 'navid_log_failed_order' );
+
+/**
+ * Saves the «log plugin errors too» switch.
+ */
+function navid_handle_log_scope() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_die( esc_html__( 'دسترسی ندارید.', 'navid' ) );
+	}
+	check_admin_referer( 'navid_log_scope' );
+	update_option( 'navid_log_all_php', empty( $_POST['all'] ) ? '0' : '1', false );
+	wp_safe_redirect( admin_url( 'admin.php?page=navid-settings&tab=errors&saved=1' ) );
+	exit;
+}
+add_action( 'admin_post_navid_log_scope', 'navid_handle_log_scope' );

@@ -156,7 +156,11 @@ class NPT_OTP {
 
 		self::login( $user );
 		do_action( 'npt_otp_verified', $user, $phone );
-		self::success( 'با موفقیت وارد شدید.', array( 'loggedIn' => true ) );
+		self::success( 'با موفقیت وارد شدید.', array(
+			'loggedIn'  => true,
+			// A number that just signed up has no name yet: the login card asks for it next.
+			'needsName' => '' === trim( $user->first_name . $user->last_name ),
+		) );
 	}
 
 	/* ---------------------------------------------------------------------
@@ -220,8 +224,8 @@ class NPT_OTP {
 
 		$user = self::get_or_create_user( $phone );
 		if ( is_wp_error( $user ) ) {
-			if ( in_array( $user->get_error_code(), array( 'npt_privileged' ), true ) ) {
-				return new WP_Error( 'npt_privileged', $user->get_error_message(), array( 'status' => 403 ) );
+			if ( in_array( $user->get_error_code(), array( 'npt_privileged', 'npt_noreg' ), true ) ) {
+				return new WP_Error( $user->get_error_code(), $user->get_error_message(), array( 'status' => 403 ) );
 			}
 			return new WP_Error( 'npt_user', 'ورود انجام نشد. با مدیر سایت تماس بگیرید.', array( 'status' => 500 ) );
 		}
@@ -408,6 +412,10 @@ class NPT_OTP {
 			return $user;
 		}
 
+		// The theme can switch new sign-ups off (Settings → ورود مشتریان); existing numbers still log in.
+		if ( ! apply_filters( 'npt_otp_allow_new_user', true, $phone ) ) {
+			return new WP_Error( 'npt_noreg', 'ثبت‌نام مشتری جدید فعلاً غیرفعال است. با فروشگاه تماس بگیرید.' );
+		}
 		$login = 'npt_' . substr( $phone, 1 );
 		if ( username_exists( $login ) ) {
 			// Someone already owns this derived username; never take it over.

@@ -2,7 +2,7 @@
 Theme Name: Navid
 Theme URI: https://simcablenavid.ir
 Description: قالب اختصاصی نوید. شامل جدول قیمت و پنل مدیریت در یک بسته.
-Version: 1.5.5
+Version: 1.6.0
 Update URI: https://simcablenavid.ir/navid
 Requires PHP: 7.4
 Text Domain: navid
@@ -4636,5 +4636,607 @@ ul.products::after {
 
 	.admin-bar .navid-header.is-sticky-m {
 		top: 46px;
+	}
+}
+
+/* ---- 1.6.0: blog sidebar, product page on phones, responsive pages ---- */
+.navid-blog-layout {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 300px;
+	gap: 24px;
+	align-items: start;
+}
+
+.navid-blog-main {
+	min-width: 0;
+}
+
+.navid-blog-side {
+	position: sticky;
+	top: calc(var(--npt-sticky-top, 0px) + 16px);
+	display: grid;
+	gap: 16px;
+	min-width: 0;
+}
+
+.navid-side-search input {
+	width: 100%;
+	min-height: 46px;
+	padding: 8px 14px;
+	border: 1px solid var(--navid-line);
+	border-radius: 14px;
+	background: var(--navid-card);
+	font: inherit;
+	font-size: 16px;
+}
+
+.navid-side-box {
+	padding: 16px;
+	background: var(--navid-card);
+	border: 1px solid var(--navid-line);
+	border-radius: 18px;
+}
+
+.navid-side-title {
+	margin: 0 0 12px;
+	padding-bottom: 10px;
+	border-bottom: 2px solid var(--navid-primary-soft);
+	font-size: 15px;
+}
+
+.navid-side-cats,
+.navid-side-recent {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.navid-side-cats li {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 8px 0;
+	border-bottom: 1px dashed var(--navid-line);
+}
+
+.navid-side-cats li:last-child {
+	border-bottom: 0;
+}
+
+.navid-side-cats a {
+	color: var(--navid-ink);
+	text-decoration: none;
+}
+
+.navid-side-cats li.is-on a,
+.navid-side-cats a:hover {
+	color: var(--navid-primary);
+	font-weight: 700;
+}
+
+.navid-side-cats span {
+	min-width: 26px;
+	padding: 0 8px;
+	border-radius: 999px;
+	background: var(--navid-bg);
+	color: var(--navid-muted);
+	font-size: 12px;
+	text-align: center;
+}
+
+.navid-side-recent li + li {
+	margin-top: 10px;
+}
+
+.navid-side-recent a {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	color: var(--navid-ink);
+	font-size: 13.5px;
+	line-height: 1.8;
+	text-decoration: none;
+}
+
+.navid-side-recent img {
+	flex: none;
+	width: 56px;
+	height: 56px;
+	border-radius: 12px;
+	object-fit: cover;
+}
+
+.navid-crumbs {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+	margin: 16px 0 4px;
+	color: var(--navid-muted);
+	font-size: 13px;
+}
+
+.navid-crumbs a {
+	color: var(--navid-muted);
+	text-decoration: none;
+}
+
+.navid-crumbs a:hover {
+	color: var(--navid-primary);
+}
+
+@media (max-width: 900px) {
+	.navid-blog-layout {
+		grid-template-columns: 1fr;
+	}
+
+	.navid-blog-side {
+		position: static;
+	}
+}
+
+/* Product page on phones: the photo stays while the details slide over it */
+@media (max-width: 700px) {
+	.navid-product {
+		display: block;
+		position: relative;
+	}
+
+	.navid-product-gallery {
+		position: sticky;
+		top: var(--npt-sticky-top, 0px);
+		z-index: 1;
+		margin-inline: -16px;
+		padding: 10px 12px 30px;
+		border: 0;
+		border-radius: 0;
+	}
+
+	.navid-product-gallery .woocommerce-product-gallery__image img,
+	.navid-product-gallery img.wp-post-image {
+		width: 100%;
+		max-height: 52vh;
+		object-fit: contain;
+	}
+
+	.navid-product-gallery .flex-control-thumbs {
+		overflow-x: auto;
+		margin-top: 8px;
+	}
+
+	.navid-product-gallery .flex-control-thumbs li {
+		flex: 0 0 52px;
+	}
+
+	.navid-product-info,
+	.navid-buybox {
+		position: relative;
+		z-index: 2;
+		margin-inline: -16px;
+		padding-inline: 16px;
+		background: var(--navid-card);
+	}
+
+	.navid-product-info {
+		margin-top: -22px;
+		padding-top: 18px;
+		border-radius: 22px 22px 0 0;
+		box-shadow: 0 -10px 26px rgba(16, 26, 36, .1);
+	}
+
+	.navid-buybox {
+		border: 0;
+		border-radius: 0;
+		box-shadow: none;
+	}
+}
+
+/* Pages built on the theme: whatever HTML they hold must fit a phone */
+.navid-entry-body {
+	overflow-wrap: anywhere;
+}
+
+.navid-entry-body img,
+.navid-entry-body video,
+.navid-entry-body iframe,
+.navid-entry-body embed,
+.navid-entry-body canvas,
+.navid-entry-body svg {
+	max-width: 100%;
+}
+
+.navid-entry-body img {
+	height: auto;
+}
+
+.navid-entry-body pre {
+	max-width: 100%;
+	overflow-x: auto;
+}
+
+@media (max-width: 768px) {
+	.navid-content {
+		padding: 14px;
+		margin: 12px 0;
+		border-radius: 16px;
+	}
+
+	.navid-content h1 {
+		font-size: 22px;
+	}
+
+	.navid-entry-body :where(div, section, article, figure, table, form, p, ul, ol, h1, h2, h3, h4) {
+		max-width: 100%;
+	}
+
+	.navid-entry-body [style*="width"] {
+		max-width: 100% !important;
+		box-sizing: border-box;
+	}
+
+	.navid-entry-body [style*="float"] {
+		float: none !important;
+	}
+
+	.navid-entry-body :where(.alignleft, .alignright) {
+		float: none;
+		margin-inline: auto;
+	}
+
+	.navid-entry-body :where(td, th) {
+		min-width: 0;
+	}
+}
+
+/* ---- 1.6.0: modern login card, animated code boxes ---- */
+.navid-auth-card.navid-lg {
+	width: min(440px, 100%);
+	padding: 0;
+	overflow: hidden;
+	border: 0;
+	border-radius: 26px;
+	box-shadow: 0 18px 60px rgba(16, 26, 36, .16);
+}
+
+.navid-lg-hero {
+	padding: 26px 24px 30px;
+	color: #fff;
+	text-align: center;
+	background:
+		radial-gradient(circle at 15% 0%, rgba(255, 255, 255, .22), transparent 55%),
+		linear-gradient(135deg, var(--navid-primary), color-mix(in srgb, var(--navid-primary) 55%, #0b1a33));
+}
+
+.navid-lg-hero .navid-auth-logo {
+	display: inline-flex;
+	margin: 0 0 12px;
+	padding: 8px 16px;
+	border-radius: 16px;
+	background: #fff;
+}
+
+.navid-lg-title {
+	margin: 0 0 4px;
+	color: #fff;
+	font-size: 22px;
+}
+
+.navid-lg-sub {
+	margin: 0;
+	font-size: 13.5px;
+	line-height: 1.9;
+	opacity: .92;
+}
+
+.navid-lg-body {
+	position: relative;
+	margin-top: -16px;
+	padding: 22px 22px 24px;
+	background: var(--navid-card);
+	border-radius: 22px 22px 0 0;
+}
+
+.navid-lg label {
+	display: block;
+	margin: 12px 0 6px;
+	font-size: 13.5px;
+	font-weight: 700;
+}
+
+.navid-lg-input,
+.navid-lg-phone {
+	width: 100%;
+	min-height: 52px;
+	border: 1.5px solid var(--navid-line);
+	border-radius: 16px;
+	background: var(--navid-bg);
+	font: inherit;
+	font-size: 16px;
+	transition: border-color .2s, box-shadow .2s, background .2s;
+}
+
+.navid-lg input.navid-lg-input {
+	padding: 10px 16px;
+}
+
+.navid-lg-phone {
+	display: flex;
+	align-items: center;
+	overflow: hidden;
+}
+
+.navid-lg-phone span {
+	flex: none;
+	padding: 0 14px;
+	color: var(--navid-muted);
+	font-size: 14px;
+	border-inline-end: 1.5px solid var(--navid-line);
+}
+
+.navid-auth-card.navid-lg .navid-lg-phone input {
+	flex: 1;
+	min-width: 0;
+	min-height: 50px;
+	padding: 0 14px;
+	border: 0;
+	background: transparent;
+	font: inherit;
+	font-size: 18px;
+	letter-spacing: 1px;
+}
+
+.navid-auth-card.navid-lg .navid-lg-phone input:focus {
+	outline: 0;
+}
+
+.navid-lg-input:focus,
+.navid-lg-phone:focus-within {
+	outline: 0;
+	border-color: var(--navid-primary);
+	background: var(--navid-card);
+	box-shadow: 0 0 0 4px color-mix(in srgb, var(--navid-primary) 16%, transparent);
+}
+
+.navid-lg-btn {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	min-height: 52px;
+	margin-top: 16px;
+	border: 0;
+	border-radius: 16px;
+	background: var(--navid-primary);
+	color: #fff;
+	font: inherit;
+	font-size: 16px;
+	font-weight: 800;
+	cursor: pointer;
+	box-shadow: 0 10px 22px color-mix(in srgb, var(--navid-primary) 35%, transparent);
+	transition: transform .12s ease, filter .2s;
+}
+
+.navid-lg-btn:hover {
+	filter: brightness(1.06);
+}
+
+.navid-lg-btn:active {
+	transform: scale(.98);
+}
+
+.navid-lg-btn:disabled {
+	cursor: progress;
+	opacity: .85;
+}
+
+.navid-lg-btn.is-busy span {
+	opacity: 0;
+}
+
+.navid-lg-btn.is-busy::after {
+	content: "";
+	position: absolute;
+	width: 22px;
+	height: 22px;
+	border: 3px solid rgba(255, 255, 255, .45);
+	border-top-color: #fff;
+	border-radius: 50%;
+	animation: navid-spin .7s linear infinite;
+}
+
+@keyframes navid-spin {
+	to { transform: rotate(360deg); }
+}
+
+.navid-lg-link {
+	display: inline-block;
+	margin-top: 10px;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--navid-primary);
+	font: inherit;
+	font-size: 13.5px;
+	font-weight: 700;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.navid-lg-link:disabled {
+	color: var(--navid-muted);
+	cursor: default;
+}
+
+.navid-lg-steps {
+	min-height: 180px;
+}
+
+.navid-lg-step[hidden] {
+	display: none;
+}
+
+.navid-lg-step.is-in {
+	animation: navid-step-in .35s cubic-bezier(.22, .8, .3, 1) both;
+}
+
+@keyframes navid-step-in {
+	from { opacity: 0; transform: translateX(-26px); }
+	to { opacity: 1; transform: none; }
+}
+
+.navid-lg-sent {
+	margin: 0 0 14px;
+	font-size: 14px;
+	line-height: 2;
+	text-align: center;
+}
+
+.navid-lg-sent .navid-lg-link {
+	margin: 0 4px;
+}
+
+.navid-lg-otp {
+	display: flex;
+	justify-content: center;
+	gap: 8px;
+	direction: ltr;
+}
+
+.navid-auth-card.navid-lg .navid-lg-otp input {
+	width: 100%;
+	max-width: 54px;
+	height: 60px;
+	padding: 0;
+	border: 1.5px solid var(--navid-line);
+	border-radius: 16px;
+	background: var(--navid-bg);
+	font: inherit;
+	font-size: 26px;
+	font-weight: 800;
+	text-align: center;
+	caret-color: var(--navid-primary);
+	transition: border-color .15s, transform .15s, box-shadow .15s, background .15s;
+}
+
+.navid-auth-card.navid-lg .navid-lg-otp input:focus {
+	outline: 0;
+	border-color: var(--navid-primary);
+	background: var(--navid-card);
+	transform: translateY(-3px);
+	box-shadow: 0 8px 18px color-mix(in srgb, var(--navid-primary) 22%, transparent);
+}
+
+.navid-auth-card.navid-lg .navid-lg-otp input.is-filled {
+	border-color: var(--navid-primary);
+	background: var(--navid-primary-soft);
+	animation: navid-pop .18s ease;
+}
+
+@keyframes navid-pop {
+	50% { transform: scale(1.1); }
+}
+
+.navid-lg-otp.is-shake {
+	animation: navid-shake .45s ease;
+}
+
+.navid-auth-card.navid-lg .navid-lg-otp.is-shake input {
+	border-color: #d63638;
+}
+
+@keyframes navid-shake {
+	20%, 60% { transform: translateX(-9px); }
+	40%, 80% { transform: translateX(9px); }
+}
+
+.navid-auth-card.navid-lg .navid-lg-otp.is-ok input {
+	border-color: #1f9d55;
+	background: #e8f7ee;
+	animation: navid-pop .35s ease both;
+}
+
+.navid-lg-resend {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	margin-top: 14px;
+}
+
+.navid-lg-resend .navid-lg-link {
+	margin: 0;
+}
+
+.navid-lg-ring {
+	transform: rotate(-90deg);
+}
+
+.navid-lg-ring circle {
+	stroke: var(--navid-primary);
+	stroke-linecap: round;
+	transition: stroke-dashoffset 1s linear;
+}
+
+.navid-lg-done {
+	padding: 18px 0 6px;
+	text-align: center;
+}
+
+.navid-lg-done .c {
+	stroke: #1f9d55;
+	stroke-dasharray: 151;
+	stroke-dashoffset: 151;
+	animation: navid-draw .6s ease forwards;
+}
+
+.navid-lg-done .t {
+	stroke: #1f9d55;
+	stroke-dasharray: 40;
+	stroke-dashoffset: 40;
+	animation: navid-draw .4s .45s ease forwards;
+}
+
+@keyframes navid-draw {
+	to { stroke-dashoffset: 0; }
+}
+
+.navid-lg-done-text {
+	margin: 10px 0 0;
+	font-size: 16px;
+	font-weight: 800;
+}
+
+.navid-lg .navid-auth-status {
+	min-height: 22px;
+	margin: 12px 0 0;
+	text-align: center;
+}
+
+.navid-lg .navid-auth-tabs {
+	margin-bottom: 8px;
+}
+
+@media (max-width: 420px) {
+	.navid-lg-body {
+		padding-inline: 16px;
+	}
+
+	.navid-lg-otp {
+		gap: 6px;
+	}
+
+	.navid-auth-card.navid-lg .navid-lg-otp input {
+		height: 54px;
+		font-size: 22px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.navid-lg-step.is-in,
+	.navid-lg-otp.is-shake,
+	.navid-auth-card.navid-lg .navid-lg-otp input.is-filled {
+		animation: none;
 	}
 }

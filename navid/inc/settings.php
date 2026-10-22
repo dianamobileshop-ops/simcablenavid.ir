@@ -92,6 +92,7 @@ function navid_settings_styles( $hook ) {
 		@media (max-width:960px){.navid-layout{grid-template-columns:1fr}.navid-side{position:static;max-height:none}.navid-topbar{flex-wrap:wrap;top:46px}.navid-qsearch{width:100%}.navid-row{grid-template-columns:1fr}}
 	';
 	wp_enqueue_media();
+	$css .= '.navid-okmark{position:fixed;inset:0;z-index:100000;display:grid;place-items:center;background:rgba(16,26,36,.35);animation:navid-okfade .25s ease}.navid-okmark.is-out{opacity:0;transition:opacity .35s ease}.navid-okmark div{display:grid;place-items:center;width:150px;height:150px;border-radius:50%;background:#fff;box-shadow:0 20px 60px rgba(16,26,36,.3);animation:navid-okpop .45s cubic-bezier(.2,1.3,.4,1)}.navid-okmark svg{width:84px;height:84px}.navid-okmark .c{stroke:#1f9d55;stroke-dasharray:151;stroke-dashoffset:151;animation:navid-okdraw .55s .1s ease forwards}.navid-okmark .t{stroke:#1f9d55;stroke-dasharray:40;stroke-dashoffset:40;animation:navid-okdraw .4s .5s ease forwards}@keyframes navid-okdraw{to{stroke-dashoffset:0}}@keyframes navid-okpop{from{transform:scale(.4);opacity:0}}@keyframes navid-okfade{from{opacity:0}}';
 	$css .= '.navid-app .navid-ok{color:#13803f;font-weight:700}.navid-app .navid-bad{color:#b42318;font-weight:700}';
 	wp_register_style( 'navid-settings', false, array(), NAVID_VERSION );
 	wp_enqueue_style( 'navid-settings' );
@@ -317,13 +318,18 @@ function navid_admin_tree() {
 			),
 		),
 		array(
+			'label' => 'خطاها و گزارش',
+			'icon'  => 'dashicons-warning',
+			'items' => array( 'errors' => array( 'گزارش خطاها' . ( class_exists( 'NPT_Log' ) && NPT_Log::recent_count() ? ' (' . NPT_Log::recent_count() . ' جدید)' : '' ), $tab( 'errors' ) ) ),
+			'single' => true,
+		),
+		array(
 			'label' => 'سیستم',
 			'icon'  => 'dashicons-admin-tools',
 			'items' => array(
 				'general' => array( 'تنظیمات عمومی', $tab( 'general' ) ),
 				't-support' => array( 'پشتیبانی و بروزرسانی قالب', $tab( 't-support' ) ),
 				'backup'  => array( 'پشتیبان‌گیری و بازیابی', $tab( 'backup' ) ),
-				'errors'  => array( 'گزارش خطاها', $tab( 'errors' ) ),
 			),
 		),
 	);
@@ -397,6 +403,19 @@ function navid_admin_shell_close() {
 	?>
 	<script>
 	(function () {
+		// A big green check in the middle of the screen confirms that an action went through.
+		var ok = /[?&](saved|checked|updated|done|success|settings-updated)=/.test(location.search) || document.querySelector('.notice-success:not(.is-dismissed), #setting-error-settings_updated');
+		if (ok) {
+			var box = document.createElement('div');
+			box.className = 'navid-okmark';
+			box.setAttribute('role', 'status');
+			box.innerHTML = '<div><svg viewBox="0 0 52 52" fill="none" stroke-width="3" aria-hidden="true"><circle class="c" cx="26" cy="26" r="24"/><path class="t" d="M15 27l8 8 14-16" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>';
+			document.body.appendChild(box);
+			var gone = function () { box.classList.add('is-out'); window.setTimeout(function () { box.remove(); }, 380); };
+			box.addEventListener('click', gone);
+			window.setTimeout(gone, 1500);
+		}
+
 		// Open the accordion that an anchor link points to.
 		function openHash() {
 			var id = location.hash.replace('#', '');

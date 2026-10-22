@@ -38,6 +38,8 @@ get_header();
 		<?php endif; ?>
 	</header>
 
+	<div class="navid-blog-layout">
+	<div class="navid-blog-main">
 	<?php if ( have_posts() ) : ?>
 		<div class="navid-blog-grid navid-blog-grid--page">
 			<?php
@@ -59,6 +61,9 @@ get_header();
 	<?php else : ?>
 		<?php get_template_part( 'template-parts/none' ); ?>
 	<?php endif; ?>
+	</div>
+	<?php get_template_part( 'template-parts/sidebar', 'blog' ); ?>
+	</div>
 </div>
 <?php
 get_footer();
