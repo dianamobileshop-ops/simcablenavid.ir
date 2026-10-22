@@ -45,7 +45,8 @@ function navid_update_info( $force = false ) {
 	if ( is_wp_error( $res ) ) {
 		$info['error'] = $res->get_error_message();
 	} elseif ( 200 !== (int) wp_remote_retrieve_response_code( $res ) ) {
-		$info['error'] = 'پاسخ سرور بروزرسانی: ' . (int) wp_remote_retrieve_response_code( $res );
+		$code          = (int) wp_remote_retrieve_response_code( $res );
+		$info['error'] = 404 === $code ? 'فایل update.json هنوز روی سرور بروزرسانی گذاشته نشده است.' : 'پاسخ سرور بروزرسانی: ' . $code;
 	} else {
 		$json = json_decode( wp_remote_retrieve_body( $res ), true );
 		if ( ! is_array( $json ) || empty( $json['version'] ) || empty( $json['package'] ) ) {
@@ -65,7 +66,8 @@ function navid_update_info( $force = false ) {
 			}
 		}
 	}
-	if ( isset( $info['error'] ) ) {
+	// A missing update.json is a normal state before the first release is uploaded: no log line.
+	if ( isset( $info['error'] ) && false === strpos( $info['error'], 'update.json هنوز' ) ) {
 		navid_log( 'بروزرسانی', $info['error'] );
 	}
 	set_transient( 'navid_update_info', $info, isset( $info['error'] ) ? HOUR_IN_SECONDS : 12 * HOUR_IN_SECONDS );

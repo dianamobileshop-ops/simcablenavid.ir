@@ -79,12 +79,27 @@ function npt_meter_price_labels( $price, $product ) {
  * 3) Single product: meter input UI + instant total + add-to-cart button
  * ---------------------------------------------------------------------- */
 
+/**
+ * The product being viewed. In wp_head the global $product can still be the product
+ * slug (a string, from the query variable), so it is only trusted when it is an object.
+ *
+ * @return WC_Product|null
+ */
+function npt_meter_current_product() {
+	global $product;
+	if ( $product instanceof WC_Product ) {
+		return $product;
+	}
+	$found = function_exists( 'wc_get_product' ) ? wc_get_product( get_queried_object_id() ) : null;
+	return $found instanceof WC_Product ? $found : null;
+}
+
 add_action( 'wp_head', 'npt_meter_input_css' );
 function npt_meter_input_css() {
 	if ( ! function_exists( 'is_product' ) || ! is_product() ) {
 		return;
 	}
-	global $product;
+	$product = npt_meter_current_product();
 	if ( ! $product || ! $product->is_type( 'simple' ) || ! npt_meter_is_meter_product( $product->get_id() ) ) {
 		return;
 	}
@@ -104,7 +119,7 @@ function npt_meter_input_css() {
 
 add_action( 'woocommerce_before_add_to_cart_button', 'npt_meter_input_html' );
 function npt_meter_input_html() {
-	global $product;
+	$product = npt_meter_current_product();
 	if ( ! $product || ! $product->is_type( 'simple' ) || ! npt_meter_is_meter_product( $product->get_id() ) ) {
 		return;
 	}
@@ -139,7 +154,7 @@ function npt_meter_js() {
 	if ( ! function_exists( 'is_product' ) || ! is_product() ) {
 		return;
 	}
-	global $product;
+	$product = npt_meter_current_product();
 	if ( ! $product || ! $product->is_type( 'simple' ) || ! npt_meter_is_meter_product( $product->get_id() ) ) {
 		return;
 	}

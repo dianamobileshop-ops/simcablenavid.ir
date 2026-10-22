@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'NAVID_VERSION', '1.5.2' );
+define( 'NAVID_VERSION', '1.5.3' );
 
 /**
  * Whether WooCommerce is running. Every shop feature checks this, so the theme works

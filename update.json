@@ -1,6 +1,6 @@
 {
-    "version": "1.5.2",
-    "package": "https://simcablenavid.ir/navid/navid-theme-1.5.2.zip",
+    "version": "1.5.3",
+    "package": "https://simcablenavid.ir/navid/navid-theme-1.5.3.zip",
     "url": "https://simcablenavid.ir/navid",
-    "changelog": "بروزرسانی ۱.۵.۲: خطاهای قالب در گزارش، بروزرسانی خودکار قالب، بهبود کش"
+    "changelog": "۱.۵.۳: رفع خطای مرگبار صفحهٔ محصول (فروش متری)"
 }
